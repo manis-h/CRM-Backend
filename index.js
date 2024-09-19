@@ -16,7 +16,7 @@ const app = express();
 // Body Parser Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({origin:["https://losfront.netlify.app/","localhost:5173"]}))
+app.use(cors({origin:["localhost:5173"]}))
 // Middleware configuration
 // app.use(
 //     cors({
