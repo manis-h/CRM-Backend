@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 
-import { login, logout, register } from "../controllers/employees.js";
+import { login, logout, register } from "../Controllers/employees.js";
 // import { authenticateToken } from "../middleware/authMiddleware.js";
 
 // Route to register a new user

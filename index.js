@@ -5,11 +5,11 @@ import cors from "cors"; // Import cors
 import connectDB from "./config/db.js";
 import "dotenv/config.js";
 import morgan from "morgan";
-import lead from "./routes/Leads.js"; // Import routes
-import employee from "./routes/Employees.js";
+import leadRouter from "./routes/LeadsRouter.js"; // Import routes
+import employeeRouter from "./routes/EmployeesRouter.js";
 import { notFound, errorHandler } from "./middleware/errorHandler.js";
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 connectDB();
 
 const app = express();
@@ -34,8 +34,8 @@ app.get("/", (req, res) => {
     res.send("API is running.......");
 });
 
-app.use("/api/leads", lead); // Use the lead routes
-app.use("/api/employees", employee); // Use the employee routes
+app.use("/api/leads", leadRouter); // Use the lead routes
+app.use("/api/employees", employeeRouter); // Use the employee routes
 
 app.use(notFound);
 app.use(errorHandler);
