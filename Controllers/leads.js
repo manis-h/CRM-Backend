@@ -49,28 +49,42 @@ export const  createLead = asyncHandler(async (req, res) => {
 // @desc Get all leads
 // @route GET /api/leads
 // @access Private
+<<<<<<< HEAD
 export const getAllLeads = async (req, res) => {
     try {
         // const page = parseInt(req.query.page) || 1; // current page
         // const limit = parseInt(req.query.limit) || 10; // items per page
         // const skip = (page - 1) * limit;
+=======
+const getAllLeads = asyncHandler(async (req, res) => {
+    // const page = parseInt(req.query.page) || 1; // current page
+    // const limit = parseInt(req.query.limit) || 10; // items per page
+    // const skip = (page - 1) * limit;
+>>>>>>> origin/Ajay
 
-        const leads = await Lead.find({}); //.skip(skip).limit(limit);
-        const totalLeads = await Lead.countDocuments();
+    const leads = await Lead.find({}); //.skip(skip).limit(limit);
+    const totalLeads = await Lead.countDocuments();
 
-        res.status(200).json({
-            totalLeads,
-            // totalPages: Math.ceil(totalLeads / limit),
-            // currentPage: page,
-            leads,
-        });
-    } catch (error) {
-        res.status(500).json({
-            message: "Error retrieving user details",
-            error,
-        });
+    res.json({
+        totalLeads,
+        // totalPages: Math.ceil(totalLeads / limit),
+        // currentPage: page,
+        leads,
+    });
+});
+
+// @desc Get lead
+// @route GET /api/leads/:id
+// @access Private
+const getLead = asyncHandler(async (req, res) => {
+    const id = req.params;
+    const lead = await Lead.findOne({ _id: id });
+    if (!lead) {
+        res.status(404);
+        throw new Error("Lead not found!!!!");
     }
-};
+    res.json(lead);
+});
 
 // Get user details by ID
 // const getUserDetailsById = async (req, res) => {
@@ -111,4 +125,8 @@ export const getAllLeads = async (req, res) => {
 //     }
 // };
 
+<<<<<<< HEAD
 // export { createLead, getAllLeads };
+=======
+export { createLead, getAllLeads, getLead };
+>>>>>>> origin/Ajay

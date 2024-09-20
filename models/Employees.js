@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 
 const employeeSchema = new mongoose.Schema({
     username: {
@@ -15,6 +16,19 @@ const employeeSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+});
+
+employeeSchema.methods.matchPassword = async function (enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password);
+};
+
+employeeSchema.pre("save", async function (next) {
+    if (!this.isModified("password")) {
+        next();
+    }
+
+    this.password = bcrypt.hashSync(this.password, 10);
+    next();
 });
 
 const Employee = mongoose.model("Employee", employeeSchema);

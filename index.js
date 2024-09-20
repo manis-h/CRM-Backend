@@ -6,9 +6,10 @@ import connectDB from "./config/db.js";
 import "dotenv/config.js";
 import morgan from "morgan";
 import leadRouter from "./routes/LeadsRouter.js"; // Import routes
+import employeeRouter from "./routes/EmployeesRouter.js";
 import { notFound, errorHandler } from "./middleware/errorHandler.js";
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 connectDB();
 
 const app = express();
@@ -39,7 +40,8 @@ app.get("/", (req, res) => {
   res.send("API is running.......");
 });
 
-app.use("/api/leads", leadRouter); // Use the user routes
+app.use("/api/leads", leadRouter); // Use the lead routes
+app.use("/api/employees", employeeRouter); // Use the employee routes
 
 app.use(notFound);
 app.use(errorHandler);
