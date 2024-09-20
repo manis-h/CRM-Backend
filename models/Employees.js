@@ -2,10 +2,18 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
 const employeeSchema = new mongoose.Schema({
-    username: {
-        type: String,
+    empId: {
+        type: Number,
         required: true,
         unique: true,
+    },
+    fName: {
+        type: String,
+        required: true,
+    },
+    lName: {
+        type: String,
+        required: true,
     },
     email: {
         type: String,
@@ -15,6 +23,14 @@ const employeeSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
+    },
+    empRole: {
+        type: String,
+        required: true,
+    },
+    isActive: {
+        type: Boolean,
+        default: true,
     },
 });
 

@@ -2,39 +2,45 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Employee from "../models/Employees.js";
 import { generateToken } from "../utils/generateToken.js";
-
 // @desc Register Employee
 // @route POST /api/employees
 //@access Private
 export const register = asyncHandler(async (req, res) => {
     try {
-        const { username, email, password } = req.body;
-
+        const { fName, lName, email, password, confPassword, empRole, empId } =
+            req.body;
         const existingUser = await Employee.findOne({ email });
+
         if (existingUser) {
             res.status(400);
             throw new Error("Employee already exists!!!");
         }
 
-        const employee = await Employee.create({
-            username,
-            email,
-            password,
-        });
-
-        if (employee) {
-            generateToken(res, employee._id);
-            res.status(201).json({
-                _id: employee._id,
-                name: employee.fName + " " + employee.lName,
-                email: employee.email,
+        // const empId = generateEmpId();
+        if (password === confPassword) {
+            const employee = await Employee.create({
+                fName,
+                lName,
+                email,
+                password,
+                empRole,
+                empId,
             });
+            if (employee) {
+                const token = generateToken(res, employee._id);
+                res.status(201).json({
+                    _id: employee._id,
+                    token: token,
+                    name: employee.fName + " " + employee.lName,
+                    email: employee.email,
+                });
+            }
         }
 
-        res.status(201).json({
-            message: "User registered successfully",
-            user: newUser,
-        });
+        // res.status(201).json({
+        //     message: "User registered successfully",
+        //     user: newUser,
+        // });
     } catch (error) {
         res.status(500).json({ message: "Error saving user", error });
     }
@@ -49,10 +55,11 @@ export const login = asyncHandler(async (req, res) => {
     // Find the user by email
     const employee = await Employee.findOne({ email });
     if (employee && (await employee.matchPassword(password))) {
-        generateToken(res, employee._id);
+        const token = generateToken(res, employee._id);
 
         res.status(200).json({
             _id: employee._id,
+            token: token,
             name: employee.fName + " " + employee.lName,
             email: employee.email,
         });
@@ -61,10 +68,38 @@ export const login = asyncHandler(async (req, res) => {
         throw new Error("Invalid email or password");
     }
 });
-// Logout route (clears the auth token)
+
+// @desc Logout Employee / clear cookie
+// @route POST /api/employees/logout
+// @access Private
 export const logout = (req, res) => {
-    console.log("Logout request received");
-    res.clearCookie("authToken", { path: "/" });
-    console.log("Auth token cookie cleared");
+    res.cookie("jwt", "", {
+        httpOnly: true,
+        expires: new Date(0),
+    });
     res.status(200).json({ message: "Logged out successfully" });
 };
+
+// @desc Get all employees
+// @route GET /api/employees/
+// @access Private
+export const getAllEmployees = asyncHandler(async (req, res) => {
+    const employees = await Employee.find({});
+    res.json(employees);
+});
+
+// @desc Get a particular employee
+// @route GET /api/employees/:id
+// @access Private
+
+export const getAnEmployee = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const employee = await Employee.findOne({ _id: id });
+    console.log(employee);
+
+    if (employee) {
+        return res.json(employee);
+    }
+    res.stauts(400);
+    throw new Error("Employee not found!!");
+});

@@ -4,7 +4,6 @@ import Lead from "../models/Leads.js";
 // @desc Create loan leads
 // @route POST /api/leads
 // @access Public
-
 const createLead = asyncHandler(async (req, res) => {
     const {
         fName,
@@ -50,17 +49,25 @@ const createLead = asyncHandler(async (req, res) => {
 // @route GET /api/leads
 // @access Private
 const getAllLeads = asyncHandler(async (req, res) => {
-    // const page = parseInt(req.query.page) || 1; // current page
-    // const limit = parseInt(req.query.limit) || 10; // items per page
-    // const skip = (page - 1) * limit;
+    const page = parseInt(req.query.page) || 1; // current page
+    const limit = parseInt(req.query.limit) || 10; // items per page
+    const skip = (page - 1) * limit;
 
-    const leads = await Lead.find({}); //.skip(skip).limit(limit);
+    const leads = await Lead.find({
+        $or: [
+            { screenerId: { $exists: false } },
+            { screenerId: null },
+            { screenerId: "" },
+        ],
+    })
+        .skip(skip)
+        .limit(limit);
     const totalLeads = await Lead.countDocuments();
 
     res.json({
         totalLeads,
-        // totalPages: Math.ceil(totalLeads / limit),
-        // currentPage: page,
+        totalPages: Math.ceil(totalLeads / limit),
+        currentPage: page,
         leads,
     });
 });
@@ -69,13 +76,76 @@ const getAllLeads = asyncHandler(async (req, res) => {
 // @route GET /api/leads/:id
 // @access Private
 const getLead = asyncHandler(async (req, res) => {
-    const id = req.params;
+    const { id } = req.params;
     const lead = await Lead.findOne({ _id: id });
     if (!lead) {
         res.status(404);
         throw new Error("Lead not found!!!!");
     }
     res.json(lead);
+});
+
+// @desc Allocate new lead
+// @route PATCH /api/leads/:id
+// @access Private
+const allocateLead = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { emp_id } = req.body;
+
+    const lead = await Lead.findByIdAndUpdate(
+        { _id: id },
+        { screenerId: emp_id },
+        { new: true }
+    );
+
+    res.json(lead);
+});
+
+// @desc Allocated Leads
+// @route GET /api/leads/allocated
+// @access Private
+const allocatedLeads = asyncHandler(async (req, res) => {
+    const page = parseInt(req.query.page) || 1; // current page
+    const limit = parseInt(req.query.limit) || 10; // items per page
+    const skip = (page - 1) * limit;
+
+    const leads = await Lead.find({
+        screenerId: {
+            $exists: true,
+            $ne: null,
+        },
+    })
+        .skip(skip)
+        .limit(limit);
+    const totalLeads = await Lead.countDocuments();
+
+    res.json({
+        totalLeads,
+        totalPages: Math.ceil(totalLeads / limit),
+        currentPage: page,
+        leads,
+    });
+});
+
+// @desc Particular employee allocated leads
+// @route GET /api/leads/allocated/:id
+// @access Private
+const particularEmployeeAllocatedLeads = asyncHandler(async (req, res) => {
+    const page = parseInt(req.query.page) || 1; // current page
+    const limit = parseInt(req.query.limit) || 10; // items per page
+    const skip = (page - 1) * limit;
+
+    const { id } = req.params;
+
+    const leads = await Lead.find({ screenerId: id }).skip(skip).limit(limit);
+    const totalLeads = await Lead.countDocuments();
+
+    res.json({
+        totalLeads,
+        totalPages: Math.ceil(totalLeads / limit),
+        currentPage: page,
+        leads,
+    });
 });
 
 // Get user details by ID
@@ -117,5 +187,11 @@ const getLead = asyncHandler(async (req, res) => {
 //     }
 // };
 
-export { createLead, getAllLeads, getLead };
-
+export {
+    createLead,
+    getAllLeads,
+    getLead,
+    allocateLead,
+    allocatedLeads,
+    particularEmployeeAllocatedLeads,
+};
