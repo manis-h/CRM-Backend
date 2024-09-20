@@ -29,10 +29,13 @@ export const register = asyncHandler(async (req, res) => {
             if (employee) {
                 const token = generateToken(res, employee._id);
                 res.status(201).json({
-                    _id: employee._id,
+                    data: {
+                        _id: employee._id,
+                        // token: token,
+                        name: employee.fName + " " + employee.lName,
+                        email: employee.email,
+                    },
                     token: token,
-                    name: employee.fName + " " + employee.lName,
-                    email: employee.email,
                 });
             }
         }
@@ -58,10 +61,13 @@ export const login = asyncHandler(async (req, res) => {
         const token = generateToken(res, employee._id);
 
         res.status(200).json({
-            _id: employee._id,
+            data: {
+                _id: employee._id,
+                // token: token,
+                name: employee.fName + " " + employee.lName,
+                email: employee.email,
+            },
             token: token,
-            name: employee.fName + " " + employee.lName,
-            email: employee.email,
         });
     } else {
         res.status(401);

@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 
 const employeeSchema = new mongoose.Schema({
     empId: {
-        type: Number,
+        type: String,
         required: true,
         unique: true,
     },
