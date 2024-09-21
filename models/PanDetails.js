@@ -11,5 +11,5 @@ const panSchema = new mongoose.Schema({
         }
 },{timestamps :  true});
 
-const PanDetails = mongoose.model("Aadhar",aadharSchema);
+const PanDetails = mongoose.model("Pan",panSchema);
 export default PanDetails;

@@ -8,6 +8,8 @@ import morgan from "morgan";
 import leadRouter from "./routes/LeadsRouter.js"; // Import routes
 import employeeRouter from "./routes/EmployeesRouter.js";
 import authAadharRouter from "./routes/AuthAadharRouter.js"
+import authPanRouter from "./routes/AuthPanRouter.js"
+
 import { notFound, errorHandler } from "./middleware/errorHandler.js";
 import { getPanDetails } from "./utils/getPanDetails.js";
 
@@ -40,6 +42,8 @@ app.get("/", (req, res) => {
 app.use("/api/leads", leadRouter); // Use the lead routes
 app.use("/api/employees", employeeRouter); // Use the employee routes
 app.use("/api/okyc",authAadharRouter); // Use the auth aadhar routes sevice by okyc
+app.use("/api/pan",authPanRouter); // Use the auth aadhar routes sevice by okyc
+
 
 app.use(notFound);
 app.use(errorHandler);
