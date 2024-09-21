@@ -1,30 +1,52 @@
-import asyncHandler from "./asyncHandler";
+import asyncHandler from "./asyncHandler.js";
 import jwt from "jsonwebtoken";
-// import Employees from "../models/Employees.js";
-const JWT_SECRET = "loan"; // Again, use environment variables in production
+import Employees from "../models/Employees.js";
 
 // Protected Routes
 const protect = asyncHandler(async (req, res, next) => {
-    let token;
     // var userRole = req.cookies.userRole;
-    token = req.cookies.jwt;
+    // token = req.cookies.jwt;
+    let token = req.headers.authorization;
+    // console.log(req.headers.authorization);
+
     if (token) {
         try {
+            if (token.startsWith("Bearer ")) {
+                token = token.slice(7, token.length).trimLeft();
+            }
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            req.employee = await Employee.findById(decoded.id).select(
+            req.employee = await Employees.findById(decoded.id).select(
                 "-password"
             );
-            if (req.employee.empRole === "admin") {
-                req.admin = req.employee;
-            }
+
+            // Dynamically add the employee role to req
+            const role = req.employee.empRole;
+            req[role] = req.employee; // Assign the employee's role to req dynamically
+
             next();
+
+            // switch (req.employee.empRole) {
+            //     case "admin":
+            //         req.admin = req.employee;
+            //         break;
+            //     case "screener":
+            //         req.screener = req.employee;
+            //         break;
+            //     case "creditManger":
+            //         req.creditManager = req.employee;
+            //         break;
+            //     default:
+            //         res.status(403);
+            //         throw new Error("Not Authorized!! Invalid role");
+            // }
+            // next();
         } catch (error) {
             console.log(error);
             res.status(401);
-            throw new Error("Not Authorized!!");
+            throw new Error("Not Authorized as Admin!!");
         }
     } else {
-        res.status(401);
+        res.status(403);
         throw new Error("Not Authorized!!! No token found");
     }
 });

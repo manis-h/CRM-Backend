@@ -6,7 +6,7 @@ import { generateToken } from "../utils/generateToken.js";
 // @route POST /api/employees
 //@access Private
 export const register = asyncHandler(async (req, res) => {
-    try {
+    if (req.admin) {
         const { fName, lName, email, password, confPassword, empRole, empId } =
             req.body;
         const existingUser = await Employee.findOne({ email });
@@ -28,7 +28,7 @@ export const register = asyncHandler(async (req, res) => {
             });
             if (employee) {
                 const token = generateToken(res, employee._id);
-                res.status(201).json({
+                return res.status(201).json({
                     data: {
                         _id: employee._id,
                         // token: token,
@@ -39,13 +39,6 @@ export const register = asyncHandler(async (req, res) => {
                 });
             }
         }
-
-        // res.status(201).json({
-        //     message: "User registered successfully",
-        //     user: newUser,
-        // });
-    } catch (error) {
-        res.status(500).json({ message: "Error saving user", error });
     }
 });
 
@@ -90,8 +83,10 @@ export const logout = (req, res) => {
 // @route GET /api/employees/
 // @access Private
 export const getAllEmployees = asyncHandler(async (req, res) => {
-    const employees = await Employee.find({});
-    res.json(employees);
+    if (req.admin) {
+        const employees = await Employee.find({});
+        return res.json(employees);
+    }
 });
 
 // @desc Get a particular employee

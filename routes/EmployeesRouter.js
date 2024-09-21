@@ -1,6 +1,5 @@
 import express from "express";
 const router = express.Router();
-
 import {
     login,
     logout,
@@ -8,13 +7,13 @@ import {
     getAllEmployees,
     getAnEmployee,
 } from "../Controllers/employees.js";
-// import { authenticateToken } from "../middleware/authMiddleware.js";
+import { protect, admin } from "../middleware/authMiddleware.js";
 
-router.route("/").get(getAllEmployees);
-router.route("/:id").get(getAnEmployee);
+router.route("/").get(protect, admin, getAllEmployees);
+router.route("/:id").get(protect, getAnEmployee);
 
 // Route to register a new user
-router.route("/register").post(register);
+router.route("/register").post(protect, admin, register);
 
 // Route to login
 router.route("/login").post(login);

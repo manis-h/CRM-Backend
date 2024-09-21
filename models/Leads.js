@@ -21,7 +21,7 @@ const leadSchema = new mongoose.Schema({
         required: true,
     },
     adhaar: {
-        type: Number,
+        type: String,
         required: true,
         unique: true,
     },
@@ -69,6 +69,14 @@ const leadSchema = new mongoose.Schema({
         required: true,
     },
     screenerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Employee",
+    },
+    onHold: {
+        type: Boolean,
+        default: false,
+    },
+    heldByWhom: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Employee",
     },
