@@ -11,5 +11,5 @@ const panSchema = new mongoose.Schema({
         }
 },{timestamps :  true});
 
-const PanDetails = mongoose.model("Pan",panSchema);
-export default PanDetails;
+const PanDetailsModel = mongoose.model("Pan",panSchema);
+export default PanDetailsModel;

@@ -1,8 +1,5 @@
 import asyncHandler from "../middleware/asyncHandler.js";
-import { generateOtpWithAadhaar } from "../utils/generateAadhaarOtp.js";
-import { generateAadhaarDetails } from "../utils/generateAadharDetails.js";
 import Lead from "../models/Leads.js";
-import AadharDetails from "../models/AadharDetails.js";
 import { getPanDetails } from "../utils/getPanDetails.js";
 import PanDetails from "../models/PanDetails.js";
 
@@ -22,7 +19,7 @@ export const getPanController = asyncHandler(async (req, res) => {
         }
 
         // Validate it should be a 12-digit string
-        if ("^(?=.*[a-zA-Z])(?=.*[0-9])[A-Za-z0-9]+$".test(aadhaarNumber)) {
+        if ("^(?=.*[a-zA-Z])(?=.*[0-9])[A-Za-z0-9]+$".test(panNumber)) {
             return res.status(400).json({
                 success: false,
                 message: "Pan number must be a 10-digit Alpha numeric."

@@ -47,7 +47,7 @@ app.use("/api/pan",authPanRouter); // Use the auth aadhar routes sevice by okyc
 
 app.use(notFound);
 app.use(errorHandler);
-getPanDetails({panNumber:"DVWPG0881D",getStatusInfo:true})
+// getPanDetails({panNumber:"DVWPG0881D",getStatusInfo:true})
 app.listen(PORT, () => {
     console.log(`Server is running on port: ${PORT}`);
 });
