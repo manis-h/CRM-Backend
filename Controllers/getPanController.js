@@ -19,29 +19,29 @@ export const getPanController = asyncHandler(async (req, res) => {
         }
 
         // Validate it should be a 12-digit string
-        if ("^(?=.*[a-zA-Z])(?=.*[0-9])[A-Za-z0-9]+$".test(panNumber)) {
-            return res.status(400).json({
-                success: false,
-                message: "Pan number must be a 10-digit Alpha numeric."
-            });
-        }
+        // if (/^([a-zA-Z0-9 _-]+)$/.test(panNumber)) {
+        //     return res.status(400).json({
+        //         success: false,
+        //         message: "Pan number must be a 10-digit Alpha numeric."
+        //     });
+        // }
 
         // Call the get panDetails Function 
-        const panDetails= getPanDetails({panNumber,getStatusInfo:true})
+        const panDetails= await getPanDetails({panNumber,getStatusInfo:true})
         // Now match the Lead data with the generated data
-        const lead = await Lead.findOne({ aadhaarNumber: aadhaarNumber });
-        if (!lead || !panDetails ) {
-            return res.status(404).json({
-                success: false,
-                message: "No matching lead found."
-            });
-        }
-
+        // const lead = await Lead.findOne({ panNumber: panNumber });
+        // if (!lead || !panDetails ) {
+        //     return res.status(404).json({
+        //         success: false,
+        //         message: "No matching lead found."
+        //     });
+        // }
+console.log({panDetails})
         // Now save the data in the AadharDetails database
         const newpanDetail = new PanDetails({
             panNumber,
             // otp: otpResponseData.otp, // Adjust based on the actual response structure
-            details: panDetails
+            data: panDetails.data 
         });
 
         await newpanDetail.save();
@@ -56,7 +56,8 @@ export const getPanController = asyncHandler(async (req, res) => {
     } catch (error) {
         return res.status(500).json({
             success: false,
-            message: error.message
+            message: error.message,
+            newpanDetail
         });
     }
 });
