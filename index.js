@@ -8,6 +8,7 @@ import morgan from "morgan";
 import leadRouter from "./routes/LeadsRouter.js"; // Import routes
 import employeeRouter from "./routes/EmployeesRouter.js";
 import { notFound, errorHandler } from "./middleware/errorHandler.js";
+import { getPanDetails } from "./utils/getPanDetails.js";
 
 const PORT = process.env.PORT || 3000;
 connectDB();
@@ -40,7 +41,7 @@ app.use("/api/employees", employeeRouter); // Use the employee routes
 
 app.use(notFound);
 app.use(errorHandler);
-
+getPanDetails({panNumber:"DVWPG0881D",getStatusInfo:true})
 app.listen(PORT, () => {
     console.log(`Server is running on port: ${PORT}`);
 });
