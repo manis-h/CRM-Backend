@@ -42,7 +42,7 @@ const createLead = asyncHandler(async (req, res) => {
         city,
     });
     // const savedUserDetails = await newUserDetails.save();
-    res.status(201).json(newLead);
+    return res.status(201).json(newLead);
 });
 
 // @desc Get all leads
@@ -60,7 +60,7 @@ const getAllLeads = asyncHandler(async (req, res) => {
         .limit(limit);
     const totalLeads = await Lead.countDocuments();
 
-    res.json({
+    return res.json({
         totalLeads,
         totalPages: Math.ceil(totalLeads / limit),
         currentPage: page,
@@ -78,110 +78,155 @@ const getLead = asyncHandler(async (req, res) => {
         res.status(404);
         throw new Error("Lead not found!!!!");
     }
-    res.json(lead);
+    return res.json(lead);
 });
 
 // @desc Allocate new lead
 // @route PATCH /api/leads/:id
 // @access Private
 const allocateLead = asyncHandler(async (req, res) => {
+    // Check if screener exists in the request
+    if (!req.screener) {
+        throw new Error("Screener not found");
+    }
+
     const { id } = req.params;
-    const { emp_id } = req.body;
+    const screenerId = req.screener._id.toString();
 
     const lead = await Lead.findByIdAndUpdate(
-        { _id: id },
-        { screenerId: emp_id },
+        id,
+        { screenerId },
         { new: true }
     );
 
-    res.json(lead);
+    if (!lead) {
+        throw new Error("Lead not found"); // This error will be caught by the error handler
+    }
+
+    // Send the updated lead as a JSON response
+    return res.json(lead); // This is a successful response
 });
 
-// @desc Allocated Leads
+// @desc Get Allocated Leads depends on whether if it's admin or a screener.
 // @route GET /api/leads/allocated
 // @access Private
 const allocatedLeads = asyncHandler(async (req, res) => {
-    const page = parseInt(req.query.page) || 1; // current page
-    const limit = parseInt(req.query.limit) || 10; // items per page
-    const skip = (page - 1) * limit;
+    if (req.screener) {
+        const page = parseInt(req.query.page) || 1; // current page
+        const limit = parseInt(req.query.limit) || 10; // items per page
+        const skip = (page - 1) * limit;
 
-    const leads = await Lead.find({
-        screenerId: {
-            $exists: true,
-            $ne: null,
-        },
-    })
-        .skip(skip)
-        .limit(limit);
-    const totalLeads = await Lead.countDocuments();
+        const screenerId = req.screener._id.toString();
 
-    res.json({
-        totalLeads,
-        totalPages: Math.ceil(totalLeads / limit),
-        currentPage: page,
-        leads,
-    });
+        const leads = await Lead.find({ screenerId }).skip(skip).limit(limit);
+
+        const totalLeads = await Lead.countDocuments();
+
+        return res.json({
+            totalLeads,
+            totalPages: Math.ceil(totalLeads / limit),
+            currentPage: page,
+            leads,
+        });
+    } else if (req.admin) {
+        const page = parseInt(req.query.page) || 1; // current page
+        const limit = parseInt(req.query.limit) || 10; // items per page
+        const skip = (page - 1) * limit;
+
+        const leads = await Lead.find({
+            screenerId: {
+                $exists: true,
+                $ne: null,
+            },
+        })
+            .skip(skip)
+            .limit(limit);
+        const totalLeads = await Lead.countDocuments();
+
+        return res.json({
+            totalLeads,
+            totalPages: Math.ceil(totalLeads / limit),
+            currentPage: page,
+            leads,
+        });
+    }
 });
 
-// @desc Particular employee allocated leads
-// @route GET /api/leads/allocated/:id
+// @desc Putting lead on hold
+// @route PATCH /api/leads/hold/:id
 // @access Private
-const particularEmployeeAllocatedLeads = asyncHandler(async (req, res) => {
-    const page = parseInt(req.query.page) || 1; // current page
-    const limit = parseInt(req.query.limit) || 10; // items per page
-    const skip = (page - 1) * limit;
-
+const leadOnHold = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const leads = await Lead.find({ screenerId: id }).skip(skip).limit(limit);
+    // List of roles that are authorized to hold a lead
+    const authorizedRoles = [
+        "screener",
+        "admin",
+        "creditManager",
+        "teamLead",
+        "supportAgent",
+    ];
+
+    if (!req.employee) {
+        res.status(403);
+        throw new Error("Not Authorized!!");
+    }
+
+    if (!authorizedRoles.includes(req.employee.empRole)) {
+        res.status(403);
+        throw new Error("Not Authorized to hold a lead!!");
+    }
+    const lead = await Lead.findByIdAndUpdate(
+        id,
+        { onHold: true, heldByWhom: req.employee._id },
+        { new: true }
+    );
+
+    if (!lead) {
+        throw new Error("Lead not found");
+    }
+    res.json(lead);
+});
+
+// @desc Get leads on hold depends on if it's admin or an employee
+// @route GET /api/leads/hold
+// @access Private
+const getHoldLeads = asyncHandler(async (req, res) => {
+    // List of roles that are authorized to hold a lead
+    const authorizedRoles = [
+        "screener",
+        "admin",
+        "creditManager",
+        "teamLead",
+        "supportAgent",
+    ];
+
+    if (!req.employee) {
+        res.status(403);
+        throw new Error("Not Authorized!!");
+    }
+
+    if (!authorizedRoles.includes(req.employee.empRole)) {
+        res.status(403);
+        throw new Error("Not Authorized to hold a lead!!");
+    }
+    const page = parseInt(req.query.page) || 1; // current page
+    const limit = parseInt(req.query.limit) || 10; // items per page
+    const skip = (page - 1) * limit;
+
+    const heldByWhom = req.employee._id.toString();
+
+    const leads = await Lead.find({ heldByWhom }).skip(skip).limit(limit);
+
     const totalLeads = await Lead.countDocuments();
 
-    res.json({
+    return res.json({
         totalLeads,
         totalPages: Math.ceil(totalLeads / limit),
         currentPage: page,
         leads,
     });
 });
-
-// Get user details by ID
-// const getUserDetailsById = async (req, res) => {
-//     try {
-//         const userDetails = await UserDetails.findById(req.params.id);
-//         if (!userDetails) {
-//             return res.status(404).json({ message: 'User details not found' });
-//         }
-//         res.status(200).json(userDetails);
-//     } catch (error) {
-//         res.status(500).json({ message: 'Error retrieving user details', error });
-//     }
-// };
-
-// Update user details by ID
-// const updateUserDetailsById = async (req, res) => {
-//     try {
-//         const updatedUserDetails = await UserDetails.findByIdAndUpdate(req.params.id, req.body, { new: true });
-//         if (!updatedUserDetails) {
-//             return res.status(404).json({ message: 'User details not found' });
-//         }
-//         res.status(200).json(updatedUserDetails);
-//     } catch (error) {
-//         res.status(500).json({ message: 'Error updating user details', error });
-//     }
-// };
-
-// Delete user details by ID
-// const deleteUserDetailsById = async (req, res) => {
-//     try {
-//         const deletedUserDetails = await UserDetails.findByIdAndDelete(req.params.id);
-//         if (!deletedUserDetails) {
-//             return res.status(404).json({ message: 'User details not found' });
-//         }
-//         res.status(200).json({ message: 'User details deleted successfully' });
-//     } catch (error) {
-//         res.status(500).json({ message: 'Error deleting user details', error });
-//     }
-// };
 
 export {
     createLead,
@@ -189,5 +234,6 @@ export {
     getLead,
     allocateLead,
     allocatedLeads,
-    particularEmployeeAllocatedLeads,
+    leadOnHold,
+    getHoldLeads,
 };

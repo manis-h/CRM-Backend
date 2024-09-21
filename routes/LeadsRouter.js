@@ -7,20 +7,14 @@ import {
     getLead,
     allocateLead,
     allocatedLeads,
-    particularEmployeeAllocatedLeads,
+    // particularEmployeeAllocatedLeads,
 } from "../Controllers/leads.js";
-// import { authenticateToken } from "../middleware/authMiddleware.js";
+import { protect, admin } from "../middleware/authMiddleware.js";
 
-// router.get("/protected-route", authenticateToken, (req, res) => {
-//     res.status(200).json({
-//         message: "You have access to protected data!",
-//         user: req.user,
-//     });
-// });
 // Other routes
-router.route("/").post(createLead).get(getAllLeads);
-router.route("/allocated").get(allocatedLeads);
-router.route("/allocated/:id").get(particularEmployeeAllocatedLeads);
-router.route("/:id").get(getLead).patch(allocateLead);
+router.route("/").post(createLead).get(protect, getAllLeads);
+// router.route("/allocated").get(protect, admin, allocatedLeads);
+router.route("/allocated").get(protect, allocatedLeads);
+router.route("/:id").get(getLead).patch(protect, allocateLead);
 
 export default router;

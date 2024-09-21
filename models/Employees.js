@@ -24,6 +24,15 @@ const employeeSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    gender: {
+        type: String,
+        required: true,
+        enum: ["M", "F"],
+    },
+    mobile: {
+        type: Number,
+        required: true,
+    },
     empRole: {
         type: String,
         required: true,

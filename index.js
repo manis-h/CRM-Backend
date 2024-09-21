@@ -1,5 +1,4 @@
 import express from "express";
-import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import cors from "cors"; // Import cors
 import connectDB from "./config/db.js";
@@ -14,11 +13,12 @@ connectDB();
 
 const app = express();
 
-// Body Parser Middleware
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser()); //cookie parser middlerware
 
-// Middleware configuration
+// CORS configuration
 var corsOption = {
     origin: "*",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -27,8 +27,8 @@ var corsOption = {
 };
 app.use(cors(corsOption));
 
-app.use(cookieParser()); //cookie parser middlerware
-app.use(bodyParser.json()); // Middleware to parse JSON requests
+// Logging middleware (optional)
+app.use(morgan("dev")); // Log HTTP requests
 
 // Routes
 app.get("/", (req, res) => {
@@ -38,6 +38,7 @@ app.get("/", (req, res) => {
 app.use("/api/leads", leadRouter); // Use the lead routes
 app.use("/api/employees", employeeRouter); // Use the employee routes
 
+// Error handling middleware
 app.use(notFound);
 app.use(errorHandler);
 
