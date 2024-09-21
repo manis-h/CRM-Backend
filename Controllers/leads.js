@@ -54,11 +54,7 @@ const getAllLeads = asyncHandler(async (req, res) => {
     const skip = (page - 1) * limit;
 
     const leads = await Lead.find({
-        $or: [
-            { screenerId: { $exists: false } },
-            { screenerId: null },
-            { screenerId: "" },
-        ],
+        $or: [{ screenerId: { $exists: false } }, { screenerId: null }],
     })
         .skip(skip)
         .limit(limit);
