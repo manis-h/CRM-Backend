@@ -7,6 +7,7 @@ import "dotenv/config.js";
 import morgan from "morgan";
 import leadRouter from "./routes/LeadsRouter.js"; // Import routes
 import employeeRouter from "./routes/EmployeesRouter.js";
+import authAadharRouter from "./routes/AuthAadharRouter.js"
 import { notFound, errorHandler } from "./middleware/errorHandler.js";
 
 const PORT = process.env.PORT || 3000;
@@ -42,6 +43,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/leads", leadRouter); // Use the lead routes
 app.use("/api/employees", employeeRouter); // Use the employee routes
+app.use("/api/okyc",authAadharRouter); // Use the auth aadhar routes sevice by okyc
 
 app.use(notFound);
 app.use(errorHandler);
