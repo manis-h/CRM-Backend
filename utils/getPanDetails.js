@@ -13,7 +13,7 @@ const getPanDetails = async ({ pan, getStatusInfo }) => {
             Authorization: process.env.SIGNZY_PRE_PRODUCTION, // Pre-production Access Key
             "Content-Type": "application/json",
         },
-        data: { pan, getStatusInfo },
+        data: { panNumber: pan, getStatusInfo },
     };
 
     try {
@@ -21,7 +21,7 @@ const getPanDetails = async ({ pan, getStatusInfo }) => {
         return response.data;
     } catch (error) {
         console.log("Error from Signzy");
-        throw new Error(error.response.data.message || "An error occurred");
+        throw new Error(error.response?.data?.message || "An error occurred");
     }
 };
 export { getPanDetails };

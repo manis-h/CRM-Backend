@@ -76,7 +76,15 @@ const leadSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
-    heldByWhom: {
+    heldBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Employee",
+    },
+    isRejected: {
+        type: Boolean,
+        default: false,
+    },
+    rejectedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Employee",
     },

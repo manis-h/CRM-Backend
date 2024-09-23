@@ -7,8 +7,17 @@ import { generateToken } from "../utils/generateToken.js";
 //@access Private
 export const register = asyncHandler(async (req, res) => {
     if (req.admin) {
-        const { fName, lName, email, password, confPassword, empRole, empId } =
-            req.body;
+        const {
+            fName,
+            lName,
+            email,
+            password,
+            confPassword,
+            gender,
+            mobile,
+            empRole,
+            empId,
+        } = req.body;
         const existingUser = await Employee.findOne({ email });
 
         if (existingUser) {
@@ -23,6 +32,8 @@ export const register = asyncHandler(async (req, res) => {
                 lName,
                 email,
                 password,
+                gender,
+                mobile,
                 empRole,
                 empId,
             });
@@ -92,10 +103,15 @@ export const getAllEmployees = asyncHandler(async (req, res) => {
 // @desc Get a particular employee
 // @route GET /api/employees/:id
 // @access Private
-
 export const getAnEmployee = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const employee = await Employee.findOne({ _id: id });
+    let employeeId;
+    if (req.employee.empRole === "admin") {
+        employeeId = req.params.id;
+    } else {
+        employee = req.employee._id.toString();
+    }
+
+    const employee = await Employee.findOne({ _id: employeeId });
     console.log(employee);
 
     if (employee) {
