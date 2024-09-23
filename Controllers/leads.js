@@ -112,49 +112,35 @@ const allocateLead = asyncHandler(async (req, res) => {
 // @route GET /api/leads/allocated
 // @access Private
 const allocatedLeads = asyncHandler(async (req, res) => {
-    if (req.screener) {
-        const page = parseInt(req.query.page) || 1; // current page
-        const limit = parseInt(req.query.limit) || 10; // items per page
-        const skip = (page - 1) * limit;
-
-        const screenerId = req.screener._id.toString();
-
-        const leads = await Lead.find({ screenerId })
-            .sort({ _id: -1 })
-            .skip(skip)
-            .limit(limit);
-
-        const totalLeads = await Lead.countDocuments();
-
-        return res.json({
-            totalLeads,
-            totalPages: Math.ceil(totalLeads / limit),
-            currentPage: page,
-            leads,
-        });
-    } else if (req.admin) {
-        const page = parseInt(req.query.page) || 1; // current page
-        const limit = parseInt(req.query.limit) || 10; // items per page
-        const skip = (page - 1) * limit;
-
-        const leads = await Lead.find({
+    let query;
+    if (req.employee.empRole === "admin") {
+        query = {
             screenerId: {
                 $exists: true,
                 $ne: null,
             },
-        })
-            .sort({ _id: -1 })
-            .skip(skip)
-            .limit(limit);
-        const totalLeads = await Lead.countDocuments();
-
-        return res.json({
-            totalLeads,
-            totalPages: Math.ceil(totalLeads / limit),
-            currentPage: page,
-            leads,
-        });
+        };
+    } else if (req.employee.empRole === "screener") {
+        query = { screenerId: req.employee.id };
+    } else {
+        res.status(401);
+        throw new Error("Not authorized!!!");
     }
+    const page = parseInt(req.query.page) || 1; // current page
+    const limit = parseInt(req.query.limit) || 10; // items per page
+    const skip = (page - 1) * limit;
+    const leads = await Lead.find(query)
+        .sort({ _id: -1 })
+        .skip(skip)
+        .limit(limit);
+
+    const totalLeads = await Lead.countDocuments(query);
+    return res.json({
+        totalLeads,
+        totalPages: Math.ceil(totalLeads / limit),
+        currentPage: page,
+        leads,
+    });
 });
 
 // @desc Putting lead on hold

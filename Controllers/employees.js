@@ -105,14 +105,14 @@ export const getAllEmployees = asyncHandler(async (req, res) => {
 // @access Private
 export const getAnEmployee = asyncHandler(async (req, res) => {
     let employeeId;
-    if (req.employee.empRole === "admin") {
-        employeeId = req.params.id;
+
+    if (req.params.id === "me") {
+        employeeId = req.employee._id.toString();
     } else {
-        employee = req.employee._id.toString();
+        employeeId = req.params.id;
     }
 
     const employee = await Employee.findOne({ _id: employeeId });
-    console.log(employee);
 
     if (employee) {
         return res.json(employee);

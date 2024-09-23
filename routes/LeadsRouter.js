@@ -20,10 +20,10 @@ router.route("/").post(createLead).get(protect, getAllLeads);
 // router.route("/allocated").get(protect, admin, allocatedLeads);
 router.route("/allocated").get(protect, allocatedLeads);
 router.route("/:id").get(getLead).patch(protect, allocateLead);
-router.patch("/hold/:id", leadOnHold);
-router.get("/hold", getHoldLeads);
-router.patch("/reject/:id", leadReject);
-router.get("/reject", getRejectedLeads);
-router.get("/old-history/:id", internalDedupe);
+router.patch("/hold/:id", protect, leadOnHold);
+router.get("/hold", protect, getHoldLeads);
+router.patch("/reject/:id", protect, leadReject);
+router.get("/reject", protect, getRejectedLeads);
+router.get("/old-history/:id", protect, internalDedupe);
 
 export default router;
