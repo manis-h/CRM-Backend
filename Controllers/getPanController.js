@@ -8,56 +8,53 @@ import PanDetails from "../models/PanDetails.js";
 // @access Private
 export const getPanController = asyncHandler(async (req, res) => {
     try {
-        const { panNumber } = req.body;
+        const { pan } = req.body;
 
         // Validate that aadhaar is present in the leads
-        if (!panNumber) {
+        if (!pan) {
             return res.status(400).json({
                 success: false,
-                message: "Pan number is required."
+                message: "Pan number is required.",
             });
         }
 
-        // Validate it should be a 12-digit string
-        // if (/^([a-zA-Z0-9 _-]+)$/.test(panNumber)) {
-        //     return res.status(400).json({
-        //         success: false,
-        //         message: "Pan number must be a 10-digit Alpha numeric."
-        //     });
-        // }
+        const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 
-        // Call the get panDetails Function 
-        const panDetails= await getPanDetails({panNumber,getStatusInfo:true})
-        // Now match the Lead data with the generated data
-        // const lead = await Lead.findOne({ panNumber: panNumber });
-        // if (!lead || !panDetails ) {
-        //     return res.status(404).json({
-        //         success: false,
-        //         message: "No matching lead found."
-        //     });
-        // }
-console.log({panDetails})
-        // Now save the data in the AadharDetails database
-        const newpanDetail = new PanDetails({
-            panNumber,
-            // otp: otpResponseData.otp, // Adjust based on the actual response structure
-            data: panDetails.data 
+        // Validate the PAN number
+        if (!panRegex.test(pan)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid PAN!!!",
+            });
+        }
+
+        // Call the get panDetails Function
+        const panDetails = await getPanDetails({
+            pan,
+            getStatusInfo: true,
         });
 
-        await newpanDetail.save();
+        console.log(panDetails);
+        // Now save the data in the AadharDetails database
+        // const newpanDetail = new PanDetails({
+        //     pan,
+        //     // otp: otpResponseData.otp, // Adjust based on the actual response structure
+        //     data: panDetails.data,
+        // });
+
+        // await newpanDetail.save();
 
         // Now respond with status 200 with JSON success true
         return res.status(200).json({
             success: true,
             message: "Pan fetched successfully.",
-            data: newpanDetail
+            // data: newpanDetail,
         });
-
     } catch (error) {
         return res.status(500).json({
             success: false,
             message: error.message,
-            newpanDetail
+            // newpanDetail,
         });
     }
 });
