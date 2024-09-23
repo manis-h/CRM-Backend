@@ -10,7 +10,8 @@ import {
 import { protect, admin } from "../middleware/authMiddleware.js";
 
 router.route("/").get(protect, admin, getAllEmployees);
-router.route("/:id").get(protect, getAnEmployee);
+router.route("/:id").get(protect, admin, getAnEmployee);
+router.route("/me").get(protect, getAnEmployee);
 
 // Route to register a new user
 router.route("/register").post(protect, admin, register);
