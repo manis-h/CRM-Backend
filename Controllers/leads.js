@@ -1,5 +1,6 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Lead from "../models/Leads.js";
+// import {viewLeadsLog} from './viewLeadsLogs.js;'
 
 // @desc Create loan leads
 // @route POST /api/leads
@@ -41,7 +42,8 @@ const createLead = asyncHandler(async (req, res) => {
         state,
         city,
     });
-    // const savedUserDetails = await newUserDetails.save();
+    // viewLeadsLog(req, res, status || '', borrower || '', leadRemarks = '');
+    // viewLeadsLog(status='LEAD-NEW', borrower=fName + ' ' + mName + ' ' + lName);
     return res.status(201).json(newLead);
 });
 
@@ -119,9 +121,15 @@ const allocatedLeads = asyncHandler(async (req, res) => {
                 $exists: true,
                 $ne: null,
             },
+            onHold: false,
+            isRejected: false,
         };
     } else if (req.employee.empRole === "screener") {
-        query = { screenerId: req.employee.id };
+        query = {
+            screenerId: req.employee.id,
+            onHold: false,
+            isRejected: false,
+        };
     } else {
         res.status(401);
         throw new Error("Not authorized!!!");
@@ -205,7 +213,7 @@ const getHoldLeads = asyncHandler(async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // items per page
     const skip = (page - 1) * limit;
 
-    const employee = req.employee._id.toString();
+    const employeeId = req.employee._id.toString();
 
     let query = { isHold: true };
 
@@ -213,7 +221,7 @@ const getHoldLeads = asyncHandler(async (req, res) => {
     if (req.employee.empRole !== "admin") {
         query = {
             ...query,
-            heldBy: employee,
+            heldBy: employeeId,
         };
     }
 
@@ -294,7 +302,7 @@ const getRejectedLeads = asyncHandler(async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // items per page
     const skip = (page - 1) * limit;
 
-    const employee = req.employee._id.toString();
+    const employeeId = req.employee._id.toString();
 
     let query = { isRejected: true };
 
@@ -302,7 +310,7 @@ const getRejectedLeads = asyncHandler(async (req, res) => {
     if (req.employee.empRole !== "admin") {
         query = {
             ...query,
-            rejectedBy: employee,
+            rejectedBy: employeeId,
         };
     }
 
