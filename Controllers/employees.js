@@ -112,7 +112,9 @@ export const getAnEmployee = asyncHandler(async (req, res) => {
         employeeId = req.params.id;
     }
 
-    const employee = await Employee.findOne({ _id: employeeId });
+    const employee = await Employee.findOne({ _id: employeeId }).select(
+        "-password"
+    );
 
     if (employee) {
         return res.json(employee);

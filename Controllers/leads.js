@@ -1,6 +1,6 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Lead from "../models/Leads.js";
-// import {viewLeadsLog} from './viewLeadsLogs.js;'
+import LogHistory from "../models/LeadLogHistory.js";
 
 // @desc Create loan leads
 // @route POST /api/leads
@@ -12,7 +12,7 @@ const createLead = asyncHandler(async (req, res) => {
         lName,
         gender,
         dob,
-        adhaar,
+        aadhaar,
         pan,
         mobile,
         alternateMobile,
@@ -30,7 +30,7 @@ const createLead = asyncHandler(async (req, res) => {
         lName: lName ?? "",
         gender,
         dob,
-        adhaar,
+        aadhaar,
         pan,
         mobile,
         alternateMobile,
@@ -43,8 +43,13 @@ const createLead = asyncHandler(async (req, res) => {
         city,
     });
     // viewLeadsLog(req, res, status || '', borrower || '', leadRemarks = '');
-    // viewLeadsLog(status='LEAD-NEW', borrower=fName + ' ' + mName + ' ' + lName);
-    return res.status(201).json(newLead);
+    const logs = await postLeadLogs(
+        newLead._id,
+        "LEAD-NEW",
+        `${newLead.fName} + " " + ${newLead.mName} + " " + ${newLead.lName}`,
+        "New lead created"
+    );
+    return res.status(201).json({ newLead: newLead }, { logs: logs });
 });
 
 // @desc Get all leads
@@ -349,6 +354,57 @@ const internalDedupe = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc Post leads logs with status
+// @access Private
+const postLeadLogs = async (
+    leadId = "",
+    leadStatus = "",
+    borrower = "",
+    leadRemarks = ""
+) => {
+    try {
+        // Check if the lead is present
+        const lead = await Lead.findOne({ _id: leadId });
+
+        if (!lead) {
+            res.status(404);
+            throw new Error("No lead found!!!");
+        }
+
+        // Create the new log initally
+        const createloghistory = await LogHistory.create({
+            lead: leadId,
+            logDate: new Date().toLocaleString("en-IN", {
+                timeZone: "Asia/Kolkata",
+            }),
+            status: leadStatus,
+            borrower: borrower,
+            leadRmark: leadRemarks,
+        });
+        return createloghistory;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
+// @desc Get leads logs with status
+// @route GET /api/lead/viewleaadlog
+// @access Private
+const viewLeadLogs = asyncHandler(async (req, res) => {
+    // Fetch the lead id
+    const { leadId } = req.params;
+
+    // Check if the lead is present
+    const leadDetails = await LogHistory.findOne({ lead: leadId });
+
+    if (!leadDetails) {
+        res.status(404);
+        throw new Error("No lead found!!!");
+    }
+
+    res.json(leadDetails);
+});
+
 export {
     createLead,
     getAllLeads,
@@ -360,4 +416,5 @@ export {
     leadReject,
     getRejectedLeads,
     internalDedupe,
+    viewLeadLogs,
 };

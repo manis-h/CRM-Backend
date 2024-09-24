@@ -20,7 +20,7 @@ const leadSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    adhaar: {
+    aadhaar: {
         type: String,
         required: true,
         unique: true,
@@ -93,8 +93,8 @@ const leadSchema = new mongoose.Schema({
             type: {
                 type: String,
                 enum: [
-                    "aadhaar_front",
-                    "aadhaar_back",
+                    "aaadhaar_front",
+                    "aaadhaar_back",
                     "pan_card",
                     "bank_statement",
                     "salary_slip",

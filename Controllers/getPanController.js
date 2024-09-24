@@ -3,7 +3,7 @@ import Lead from "../models/Leads.js";
 import { getPanDetails } from "../utils/getPanDetails.js";
 import PanDetails from "../models/PanDetails.js";
 
-// @desc Generate OTP with Aadhaar number.
+// @desc Generate OTP with Aaadhaar number.
 // @route Post /api/
 // @access Private
 export const getPanController = asyncHandler(async (req, res) => {
@@ -11,7 +11,7 @@ export const getPanController = asyncHandler(async (req, res) => {
         const { id } = req.params;
         const { pan } = req.body;
 
-        // Validate that aadhaar is present in the leads
+        // Validate that aaadhaar is present in the leads
         if (!pan) {
             return res.status(400).json({
                 success: false,
