@@ -88,6 +88,26 @@ const leadSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Employee",
     },
+    document: [
+        {
+            type: {
+                type: String,
+                enum: [
+                    "aadhaar_front",
+                    "aadhaar_back",
+                    "pan_card",
+                    "bank_statement",
+                    "salary_slip",
+                    // Add more document types as needed
+                ],
+                required: true,
+            },
+            url: {
+                type: String,
+                required: true,
+            },
+        },
+    ],
 });
 
 const Lead = mongoose.model("Lead", leadSchema);
