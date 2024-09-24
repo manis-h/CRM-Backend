@@ -39,7 +39,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/leads", leadRouter); // Use the lead routes
 app.use("/api/employees", employeeRouter); // Use the employee routes
-app.use("/api/verify", verifyRouter); // Use the verify routes sevice to verify PAN and Adhaar
+app.use("/api/verify", verifyRouter); // Use the verify routes sevice to verify PAN and aadhaar
 
 // Error handling middleware
 app.use(notFound);

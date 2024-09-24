@@ -1,5 +1,6 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Lead from "../models/Leads.js";
+import LogHistory from "../models/LeadLogHistory.js";
 
 // @desc Create loan leads
 // @route POST /api/leads
@@ -11,7 +12,7 @@ const createLead = asyncHandler(async (req, res) => {
         lName,
         gender,
         dob,
-        adhaar,
+        aadhaar,
         pan,
         mobile,
         alternateMobile,
@@ -29,7 +30,7 @@ const createLead = asyncHandler(async (req, res) => {
         lName: lName ?? "",
         gender,
         dob,
-        adhaar,
+        aadhaar,
         pan,
         mobile,
         alternateMobile,
@@ -41,8 +42,14 @@ const createLead = asyncHandler(async (req, res) => {
         state,
         city,
     });
-    // const savedUserDetails = await newUserDetails.save();
-    return res.status(201).json(newLead);
+    // viewLeadsLog(req, res, status || '', borrower || '', leadRemarks = '');
+    const logs = await postLeadLogs(
+        newLead._id,
+        "LEAD-NEW",
+        `${newLead.fName} + " " + ${newLead.mName} + " " + ${newLead.lName}`,
+        "New lead created"
+    );
+    return res.status(201).json({ newLead: newLead }, { logs: logs });
 });
 
 // @desc Get all leads
@@ -119,9 +126,15 @@ const allocatedLeads = asyncHandler(async (req, res) => {
                 $exists: true,
                 $ne: null,
             },
+            onHold: false,
+            isRejected: false,
         };
     } else if (req.employee.empRole === "screener") {
-        query = { screenerId: req.employee.id };
+        query = {
+            screenerId: req.employee.id,
+            onHold: false,
+            isRejected: false,
+        };
     } else {
         res.status(401);
         throw new Error("Not authorized!!!");
@@ -205,7 +218,7 @@ const getHoldLeads = asyncHandler(async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // items per page
     const skip = (page - 1) * limit;
 
-    const employee = req.employee._id.toString();
+    const employeeId = req.employee._id.toString();
 
     let query = { isHold: true };
 
@@ -213,7 +226,7 @@ const getHoldLeads = asyncHandler(async (req, res) => {
     if (req.employee.empRole !== "admin") {
         query = {
             ...query,
-            heldBy: employee,
+            heldBy: employeeId,
         };
     }
 
@@ -294,7 +307,7 @@ const getRejectedLeads = asyncHandler(async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // items per page
     const skip = (page - 1) * limit;
 
-    const employee = req.employee._id.toString();
+    const employeeId = req.employee._id.toString();
 
     let query = { isRejected: true };
 
@@ -302,7 +315,7 @@ const getRejectedLeads = asyncHandler(async (req, res) => {
     if (req.employee.empRole !== "admin") {
         query = {
             ...query,
-            rejectedBy: employee,
+            rejectedBy: employeeId,
         };
     }
 
@@ -341,6 +354,57 @@ const internalDedupe = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc Post leads logs with status
+// @access Private
+const postLeadLogs = async (
+    leadId = "",
+    leadStatus = "",
+    borrower = "",
+    leadRemarks = ""
+) => {
+    try {
+        // Check if the lead is present
+        const lead = await Lead.findOne({ _id: leadId });
+
+        if (!lead) {
+            res.status(404);
+            throw new Error("No lead found!!!");
+        }
+
+        // Create the new log initally
+        const createloghistory = await LogHistory.create({
+            lead: leadId,
+            logDate: new Date().toLocaleString("en-IN", {
+                timeZone: "Asia/Kolkata",
+            }),
+            status: leadStatus,
+            borrower: borrower,
+            leadRmark: leadRemarks,
+        });
+        return createloghistory;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
+// @desc Get leads logs with status
+// @route GET /api/lead/viewleaadlog
+// @access Private
+const viewLeadLogs = asyncHandler(async (req, res) => {
+    // Fetch the lead id
+    const { leadId } = req.params;
+
+    // Check if the lead is present
+    const leadDetails = await LogHistory.findOne({ lead: leadId });
+
+    if (!leadDetails) {
+        res.status(404);
+        throw new Error("No lead found!!!");
+    }
+
+    res.json(leadDetails);
+});
+
 export {
     createLead,
     getAllLeads,
@@ -352,4 +416,5 @@ export {
     leadReject,
     getRejectedLeads,
     internalDedupe,
+    viewLeadLogs,
 };
