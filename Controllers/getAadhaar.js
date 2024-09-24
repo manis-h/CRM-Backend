@@ -1,9 +1,6 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import { generateOtpWithAadhaar } from "../utils/generateAadhaarOtp.js";
 import { generateAadhaarDetails } from "../utils/generateAadhaarDetails.js";
-// import { generateAaadhaarDetails } from "../utils/generateAadharDetails.js";
-import Lead from "../models/Leads.js";
-// import AadharDetails from "../models/AadharDetails.js";
 import AadhaarDetails from "../models/AadhaarDetails.js";
 import AadhaarVerification from "../models/AadhaarVerification.js";
 

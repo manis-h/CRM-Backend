@@ -93,14 +93,13 @@ const leadSchema = new mongoose.Schema({
             type: {
                 type: String,
                 enum: [
-                    "aaadhaar_front",
-                    "aaadhaar_back",
-                    "pan_card",
-                    "bank_statement",
-                    "salary_slip",
+                    "aadhaarFront",
+                    "aadhaarBack",
+                    "panCard",
+                    "bankStatement",
+                    "salarySlip",
                     // Add more document types as needed
                 ],
-                required: true,
             },
             url: {
                 type: String,

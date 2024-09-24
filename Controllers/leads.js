@@ -1,6 +1,11 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Lead from "../models/Leads.js";
 import LogHistory from "../models/LeadLogHistory.js";
+import {
+    uploadFilesToS3,
+    generatePresignedUrl,
+} from "../config/uploadFilesToS3.js";
+import getMimeTypeForDocType from "../utils/getMimeTypeForDocType.js";
 
 // @desc Create loan leads
 // @route POST /api/leads
@@ -154,6 +159,79 @@ const allocatedLeads = asyncHandler(async (req, res) => {
         currentPage: page,
         leads,
     });
+});
+
+// @desc Adding file documents to a lead
+// @route PATCH /api/leads/docs/:id
+// @access Private
+const addDocsInLead = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    if (!req.files) {
+        res.status(400);
+        throw new Error("No files uploaded");
+    }
+
+    // Prepare an array to store all upload promises
+    const uploadPromises = [];
+    const documentUpdates = [];
+
+    // Loop through each field and upload the files to S3
+    for (const fieldName in req.files) {
+        const file = req.files[fieldName][0]; // Get the first file for each field
+        const key = `${id}/${fieldName}-${Date.now()}-${file.originalname}`; // Construct a unique S3 key
+
+        // Push the promise for each file upload to the uploadPromises array
+        uploadPromises.push(
+            uploadFilesToS3(file.buffer, key, file.mimetype).then((res) => {
+                // After upload, store the document update
+                documentUpdates.push({
+                    type: fieldName,
+                    url: res.Key,
+                });
+            })
+        );
+    }
+
+    // Wait for all files to be uploaded
+    await Promise.all(uploadPromises);
+
+    // Update the lead's document field with the uploaded files' URLs
+    const updatedLead = await Lead.findByIdAndUpdate(
+        id,
+        { $push: { document: { $each: documentUpdates } } },
+        { new: true, runValidators: false }
+    );
+
+    if (!updatedLead) {
+        res.status(404);
+        throw new Error("Lead not found");
+    }
+
+    res.json({ message: "file uploaded successfully" });
+});
+
+// @desc Get the docs from a lead
+// @route GET /api/leads/hold/:id
+// @access Private
+const getDocsFromLead = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    // Fetch the lead from the database
+    const lead = await Lead.findById(id);
+    if (!lead) {
+        res.status(404);
+        throw new Error("Lead not found!!!");
+    }
+
+    // Generate pre-signed URLs for all documents in the lead
+    lead.document = lead.document.map((doc) => ({
+        ...doc,
+        url: generatePresignedUrl(doc.url, getMimeTypeForDocType(doc.type)), // Generate a new pre-signed URL with the correct MIME type
+    }));
+
+    // Return the lead with fresh pre-signed URLs
+    res.json(lead);
 });
 
 // @desc Putting lead on hold
@@ -410,6 +488,8 @@ export {
     getAllLeads,
     getLead,
     allocateLead,
+    addDocsInLead,
+    getDocsFromLead,
     allocatedLeads,
     leadOnHold,
     getHoldLeads,
