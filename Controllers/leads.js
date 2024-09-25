@@ -3,6 +3,7 @@ import Lead from "../models/Leads.js";
 import LogHistory from "../models/LeadLogHistory.js";
 import {
     uploadFilesToS3,
+    deleteFilesFromS3,
     generatePresignedUrl,
 } from "../config/uploadFilesToS3.js";
 import getMimeTypeForDocType from "../utils/getMimeTypeForDocType.js";
@@ -190,26 +191,41 @@ const addDocsInLead = asyncHandler(async (req, res) => {
         const file = req.files[fieldName][0]; // Get the first file for each field
         const key = `${id}/${fieldName}-${Date.now()}-${file.originalname}`; // Construct a unique S3 key
 
-        // Push the promise for each file upload to the uploadPromises array
-        uploadPromises.push(
-            uploadFilesToS3(file.buffer, key, file.mimetype).then((res) => {
-                // Check if the document type already exists in the lead's document array
-                const existingDocIndex = lead.document.findIndex(
-                    (doc) => doc.type === fieldName
-                );
+        // Check if the document type already exists in the lead's document array
+        const existingDocIndex = lead.document.findIndex(
+            (doc) => doc.type === fieldName
+        );
 
-                if (existingDocIndex !== -1) {
-                    // If document type exists, update the URL
-                    lead.document[existingDocIndex].url = res.Key;
-                } else {
-                    // If document type does not exist, push a new document entry
+        if (existingDocIndex !== -1) {
+            // Old file URL stored in document
+            const oldFileKey = lead.document[existingDocIndex].url;
+            if (oldFileKey) {
+                uploadPromises.push(
+                    // Delete the old files fro S3
+                    deleteFilesFromS3(oldFileKey).then(() => {
+                        // upload the new file
+                        return uploadFilesToS3(
+                            file.buffer,
+                            key,
+                            file.mimetype
+                        ).then((res) => {
+                            // Update the existing document's URL
+                            lead.document[existingDocIndex].url = res.Key;
+                        });
+                    })
+                );
+            }
+        } else {
+            // If document type does not exist, add it to the document array
+            uploadPromises.push(
+                uploadFilesToS3(file.buffer, key, file.mimetype).then((res) => {
                     documentUpdates.push({
                         type: fieldName,
                         url: res.Key,
                     });
-                }
-            })
-        );
+                })
+            );
+        }
     }
 
     // Wait for all files to be uploaded

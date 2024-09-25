@@ -21,6 +21,15 @@ async function uploadFilesToS3(buffer, key) {
     }
 }
 
+// Delete old files from S3
+async function deleteFilesFromS3(key) {
+    const params = {
+        Bucket: bucketName,
+        Key: key,
+    };
+    return await s3.deleteObject(params).promise();
+}
+
 // Generate a pre-signed URL for each document
 const generatePresignedUrl = (key, mimeType) => {
     const params = {
@@ -33,4 +42,4 @@ const generatePresignedUrl = (key, mimeType) => {
     return s3.getSignedUrl("getObject", params);
 };
 
-export { uploadFilesToS3, generatePresignedUrl };
+export { uploadFilesToS3, deleteFilesFromS3, generatePresignedUrl };
