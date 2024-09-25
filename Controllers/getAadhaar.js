@@ -110,7 +110,12 @@ export const verifyAadhaarDetailsWithOtpAndRequestId = asyncHandler(
                 requestID,
                 otp
             );
-            console.log("Aaadhaar Detail Response:", aadhaarDetailResponse);
+
+            // Check if the response status code is 422 which is for failed verification
+            if (aadhaarDetailResponse.statusCode === 422) {
+                res.status(422);
+                throw new Error("Invalid OTP!!!");
+            }
 
             // Save Aaadhaar details in AadharDetails model
             await AadhaarDetails.create({
