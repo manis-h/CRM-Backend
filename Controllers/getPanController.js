@@ -45,6 +45,7 @@ export const getPanController = asyncHandler(async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "Pan fetched successfully.",
+            data: panDetails,
         });
     } catch (error) {
         return res.status(500).json({
