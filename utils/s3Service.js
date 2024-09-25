@@ -8,7 +8,7 @@ const bucketName = process.env.AWS_BUCKET_NAME;
 const s3 = new S3({ region, accessKeyId, secretAccessKey });
 
 // Upload a file to S3
-export async function uploadFileToS3(buffer, key, mimeType) {
+export async function uploadFilesToS3(buffer, key, mimeType) {
     var params = {
         Bucket: bucketName,
         Body: buffer,
