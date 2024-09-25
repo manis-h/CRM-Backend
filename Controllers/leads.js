@@ -173,6 +173,14 @@ const addDocsInLead = asyncHandler(async (req, res) => {
         throw new Error("No files uploaded");
     }
 
+    // Fetch the lead first to check if documents already exist
+    const lead = await Lead.findById(id);
+
+    if (!lead) {
+        res.status(404);
+        throw new Error("Lead not found");
+    }
+
     // Prepare an array to store all upload promises
     const uploadPromises = [];
     const documentUpdates = [];
@@ -185,11 +193,21 @@ const addDocsInLead = asyncHandler(async (req, res) => {
         // Push the promise for each file upload to the uploadPromises array
         uploadPromises.push(
             uploadFilesToS3(file.buffer, key, file.mimetype).then((res) => {
-                // After upload, store the document update
-                documentUpdates.push({
-                    type: fieldName,
-                    url: res.Key,
-                });
+                // Check if the document type already exists in the lead's document array
+                const existingDocIndex = lead.document.findIndex(
+                    (doc) => doc.type === fieldName
+                );
+
+                if (existingDocIndex !== -1) {
+                    // If document type exists, update the URL
+                    lead.document[existingDocIndex].url = res.Key;
+                } else {
+                    // If document type does not exist, push a new document entry
+                    documentUpdates.push({
+                        type: fieldName,
+                        url: res.Key,
+                    });
+                }
             })
         );
     }
@@ -197,17 +215,13 @@ const addDocsInLead = asyncHandler(async (req, res) => {
     // Wait for all files to be uploaded
     await Promise.all(uploadPromises);
 
-    // Update the lead's document field with the uploaded files' URLs
-    const updatedLead = await Lead.findByIdAndUpdate(
-        id,
-        { $push: { document: { $each: documentUpdates } } },
-        { new: true, runValidators: false }
-    );
-
-    if (!updatedLead) {
-        res.status(404);
-        throw new Error("Lead not found");
+    // If there are new documents to be added, push them to the document array
+    if (documentUpdates.length > 0) {
+        lead.document.push(...documentUpdates);
     }
+
+    // Save the updated lead
+    await lead.save();
 
     res.json({ message: "file uploaded successfully" });
 });
