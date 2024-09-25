@@ -21,7 +21,7 @@ export async function uploadFilesToS3(buffer, key, mimeType) {
 // Generate pre-signed url to view the files
 export function generatePresignedUrl(key, mimeType) {
     var params = {
-        Bucket: process.env.S3_BUCKET,
+        Bucket: bucketName,
         Key: key,
         Expires: 3 * 60 * 60, // Set expiration time (e.g., 3 hour)
         ResponseContentDisposition: "inline", // Display the file in the browser
