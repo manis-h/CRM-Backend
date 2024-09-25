@@ -250,7 +250,7 @@ const addDocsInLead = asyncHandler(async (req, res) => {
 // @route GET /api/leads/hold/:id
 // @access Private
 const getDocsFromLead = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    const { id, docType } = req.params;
 
     // Fetch the lead from the database
     const lead = await Lead.findById(id);
@@ -259,14 +259,22 @@ const getDocsFromLead = asyncHandler(async (req, res) => {
         throw new Error("Lead not found!!!");
     }
 
-    // Generate pre-signed URLs for all documents in the lead
-    lead.document = lead.document.map((doc) => ({
-        ...doc,
-        url: generatePresignedUrl(doc.url, getMimeTypeForDocType(doc.type)), // Generate a new pre-signed URL with the correct MIME type
-    }));
+    // Find the specific document based on docType
+    const document = lead.document.find((doc) => doc.type === docType);
 
-    // Return the lead with fresh pre-signed URLs
-    res.json(lead);
+    if (!document) {
+        res.status(404);
+        throw new Error(`Document of type ${docType} not found`);
+    }
+
+    // Generate a pre-signed URL for this specific document
+    const preSignedUrl = generatePresignedUrl(
+        document.url,
+        getMimeTypeForDocType(document.type)
+    );
+
+    // Return the pre-signed URL for this specific document
+    res.json({ type: docType, url: preSignedUrl });
 });
 
 // @desc Putting lead on hold
