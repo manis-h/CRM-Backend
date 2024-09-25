@@ -220,8 +220,12 @@ const addDocsInLead = asyncHandler(async (req, res) => {
         lead.document.push(...documentUpdates);
     }
 
-    // Save the updated lead
-    await lead.save();
+    // Use findByIdAndUpdate to only update the document field
+    await Lead.findByIdAndUpdate(
+        id,
+        { document: lead.document }, // Only update the document field
+        { new: true, runValidators: false } // Disable validation for other fields
+    );
 
     res.json({ message: "file uploaded successfully" });
 });
