@@ -8,7 +8,6 @@ import PanDetails from "../models/PanDetails.js";
 // @access Private
 export const getPanController = asyncHandler(async (req, res) => {
     try {
-        const { id } = req.params;
         const { pan } = req.body;
 
         // Validate that aaadhaar is present in the leads
@@ -37,7 +36,6 @@ export const getPanController = asyncHandler(async (req, res) => {
 
         // Now save the data in the AadharDetails database
         const newpanDetail = new PanDetails({
-            leadId: id,
             data: panDetails,
         });
 
@@ -47,13 +45,11 @@ export const getPanController = asyncHandler(async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "Pan fetched successfully.",
-            // data: newpanDetail,
         });
     } catch (error) {
         return res.status(500).json({
             success: false,
             message: error.message,
-            // newpanDetail,
         });
     }
 });

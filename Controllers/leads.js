@@ -131,19 +131,20 @@ const allocatedLeads = asyncHandler(async (req, res) => {
                 $exists: true,
                 $ne: null,
             },
-            onHold: false,
-            isRejected: false,
+            onHold: { $exists: false, $ne: true },
+            isRejected: { $exists: false, $ne: true },
         };
     } else if (req.employee.empRole === "screener") {
         query = {
             screenerId: req.employee.id,
-            onHold: false,
-            isRejected: false,
+            onHold: { $ne: true },
+            isRejected: { $ne: true },
         };
     } else {
         res.status(401);
         throw new Error("Not authorized!!!");
     }
+    console.log(query);
     const page = parseInt(req.query.page) || 1; // current page
     const limit = parseInt(req.query.limit) || 10; // items per page
     const skip = (page - 1) * limit;
@@ -151,8 +152,11 @@ const allocatedLeads = asyncHandler(async (req, res) => {
         .sort({ _id: -1 })
         .skip(skip)
         .limit(limit);
+    console.log(leads);
 
     const totalLeads = await Lead.countDocuments(query);
+    console.log(totalLeads);
+
     return res.json({
         totalLeads,
         totalPages: Math.ceil(totalLeads / limit),
