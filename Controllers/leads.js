@@ -250,7 +250,8 @@ const addDocsInLead = asyncHandler(async (req, res) => {
 // @route GET /api/leads/hold/:id
 // @access Private
 const getDocsFromLead = asyncHandler(async (req, res) => {
-    const { id, docType } = req.params;
+    const { id } = req.params;
+    const { docType } = req.query;
 
     // Fetch the lead from the database
     const lead = await Lead.findById(id);
