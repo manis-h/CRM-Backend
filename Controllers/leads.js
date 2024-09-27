@@ -1,5 +1,6 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Lead from "../models/Leads.js";
+import Application from "../models/Applications.js";
 import LogHistory from "../models/LeadLogHistory.js";
 import {
     uploadFilesToS3,
@@ -52,10 +53,10 @@ const createLead = asyncHandler(async (req, res) => {
     const logs = await postLeadLogs(
         newLead._id,
         "LEAD-NEW",
-        `${newLead.fName} + " " + ${newLead.mName} + " " + ${newLead.lName}`,
+        `${newLead.fName} ${newLead.mName ?? ""} ${newLead.lName}`,
         "New lead created"
     );
-    return res.status(201).json({ newLead: newLead }, { logs: logs });
+    return res.status(201).json({ newLead, logs });
 });
 
 // @desc Get all leads
@@ -68,8 +69,9 @@ const getAllLeads = asyncHandler(async (req, res) => {
 
     const leads = await Lead.find({
         $or: [{ screenerId: { $exists: false } }, { screenerId: null }],
+        isApproved: { $ne: true },
     })
-        .sort({ _id: -1 })
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
     const totalLeads = await Lead.countDocuments({ screenerId: null });
@@ -100,12 +102,17 @@ const getLead = asyncHandler(async (req, res) => {
 // @access Private
 const allocateLead = asyncHandler(async (req, res) => {
     // Check if screener exists in the request
+    const { id } = req.params;
+    let screenerId;
+
+    if (req.admin) {
+        screenerId = req.body.screenerId;
+    } else {
+        screenerId = req.screener._id.toString();
+    }
     if (!req.screener) {
         throw new Error("Screener not found");
     }
-
-    const { id } = req.params;
-    const screenerId = req.screener._id.toString();
 
     const lead = await Lead.findByIdAndUpdate(
         id,
@@ -134,12 +141,14 @@ const allocatedLeads = asyncHandler(async (req, res) => {
             },
             onHold: { $exists: false, $ne: true },
             isRejected: { $exists: false, $ne: true },
+            isApproved: { $exists: false, $ne: true },
         };
     } else if (req.employee.empRole === "screener") {
         query = {
             screenerId: req.employee.id,
             onHold: { $ne: true },
             isRejected: { $ne: true },
+            isApproved: { $exists: false, $ne: true },
         };
     } else {
         res.status(401);
@@ -149,7 +158,7 @@ const allocatedLeads = asyncHandler(async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // items per page
     const skip = (page - 1) * limit;
     const leads = await Lead.find(query)
-        .sort({ _id: -1 })
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
 
@@ -314,6 +323,42 @@ const leadOnHold = asyncHandler(async (req, res) => {
     res.json(lead);
 });
 
+// @desc Unhold lead
+// @route PATCH /api/leads/unhold/:id
+// @access Private
+const unHoldLead = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    // List of roles that are authorized to hold a lead
+    const authorizedRoles = [
+        "screener",
+        "admin",
+        "creditManager",
+        "teamLead",
+        "supportAgent",
+    ];
+
+    if (!req.employee) {
+        res.status(403);
+        throw new Error("Not Authorized!!");
+    }
+
+    if (!authorizedRoles.includes(req.employee.empRole)) {
+        res.status(403);
+        throw new Error("Not Authorized to hold a lead!!");
+    }
+    const lead = await Lead.findByIdAndUpdate(
+        id,
+        { onHold: false },
+        { new: true }
+    );
+
+    if (!lead) {
+        throw new Error("Lead not found");
+    }
+    res.json(lead);
+});
+
 // @desc Get leads on hold depends on if it's admin or an employee
 // @route GET /api/leads/hold
 // @access Private
@@ -342,7 +387,7 @@ const getHoldLeads = asyncHandler(async (req, res) => {
 
     const employeeId = req.employee._id.toString();
 
-    let query = { isHold: true };
+    let query = { isHold: true, isApproved: { $exists: false, $ne: true } };
 
     // If the employee is not admint, they only see the leads they rejected
     if (req.employee.empRole !== "admin") {
@@ -353,7 +398,7 @@ const getHoldLeads = asyncHandler(async (req, res) => {
     }
 
     const leads = await Lead.find(query)
-        .sort({ _id: -1 })
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
 
@@ -431,7 +476,7 @@ const getRejectedLeads = asyncHandler(async (req, res) => {
 
     const employeeId = req.employee._id.toString();
 
-    let query = { isRejected: true };
+    let query = { isRejected: true, isApproved: { $exists: false, $ne: true } };
 
     // If the employee is not admint, they only see the leads they rejected
     if (req.employee.empRole !== "admin") {
@@ -443,7 +488,7 @@ const getRejectedLeads = asyncHandler(async (req, res) => {
 
     // Fetch the leads based on roles
     const leads = await Lead.find(query)
-        .sort({ _id: -1 })
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
 
@@ -462,17 +507,23 @@ const getRejectedLeads = asyncHandler(async (req, res) => {
 // @access Private
 const internalDedupe = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const leads = await Lead.find(id).sort({ _id: -1 });
+    const lead = await Lead.findById(id).sort({ createdAt: -1 });
 
-    if (!leads) {
-        return res.json({
-            message: "No previous leads found!!",
-            leads,
-        });
+    if (!lead) {
+        res.status(404);
+        throw new Error("No previous leads found!!");
     }
 
+    const { aadhaar, pan } = lead;
+
+    // Now find all other leads with the same aadhaar or pan
+    const relatedLeads = await Lead.find({
+        _id: { $ne: id }, // Exclude the original lead
+        $or: [{ aadhaar: aadhaar }, { pan: pan }],
+    });
+
     return res.json({
-        leads,
+        relatedLeads,
     });
 });
 
@@ -482,7 +533,7 @@ const postLeadLogs = async (
     leadId = "",
     leadStatus = "",
     borrower = "",
-    leadRemarks = ""
+    leadRemark = ""
 ) => {
     try {
         // Check if the lead is present
@@ -496,12 +547,10 @@ const postLeadLogs = async (
         // Create the new log initally
         const createloghistory = await LogHistory.create({
             lead: leadId,
-            logDate: new Date().toLocaleString("en-IN", {
-                timeZone: "Asia/Kolkata",
-            }),
+            logDate: new Date().toLocaleString(),
             status: leadStatus,
             borrower: borrower,
-            leadRmark: leadRemarks,
+            leadRemark: leadRemark,
         });
         return createloghistory;
     } catch (error) {
@@ -527,6 +576,52 @@ const viewLeadLogs = asyncHandler(async (req, res) => {
     res.json(leadDetails);
 });
 
+// @desc Approve the lead
+// @route Patch /api/lead/approve/:id
+// @access Private
+const approveLead = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const screenerId = req.screener._id.toString();
+
+    // Find the lead by its ID
+    const lead = await Lead.findById(id);
+
+    // const lead = await Lead.findByIdAndUpdate(
+    //     id,
+    //     { isApproved: true, approvedBy: screenerId },
+    //     { new: true }
+    // );
+
+    if (!lead) {
+        throw new Error("Lead not found"); // This error will be caught by the error handler
+    }
+
+    // Check if the lead has been rejected
+    if (!lead.screenerId) {
+        res.status(400);
+        throw new Error(
+            "Lead has to be allocated to a screener first for investigation."
+        );
+    } else if (lead.isRejected) {
+        res.status(400);
+        throw new Error("Lead has been rejected and cannot be approved.");
+    } else if (lead.isHold) {
+        res.status(400);
+        throw new Error("Lead is on hold, please unhold it first.");
+    }
+
+    // Approve the lead by updating its status
+    lead.isApproved = true;
+    lead.approvedBy = screenerId;
+    await lead.save();
+
+    const newApplication = new Application({ lead: lead });
+    const response = await newApplication.save();
+
+    // Send the approved lead as a JSON response
+    return res.json(response); // This is a successful response
+});
+
 export {
     createLead,
     getAllLeads,
@@ -536,9 +631,11 @@ export {
     getDocsFromLead,
     allocatedLeads,
     leadOnHold,
+    unHoldLead,
     getHoldLeads,
     leadReject,
     getRejectedLeads,
     internalDedupe,
     viewLeadLogs,
+    approveLead,
 };

@@ -10,11 +10,13 @@ import {
     getDocsFromLead,
     allocatedLeads,
     leadOnHold,
+    unHoldLead,
     getHoldLeads,
     leadReject,
     getRejectedLeads,
     internalDedupe,
     viewLeadLogs,
+    approveLead,
 } from "../Controllers/leads.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
 import upload from "../config/multer.js";
@@ -34,14 +36,16 @@ router.route("/").post(createLead).get(protect, getAllLeads);
 router.route("/allocated").get(protect, allocatedLeads);
 router.route("/:id").get(getLead).patch(protect, allocateLead);
 router.patch("/hold/:id", protect, leadOnHold);
+router.patch("/unhold/:id", protect, unHoldLead);
 router.get("/hold", protect, getHoldLeads);
 router.patch("/reject/:id", protect, leadReject);
 router.get("/reject", protect, getRejectedLeads);
 router.get("/old-history/:id", protect, internalDedupe);
-router.get("/viewleadlog/:id", viewLeadLogs);
+router.get("/viewleadlog/:id", protect, viewLeadLogs);
+router.patch("/approve/:id", protect, approveLead);
 router
     .route("/docs/:id")
-    .patch(uploadFields, addDocsInLead)
-    .get(getDocsFromLead);
+    .patch(protect, uploadFields, addDocsInLead)
+    .get(protect, getDocsFromLead);
 
 export default router;
