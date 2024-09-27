@@ -108,6 +108,14 @@ const leadSchema = new mongoose.Schema(
                 },
             },
         ],
+        isApproved: {
+            type: Boolean,
+            default: false,
+        },
+        approvedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Employee",
+        },
     },
     { timestamps: true }
 );
