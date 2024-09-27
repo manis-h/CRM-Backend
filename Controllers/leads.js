@@ -55,7 +55,7 @@ const createLead = asyncHandler(async (req, res) => {
         `${newLead.fName} + " " + ${newLead.mName} + " " + ${newLead.lName}`,
         "New lead created"
     );
-    return res.status(201).json({ newLead: newLead }, { logs: logs });
+    return res.status(201).json({ newLead, logs });
 });
 
 // @desc Get all leads
@@ -69,7 +69,7 @@ const getAllLeads = asyncHandler(async (req, res) => {
     const leads = await Lead.find({
         $or: [{ screenerId: { $exists: false } }, { screenerId: null }],
     })
-        .sort({ _id: -1 })
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
     const totalLeads = await Lead.countDocuments({ screenerId: null });
@@ -149,7 +149,7 @@ const allocatedLeads = asyncHandler(async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // items per page
     const skip = (page - 1) * limit;
     const leads = await Lead.find(query)
-        .sort({ _id: -1 })
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
 
@@ -353,7 +353,7 @@ const getHoldLeads = asyncHandler(async (req, res) => {
     }
 
     const leads = await Lead.find(query)
-        .sort({ _id: -1 })
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
 
@@ -443,7 +443,7 @@ const getRejectedLeads = asyncHandler(async (req, res) => {
 
     // Fetch the leads based on roles
     const leads = await Lead.find(query)
-        .sort({ _id: -1 })
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
 
@@ -462,17 +462,23 @@ const getRejectedLeads = asyncHandler(async (req, res) => {
 // @access Private
 const internalDedupe = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const leads = await Lead.find(id).sort({ _id: -1 });
+    const lead = await Lead.findById(id).sort({ createdAt: -1 });
 
-    if (!leads) {
-        return res.json({
-            message: "No previous leads found!!",
-            leads,
-        });
+    if (!lead) {
+        res.status(404);
+        throw new Error("No previous leads found!!");
     }
 
+    const { aadhaar, pan } = lead;
+
+    // Now find all other leads with the same aadhaar or pan
+    const relatedLeads = await Lead.find({
+        _id: { $ne: id }, // Exclude the original lead
+        $or: [{ aadhaar: aadhaar }, { pan: pan }],
+    });
+
     return res.json({
-        leads,
+        relatedLeads,
     });
 });
 
@@ -496,9 +502,7 @@ const postLeadLogs = async (
         // Create the new log initally
         const createloghistory = await LogHistory.create({
             lead: leadId,
-            logDate: new Date().toLocaleString("en-IN", {
-                timeZone: "Asia/Kolkata",
-            }),
+            logDate: new Date().toLocaleString(),
             status: leadStatus,
             borrower: borrower,
             leadRmark: leadRemarks,
