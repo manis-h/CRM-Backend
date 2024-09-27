@@ -41,7 +41,7 @@ router.get("/hold", protect, getHoldLeads);
 router.patch("/reject/:id", protect, leadReject);
 router.get("/reject", protect, getRejectedLeads);
 router.get("/old-history/:id", protect, internalDedupe);
-router.get("/viewleadlog/:id", protect, viewLeadLogs);
+router.get("/viewleadlog/:leadId", protect, viewLeadLogs);
 router.patch("/approve/:id", protect, approveLead);
 router
     .route("/docs/:id")
