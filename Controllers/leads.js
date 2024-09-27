@@ -547,7 +547,7 @@ const postLeadLogs = async (
         // Create the new log initally
         const createloghistory = await LogHistory.create({
             lead: leadId,
-            logDate: new Date().toLocaleString(),
+            logDate: new Date(),
             status: leadStatus,
             borrower: borrower,
             leadRemark: leadRemark,
