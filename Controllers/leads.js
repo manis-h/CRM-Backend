@@ -8,6 +8,7 @@ import {
     generatePresignedUrl,
 } from "../config/uploadFilesToS3.js";
 import getMimeTypeForDocType from "../utils/getMimeTypeForDocType.js";
+import Employee from "../models/Employees.js";
 
 // @desc Create loan leads
 // @route POST /api/leads
@@ -56,7 +57,7 @@ const createLead = asyncHandler(async (req, res) => {
         `${newLead.fName} ${newLead.mName ?? ""} ${newLead.lName}`,
         "New lead created"
     );
-    return res.status(201).json({ newLead, logs });
+    return res.json({ newLead, logs });
 });
 
 // @desc Get all leads
@@ -123,9 +124,16 @@ const allocateLead = asyncHandler(async (req, res) => {
     if (!lead) {
         throw new Error("Lead not found"); // This error will be caught by the error handler
     }
+    const employee = await Employee.findOne({ _id: screenerId });
+    const logs = await postLeadLogs(
+        lead._id,
+        "LEAD-IN PROCESS",
+        `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
+        `Lead allocated to ${employee.fName} ${employee.lName}`
+    );
 
     // Send the updated lead as a JSON response
-    return res.json(lead); // This is a successful response
+    return res.json({ lead, logs }); // This is a successful response
 });
 
 // @desc Get Allocated Leads depends on whether if it's admin or a screener.
@@ -141,14 +149,14 @@ const allocatedLeads = asyncHandler(async (req, res) => {
             },
             onHold: { $exists: false, $ne: true },
             isRejected: { $exists: false, $ne: true },
-            isApproved: { $exists: false, $ne: true },
+            isApproved: { $ne: true },
         };
     } else if (req.employee.empRole === "screener") {
         query = {
             screenerId: req.employee.id,
             onHold: { $ne: true },
             isRejected: { $ne: true },
-            isApproved: { $exists: false, $ne: true },
+            isApproved: { ne: true },
         };
     } else {
         res.status(401);
@@ -177,6 +185,13 @@ const allocatedLeads = asyncHandler(async (req, res) => {
 // @access Private
 const addDocsInLead = asyncHandler(async (req, res) => {
     const { id } = req.params;
+    let employeeId;
+
+    if (req.screener) {
+        employeeId = req.screener._id.toString();
+    } else if (req.creditManager) {
+        employeeId = req.creditManager._id.toString();
+    }
 
     if (!req.files) {
         res.status(400);
@@ -252,7 +267,15 @@ const addDocsInLead = asyncHandler(async (req, res) => {
         { new: true, runValidators: false } // Disable validation for other fields
     );
 
-    res.json({ message: "file uploaded successfully" });
+    const employee = await Employee.findOne({ _id: employeeId });
+    const logs = await postLeadLogs(
+        lead._id,
+        "ADDED DOCUMENTS",
+        `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
+        `Added documents by ${employee.fName} ${employee.lName}`
+    );
+
+    res.json({ message: "file uploaded successfully", logs });
 });
 
 // @desc Get the docs from a lead
@@ -320,7 +343,15 @@ const leadOnHold = asyncHandler(async (req, res) => {
     if (!lead) {
         throw new Error("Lead not found");
     }
-    res.json(lead);
+
+    const employee = await Employee.findOne({ _id: req.employee._id });
+    const logs = await postLeadLogs(
+        lead._id,
+        "LEAD ON HOLD",
+        `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
+        `Lead on hold by ${employee.fName} ${employee.lName}`
+    );
+    res.json(lead, logs);
 });
 
 // @desc Unhold lead
@@ -356,7 +387,14 @@ const unHoldLead = asyncHandler(async (req, res) => {
     if (!lead) {
         throw new Error("Lead not found");
     }
-    res.json(lead);
+    const employee = await Employee.findOne({ _id: req.employee._id });
+    const logs = await postLeadLogs(
+        lead._id,
+        "LEAD UNHOLD",
+        `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
+        `Lead unhold by ${employee.fName} ${employee.lName}`
+    );
+    res.json(lead, logs);
 });
 
 // @desc Get leads on hold depends on if it's admin or an employee
@@ -445,7 +483,14 @@ const leadReject = asyncHandler(async (req, res) => {
     if (!lead) {
         throw new Error("Lead not found");
     }
-    res.json(lead);
+    const employee = await Employee.findOne({ _id: req.employee._id });
+    const logs = await postLeadLogs(
+        lead._id,
+        "LEAD REJECTED",
+        `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
+        `Lead rejected by ${employee.fName} ${employee.lName}`
+    );
+    res.json(lead, logs);
 });
 
 // @desc Get rejected leads depends on if it's admin or an employee
@@ -566,7 +611,7 @@ const viewLeadLogs = asyncHandler(async (req, res) => {
     const { leadId } = req.params;
 
     // Check if the lead is present
-    const leadDetails = await LogHistory.findOne({ lead: leadId });
+    const leadDetails = await LogHistory.find({ lead: leadId });
 
     if (!leadDetails) {
         res.status(404);
@@ -585,12 +630,6 @@ const approveLead = asyncHandler(async (req, res) => {
 
     // Find the lead by its ID
     const lead = await Lead.findById(id);
-
-    // const lead = await Lead.findByIdAndUpdate(
-    //     id,
-    //     { isApproved: true, approvedBy: screenerId },
-    //     { new: true }
-    // );
 
     if (!lead) {
         throw new Error("Lead not found"); // This error will be caught by the error handler
@@ -618,8 +657,16 @@ const approveLead = asyncHandler(async (req, res) => {
     const newApplication = new Application({ lead: lead });
     const response = await newApplication.save();
 
+    const employee = await Employee.findOne({ _id: screenerId });
+    const logs = await postLeadLogs(
+        lead._id,
+        "LEAD APPROVED. TRANSFERED TO CREDIT MANAGER",
+        `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
+        `Lead approved by ${employee.fName} ${employee.lName}`
+    );
+
     // Send the approved lead as a JSON response
-    return res.json(response); // This is a successful response
+    return res.json(response, logs); // This is a successful response
 });
 
 export {
