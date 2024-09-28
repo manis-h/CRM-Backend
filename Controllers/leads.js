@@ -184,6 +184,7 @@ export const allocatedLeads = asyncHandler(async (req, res) => {
 export const updateLead = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
+    console.log(updates);
 
     if (!id) {
         res.status(400);
@@ -212,7 +213,18 @@ export const updateLead = asyncHandler(async (req, res) => {
         { new: true, runValidators: true }
     );
 
-    res.json(updatedLead);
+    const employee = await Employee.findOne({
+        _id: req.employee._id.toString(),
+    });
+    const logs = await postLeadLogs(
+        lead._id,
+        "LEAD UPDATED",
+        `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
+        `Lead details updated by ${employee.fName} ${employee.lName}`
+    );
+
+    // Send the updated lead as a JSON response
+    return res.json({ updatedLead, logs }); // This is a successful response
 });
 
 // @desc Putting lead on hold
