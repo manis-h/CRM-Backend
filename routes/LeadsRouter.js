@@ -24,7 +24,6 @@ import upload from "../config/multer.js";
 
 // Define the fields you want to upload
 const uploadFields = upload.fields([
-    { name: "csv", maxCount: 1 },
     { name: "aadhaarFront", maxCount: 1 },
     { name: "aadhaarBack", maxCount: 1 },
     { name: "panCard", maxCount: 1 },
