@@ -116,6 +116,11 @@ const leadSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Employee",
         },
+        source: {
+            type: String,
+            required: true,
+            enum: ["website", "bulk", "landingPage"],
+        },
     },
     { timestamps: true }
 );

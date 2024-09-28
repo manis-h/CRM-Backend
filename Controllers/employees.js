@@ -59,8 +59,6 @@ export const register = asyncHandler(async (req, res) => {
 export const login = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
-    console.log(req.body);
-
     // Find the user by email
     const employee = await Employee.findOne({ email });
     if (employee && (await employee.matchPassword(password))) {
