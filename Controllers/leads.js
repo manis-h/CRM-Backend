@@ -1,6 +1,7 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Lead from "../models/Leads.js";
 import Application from "../models/Applications.js";
+import Employee from "../models/Employees.js";
 import LogHistory from "../models/LeadLogHistory.js";
 import {
     uploadFilesToS3,
@@ -8,12 +9,11 @@ import {
     generatePresignedUrl,
 } from "../config/uploadFilesToS3.js";
 import getMimeTypeForDocType from "../utils/getMimeTypeForDocType.js";
-import Employee from "../models/Employees.js";
 
 // @desc Create loan leads
 // @route POST /api/leads
 // @access Public
-const createLead = asyncHandler(async (req, res) => {
+export const createLead = asyncHandler(async (req, res) => {
     const {
         fName,
         mName,
@@ -53,7 +53,7 @@ const createLead = asyncHandler(async (req, res) => {
     // viewLeadsLog(req, res, status || '', borrower || '', leadRemarks = '');
     const logs = await postLeadLogs(
         newLead._id,
-        "LEAD-NEW",
+        "NEW LEAD",
         `${newLead.fName} ${newLead.mName ?? ""} ${newLead.lName}`,
         "New lead created"
     );
@@ -63,19 +63,21 @@ const createLead = asyncHandler(async (req, res) => {
 // @desc Get all leads
 // @route GET /api/leads
 // @access Private
-const getAllLeads = asyncHandler(async (req, res) => {
+export const getAllLeads = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1; // current page
     const limit = parseInt(req.query.limit) || 10; // items per page
     const skip = (page - 1) * limit;
 
-    const leads = await Lead.find({
+    const query = {
         $or: [{ screenerId: { $exists: false } }, { screenerId: null }],
         isApproved: { $ne: true },
-    })
+    };
+
+    const leads = await Lead.find(query)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
-    const totalLeads = await Lead.countDocuments({ screenerId: null });
+    const totalLeads = await Lead.countDocuments(query);
 
     return res.json({
         totalLeads,
@@ -88,7 +90,7 @@ const getAllLeads = asyncHandler(async (req, res) => {
 // @desc Get lead
 // @route GET /api/leads/:id
 // @access Private
-const getLead = asyncHandler(async (req, res) => {
+export const getLead = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const lead = await Lead.findOne({ _id: id });
     if (!lead) {
@@ -101,7 +103,7 @@ const getLead = asyncHandler(async (req, res) => {
 // @desc Allocate new lead
 // @route PATCH /api/leads/:id
 // @access Private
-const allocateLead = asyncHandler(async (req, res) => {
+export const allocateLead = asyncHandler(async (req, res) => {
     // Check if screener exists in the request
     const { id } = req.params;
     let screenerId;
@@ -127,7 +129,7 @@ const allocateLead = asyncHandler(async (req, res) => {
     const employee = await Employee.findOne({ _id: screenerId });
     const logs = await postLeadLogs(
         lead._id,
-        "LEAD-IN PROCESS",
+        "LEAD IN PROCESS",
         `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
         `Lead allocated to ${employee.fName} ${employee.lName}`
     );
@@ -139,7 +141,7 @@ const allocateLead = asyncHandler(async (req, res) => {
 // @desc Get Allocated Leads depends on whether if it's admin or a screener.
 // @route GET /api/leads/allocated
 // @access Private
-const allocatedLeads = asyncHandler(async (req, res) => {
+export const allocatedLeads = asyncHandler(async (req, res) => {
     let query;
     if (req.employee.empRole === "admin") {
         query = {
@@ -156,7 +158,7 @@ const allocatedLeads = asyncHandler(async (req, res) => {
             screenerId: req.employee.id,
             onHold: { $ne: true },
             isRejected: { $ne: true },
-            isApproved: { ne: true },
+            isApproved: { $ne: true },
         };
     } else {
         res.status(401);
@@ -183,7 +185,7 @@ const allocatedLeads = asyncHandler(async (req, res) => {
 // @desc Adding file documents to a lead
 // @route PATCH /api/leads/docs/:id
 // @access Private
-const addDocsInLead = asyncHandler(async (req, res) => {
+export const addDocsInLead = asyncHandler(async (req, res) => {
     const { id } = req.params;
     let employeeId;
 
@@ -281,7 +283,7 @@ const addDocsInLead = asyncHandler(async (req, res) => {
 // @desc Get the docs from a lead
 // @route GET /api/leads/hold/:id
 // @access Private
-const getDocsFromLead = asyncHandler(async (req, res) => {
+export const getDocsFromLead = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { docType } = req.query;
 
@@ -313,7 +315,7 @@ const getDocsFromLead = asyncHandler(async (req, res) => {
 // @desc Putting lead on hold
 // @route PATCH /api/leads/hold/:id
 // @access Private
-const leadOnHold = asyncHandler(async (req, res) => {
+export const leadOnHold = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
     // List of roles that are authorized to hold a lead
@@ -351,13 +353,13 @@ const leadOnHold = asyncHandler(async (req, res) => {
         `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
         `Lead on hold by ${employee.fName} ${employee.lName}`
     );
-    res.json(lead, logs);
+    res.json({ lead, logs });
 });
 
 // @desc Unhold lead
 // @route PATCH /api/leads/unhold/:id
 // @access Private
-const unHoldLead = asyncHandler(async (req, res) => {
+export const unHoldLead = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
     // List of roles that are authorized to hold a lead
@@ -394,13 +396,13 @@ const unHoldLead = asyncHandler(async (req, res) => {
         `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
         `Lead unhold by ${employee.fName} ${employee.lName}`
     );
-    res.json(lead, logs);
+    res.json({ lead, logs });
 });
 
 // @desc Get leads on hold depends on if it's admin or an employee
 // @route GET /api/leads/hold
 // @access Private
-const getHoldLeads = asyncHandler(async (req, res) => {
+export const getHoldLeads = asyncHandler(async (req, res) => {
     // List of roles that are authorized to hold a lead
     const authorizedRoles = [
         "screener",
@@ -417,7 +419,7 @@ const getHoldLeads = asyncHandler(async (req, res) => {
 
     if (!authorizedRoles.includes(req.employee.empRole)) {
         res.status(403);
-        throw new Error("Not Authorized to hold a lead!!");
+        throw new Error("Not Authorized!!");
     }
     const page = parseInt(req.query.page) || 1; // current page
     const limit = parseInt(req.query.limit) || 10; // items per page
@@ -453,7 +455,7 @@ const getHoldLeads = asyncHandler(async (req, res) => {
 // @desc Rejecting a lead
 // @route PATCH /api/leads/reject/:id
 // @access Private
-const leadReject = asyncHandler(async (req, res) => {
+export const leadReject = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
     // List of roles that are authorized to hold a lead
@@ -472,7 +474,7 @@ const leadReject = asyncHandler(async (req, res) => {
 
     if (!authorizedRoles.includes(req.employee.empRole)) {
         res.status(403);
-        throw new Error("Not Authorized to hold a lead!!");
+        throw new Error("Not Authorized to reject a lead!!");
     }
     const lead = await Lead.findByIdAndUpdate(
         id,
@@ -490,13 +492,13 @@ const leadReject = asyncHandler(async (req, res) => {
         `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
         `Lead rejected by ${employee.fName} ${employee.lName}`
     );
-    res.json(lead, logs);
+    res.json({ lead, logs });
 });
 
 // @desc Get rejected leads depends on if it's admin or an employee
 // @route GET /api/leads/reject
 // @access Private
-const getRejectedLeads = asyncHandler(async (req, res) => {
+export const getRejectedLeads = asyncHandler(async (req, res) => {
     // List of roles that are authorized to hold a lead
     const authorizedRoles = [
         "screener",
@@ -513,7 +515,7 @@ const getRejectedLeads = asyncHandler(async (req, res) => {
 
     if (!authorizedRoles.includes(req.employee.empRole)) {
         res.status(403);
-        throw new Error("Not Authorized to hold a lead!!");
+        throw new Error("Not Authorized!!");
     }
     const page = parseInt(req.query.page) || 1; // current page
     const limit = parseInt(req.query.limit) || 10; // items per page
@@ -550,7 +552,7 @@ const getRejectedLeads = asyncHandler(async (req, res) => {
 // @desc Internal Dedupe (Old history)
 // @route GET /api/leads/old-history/:id
 // @access Private
-const internalDedupe = asyncHandler(async (req, res) => {
+export const internalDedupe = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const lead = await Lead.findById(id).sort({ createdAt: -1 });
 
@@ -574,7 +576,7 @@ const internalDedupe = asyncHandler(async (req, res) => {
 
 // @desc Post leads logs with status
 // @access Private
-const postLeadLogs = async (
+export const postLeadLogs = async (
     leadId = "",
     leadStatus = "",
     borrower = "",
@@ -606,12 +608,14 @@ const postLeadLogs = async (
 // @desc Get leads logs with status
 // @route GET /api/lead/viewleaadlog
 // @access Private
-const viewLeadLogs = asyncHandler(async (req, res) => {
+export const viewLeadLogs = asyncHandler(async (req, res) => {
     // Fetch the lead id
     const { leadId } = req.params;
 
     // Check if the lead is present
-    const leadDetails = await LogHistory.find({ lead: leadId });
+    const leadDetails = await LogHistory.find({ lead: leadId }).sort({
+        logDate: -1,
+    });
 
     if (!leadDetails) {
         res.status(404);
@@ -624,7 +628,7 @@ const viewLeadLogs = asyncHandler(async (req, res) => {
 // @desc Approve the lead
 // @route Patch /api/lead/approve/:id
 // @access Private
-const approveLead = asyncHandler(async (req, res) => {
+export const approveLead = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const screenerId = req.screener._id.toString();
 
@@ -666,23 +670,5 @@ const approveLead = asyncHandler(async (req, res) => {
     );
 
     // Send the approved lead as a JSON response
-    return res.json(response, logs); // This is a successful response
+    return res.json({ response, logs }); // This is a successful response
 });
-
-export {
-    createLead,
-    getAllLeads,
-    getLead,
-    allocateLead,
-    addDocsInLead,
-    getDocsFromLead,
-    allocatedLeads,
-    leadOnHold,
-    unHoldLead,
-    getHoldLeads,
-    leadReject,
-    getRejectedLeads,
-    internalDedupe,
-    viewLeadLogs,
-    approveLead,
-};

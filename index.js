@@ -7,6 +7,7 @@ import morgan from "morgan";
 import leadRouter from "./routes/LeadsRouter.js"; // Import routes
 import employeeRouter from "./routes/EmployeesRouter.js";
 import verifyRouter from "./routes/VerifyRouter.js";
+import applicationRouter from "./routes/ApplicationRouter.js";
 
 import { notFound, errorHandler } from "./middleware/errorHandler.js";
 
@@ -40,6 +41,7 @@ app.get("/", (req, res) => {
 app.use("/api/leads", leadRouter); // Use the lead routes
 app.use("/api/employees", employeeRouter); // Use the employee routes
 app.use("/api/verify", verifyRouter); // Use the verify routes sevice to verify PAN and aadhaar
+app.use("/api/applications", applicationRouter); // Use the application routes
 
 // Error handling middleware
 app.use(notFound);
