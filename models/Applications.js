@@ -6,6 +6,10 @@ const applicationSchema = new mongoose.Schema(
             type: Object,
             required: true,
         },
+        creditManagerId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Employee",
+        },
         onHold: {
             type: Boolean,
             default: false,
