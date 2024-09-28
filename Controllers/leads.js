@@ -3,12 +3,6 @@ import Lead from "../models/Leads.js";
 import Application from "../models/Applications.js";
 import Employee from "../models/Employees.js";
 import LogHistory from "../models/LeadLogHistory.js";
-import {
-    uploadFilesToS3,
-    deleteFilesFromS3,
-    generatePresignedUrl,
-} from "../config/uploadFilesToS3.js";
-import getMimeTypeForDocType from "../utils/getMimeTypeForDocType.js";
 
 // @desc Create loan leads
 // @route POST /api/leads
@@ -31,6 +25,7 @@ export const createLead = asyncHandler(async (req, res) => {
         pinCode,
         state,
         city,
+        source,
     } = req.body;
     const newLead = await Lead.create({
         fName,
@@ -49,6 +44,7 @@ export const createLead = asyncHandler(async (req, res) => {
         pinCode,
         state,
         city,
+        source,
     });
     // viewLeadsLog(req, res, status || '', borrower || '', leadRemarks = '');
     const logs = await postLeadLogs(
@@ -182,134 +178,41 @@ export const allocatedLeads = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc Adding file documents to a lead
-// @route PATCH /api/leads/docs/:id
+// @desc Update allocated lead's details
+// @route PATCH /api/leads/update/:id
 // @access Private
-export const addDocsInLead = asyncHandler(async (req, res) => {
+export const updateLead = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    let employeeId;
+    const updates = req.body;
 
-    if (req.screener) {
-        employeeId = req.screener._id.toString();
-    } else if (req.creditManager) {
-        employeeId = req.creditManager._id.toString();
-    }
-
-    if (!req.files) {
+    if (!id) {
         res.status(400);
-        throw new Error("No files uploaded");
-    }
-
-    // Fetch the lead first to check if documents already exist
-    const lead = await Lead.findById(id);
-
-    if (!lead) {
-        res.status(404);
-        throw new Error("Lead not found");
-    }
-
-    // Prepare an array to store all upload promises
-    const uploadPromises = [];
-    const documentUpdates = [];
-
-    // Loop through each field and upload the files to S3
-    for (const fieldName in req.files) {
-        const file = req.files[fieldName][0]; // Get the first file for each field
-        const key = `${id}/${fieldName}-${Date.now()}-${file.originalname}`; // Construct a unique S3 key
-
-        // Check if the document type already exists in the lead's document array
-        const existingDocIndex = lead.document.findIndex(
-            (doc) => doc.type === fieldName
+        throw new Error(
+            "Id is required to fetch the lead from the collection!!"
         );
-
-        if (existingDocIndex !== -1) {
-            // Old file URL stored in document
-            const oldFileKey = lead.document[existingDocIndex].url;
-            if (oldFileKey) {
-                uploadPromises.push(
-                    // Delete the old files fro S3
-                    deleteFilesFromS3(oldFileKey).then(() => {
-                        // upload the new file
-                        return uploadFilesToS3(
-                            file.buffer,
-                            key,
-                            file.mimetype
-                        ).then((res) => {
-                            // Update the existing document's URL
-                            lead.document[existingDocIndex].url = res.Key;
-                        });
-                    })
-                );
-            }
-        } else {
-            // If document type does not exist, add it to the document array
-            uploadPromises.push(
-                uploadFilesToS3(file.buffer, key, file.mimetype).then((res) => {
-                    documentUpdates.push({
-                        type: fieldName,
-                        url: res.Key,
-                    });
-                })
-            );
-        }
     }
 
-    // Wait for all files to be uploaded
-    await Promise.all(uploadPromises);
-
-    // If there are new documents to be added, push them to the document array
-    if (documentUpdates.length > 0) {
-        lead.document.push(...documentUpdates);
-    }
-
-    // Use findByIdAndUpdate to only update the document field
-    await Lead.findByIdAndUpdate(
-        id,
-        { document: lead.document }, // Only update the document field
-        { new: true, runValidators: false } // Disable validation for other fields
-    );
-
-    const employee = await Employee.findOne({ _id: employeeId });
-    const logs = await postLeadLogs(
-        lead._id,
-        "ADDED DOCUMENTS",
-        `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
-        `Added documents by ${employee.fName} ${employee.lName}`
-    );
-
-    res.json({ message: "file uploaded successfully", logs });
-});
-
-// @desc Get the docs from a lead
-// @route GET /api/leads/hold/:id
-// @access Private
-export const getDocsFromLead = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const { docType } = req.query;
-
-    // Fetch the lead from the database
+    // Fetch the lead to check the screenerId
     const lead = await Lead.findById(id);
+
     if (!lead) {
         res.status(404);
-        throw new Error("Lead not found!!!");
+        throw new Error("No lead found!!");
     }
 
-    // Find the specific document based on docType
-    const document = lead.document.find((doc) => doc.type === docType);
-
-    if (!document) {
-        res.status(404);
-        throw new Error(`Document of type ${docType} not found`);
+    // Check if screenerId matches the one in the lead document
+    if (lead.screenerId.toString() !== req.employee._id.toString()) {
+        res.status(403);
+        throw new Error("Unauthorized: You can not update this lead!!");
     }
 
-    // Generate a pre-signed URL for this specific document
-    const preSignedUrl = generatePresignedUrl(
-        document.url,
-        getMimeTypeForDocType(document.type)
+    const updatedLead = await Lead.findByIdAndUpdate(
+        id,
+        { $set: updates },
+        { new: true, runValidators: true }
     );
 
-    // Return the pre-signed URL for this specific document
-    res.json({ type: docType, url: preSignedUrl });
+    res.json(updatedLead);
 });
 
 // @desc Putting lead on hold

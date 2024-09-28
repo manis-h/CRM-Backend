@@ -6,9 +6,8 @@ import {
     getAllLeads,
     getLead,
     allocateLead,
-    addDocsInLead,
-    getDocsFromLead,
     allocatedLeads,
+    updateLead,
     leadOnHold,
     unHoldLead,
     getHoldLeads,
@@ -18,11 +17,14 @@ import {
     viewLeadLogs,
     approveLead,
 } from "../Controllers/leads.js";
+import { bulkUpload } from "../helper/bulkUpload.js";
+import { addDocs, getDocs } from "../helper/docsUploadAndFetch.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
 import upload from "../config/multer.js";
 
 // Define the fields you want to upload
 const uploadFields = upload.fields([
+    { name: "csv", maxCount: 1 },
     { name: "aadhaarFront", maxCount: 1 },
     { name: "aadhaarBack", maxCount: 1 },
     { name: "panCard", maxCount: 1 },
@@ -32,9 +34,10 @@ const uploadFields = upload.fields([
 
 // Other routes
 router.route("/").post(createLead).get(protect, getAllLeads);
-// router.route("/allocated").get(protect, admin, allocatedLeads);
+router.route("/bulk-upload").post(protect, upload.single("csv"), bulkUpload);
 router.route("/allocated").get(protect, allocatedLeads);
 router.route("/:id").get(getLead).patch(protect, allocateLead);
+router.route("/update/:id").patch(protect, updateLead);
 router.patch("/hold/:id", protect, leadOnHold);
 router.patch("/unhold/:id", protect, unHoldLead);
 router.get("/hold", protect, getHoldLeads);
@@ -45,7 +48,7 @@ router.get("/viewleadlog/:leadId", protect, viewLeadLogs);
 router.patch("/approve/:id", protect, approveLead);
 router
     .route("/docs/:id")
-    .patch(protect, uploadFields, addDocsInLead)
-    .get(protect, getDocsFromLead);
+    .patch(protect, uploadFields, addDocs)
+    .get(protect, getDocs);
 
 export default router;
