@@ -12,6 +12,8 @@ import {
     applicationReject,
     getRejectedApplication,
     approveApplication,
+    addPersonalDeatils,
+    getApplicantPersonalDetails
 } from "../Controllers/application.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
 // import upload from "../config/multer.js";
@@ -36,9 +38,12 @@ router.patch("/reject/:id", protect, applicationReject);
 router.get("/reject", protect, getRejectedApplication);
 // router.get("/old-history/:id", protect, internalDedupe);
 router.patch("/approve/:id", protect, approveApplication);
+
+router.post("/personalDeatil/:id",protect,addPersonalDeatils);
 // router
 //     .route("/docs/:id")
 //     .patch(protect, uploadFields, addDocsInLead)
 //     .get(protect, getDocsFromLead);
+router.get("/getApplicantPersonalDetails",getApplicantPersonalDetails)
 
 export default router;

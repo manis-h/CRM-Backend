@@ -8,6 +8,7 @@ import {
     generatePresignedUrl,
 } from "../config/uploadFilesToS3.js";
 import getMimeTypeForDocType from "../utils/getMimeTypeForDocType.js";
+import ApplicationPersonalDetails from "../models/PersonalDetials.js";
 
 // @desc Get all applications
 // @route GET /api/applications
@@ -281,6 +282,7 @@ export const getHoldApplication = asyncHandler(async (req, res) => {
     });
 });
 
+
 // @desc Rejecting an application
 // @route PATCH /api/applications/reject/:id
 // @access Private
@@ -430,3 +432,113 @@ export const approveApplication = asyncHandler(async (req, res) => {
     // return res.json(response, logs); // This is a successful response
     return res.json(logs);
 });
+
+// @desc Add  the Personal  Details to the Application By CreditManager
+// @route Post /api/applications/addPersonalDeatils/:id
+// @access Private
+export const  addPersonalDeatils = asyncHandler( async (req,res)=>{
+    try {
+        
+        const { id } = req.params; //Application Id
+        const creditManagerId = req.creditManager._id.toString(); // Assuming you have creditManager attached to req
+    
+        // Find the application by its ID
+        const application = await Application.findById(id);
+    
+        if (!application) {
+          return res.status(401).json({
+            success: false,
+            message: "No application related to that ID",
+          });
+        }
+    
+        // Find the Lead from the application
+        const lead = application.lead;
+    
+        if (!lead) {
+          return res.status(401).json({
+            success: false,
+            message: "No lead information found in the application",
+          });
+        }
+    
+        console.log("The lead is here ",lead);
+
+        // // Extract PAN and other relevant details from the lead
+        const { pan, fName, lName, dob, mobile, personalEmail , officeEmail } = lead;
+    
+        // Create a new instance of ApplicationPersonalDetails model with personal details
+        const personalDetailsDocument = new ApplicationPersonalDetails({
+            personalDetails: {
+                pan,
+                fName,
+                lName,
+                dob,
+                mobile,
+                email: personalEmail,
+                officeEmail,
+                creditManagerId
+            }
+        });
+
+        console.log("Here are the personal details:", personalDetailsDocument);
+
+        // Save the new personal details document
+        await personalDetailsDocument.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Personal details added successfully",
+            data: personalDetailsDocument,
+        });
+
+      } catch (error) {
+        console.log("Error while creating the Personal Details:", error.message);
+        return res.status(500).json({
+          success: false,
+          message: `There was an error while creating personal details: ${error.message}`,
+        });
+      }
+    
+})
+
+
+// @desc Add  the Personal  Details to the Application By CreditManager
+// @route Post /api/applications/addPersonalDeatils/:id
+// @access Private
+export const getApplicantPersonalDetails = asyncHandler(async (req,res)=>{
+    try {
+
+        const { id } = req.params; //Application Id
+        const creditManagerId = req.creditManager._id.toString(); // Assuming you have creditManager attached to req
+
+        // Find the application by its ID
+        const application = await Application.findById(id);
+        
+         // Find the Lead from the application
+         const lead = application.lead;
+         if (!lead) {
+            return res.status(401).json({
+              success: false,
+              message: "No lead information found in the application",
+            });
+          }
+    
+          
+          console.log("The lead is here ",lead);
+          return res.status(200).json({
+            message : "Applicant lead details is here ",
+            deatils : lead
+          })
+
+
+    } catch (error) {
+        console.log("Error while getting  the Personal Details: of the applicant", error.message);
+        return res.status(500).json({
+          success: false,
+          message: `There was an error while creating personal details: ${error.message}`,
+        });
+    }
+})
+
+

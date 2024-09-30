@@ -32,7 +32,6 @@ const uploadFields = upload.fields([
 
 // Other routes
 router.route("/").post(createLead).get(protect, getAllLeads);
-// router.route("/allocated").get(protect, admin, allocatedLeads);
 router.route("/allocated").get(protect, allocatedLeads);
 router.route("/:id").get(getLead).patch(protect, allocateLead);
 router.patch("/hold/:id", protect, leadOnHold);
