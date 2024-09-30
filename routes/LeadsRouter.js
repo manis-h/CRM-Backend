@@ -6,9 +6,8 @@ import {
     getAllLeads,
     getLead,
     allocateLead,
-    addDocsInLead,
-    getDocsFromLead,
     allocatedLeads,
+    updateLead,
     leadOnHold,
     unHoldLead,
     getHoldLeads,
@@ -18,6 +17,8 @@ import {
     viewLeadLogs,
     approveLead,
 } from "../Controllers/leads.js";
+import { bulkUpload } from "../helper/bulkUpload.js";
+import { addDocs, getDocs } from "../helper/docsUploadAndFetch.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
 import upload from "../config/multer.js";
 
@@ -32,19 +33,21 @@ const uploadFields = upload.fields([
 
 // Other routes
 router.route("/").post(createLead).get(protect, getAllLeads);
+router.route("/bulk-upload").post(protect, upload.single("csv"), bulkUpload);
 router.route("/allocated").get(protect, allocatedLeads);
+router.get("/hold", protect, getHoldLeads);
+router.get("/reject", protect, getRejectedLeads);
 router.route("/:id").get(getLead).patch(protect, allocateLead);
+router.get("/old-history/:id", protect, internalDedupe);
 router.patch("/hold/:id", protect, leadOnHold);
 router.patch("/unhold/:id", protect, unHoldLead);
-router.get("/hold", protect, getHoldLeads);
+router.route("/update/:id").patch(protect, updateLead);
 router.patch("/reject/:id", protect, leadReject);
-router.get("/reject", protect, getRejectedLeads);
-router.get("/old-history/:id", protect, internalDedupe);
 router.get("/viewleadlog/:leadId", protect, viewLeadLogs);
 router.patch("/approve/:id", protect, approveLead);
 router
     .route("/docs/:id")
-    .patch(protect, uploadFields, addDocsInLead)
-    .get(protect, getDocsFromLead);
+    .patch(protect, uploadFields, addDocs)
+    .get(protect, getDocs);
 
 export default router;

@@ -15,17 +15,18 @@ import {
     addPersonalDeatils,
     getApplicantPersonalDetails
 } from "../Controllers/application.js";
+import { addDocs, getDocs } from "../helper/docsUploadAndFetch.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
-// import upload from "../config/multer.js";
+import upload from "../config/multer.js";
 
 // Define the fields you want to upload
-// const uploadFields = upload.fields([
-//     { name: "aadhaarFront", maxCount: 1 },
-//     { name: "aadhaarBack", maxCount: 1 },
-//     { name: "panCard", maxCount: 1 },
-//     { name: "bankStatement", maxCount: 1 },
-//     { name: "salarySlip", maxCount: 1 },
-// ]);
+const uploadFields = upload.fields([
+    { name: "aadhaarFront", maxCount: 1 },
+    { name: "aadhaarBack", maxCount: 1 },
+    { name: "panCard", maxCount: 1 },
+    { name: "bankStatement", maxCount: 1 },
+    { name: "salarySlip", maxCount: 1 },
+]);
 
 // Other routes
 router.route("/").get(protect, getAllApplication);
@@ -38,12 +39,10 @@ router.patch("/reject/:id", protect, applicationReject);
 router.get("/reject", protect, getRejectedApplication);
 // router.get("/old-history/:id", protect, internalDedupe);
 router.patch("/approve/:id", protect, approveApplication);
+router
+    .route("/docs/:id")
+    .patch(protect, uploadFields, addDocs)
+    .get(protect, getDocs);
 
-router.post("/personalDeatil/:id",protect,addPersonalDeatils);
-// router
-//     .route("/docs/:id")
-//     .patch(protect, uploadFields, addDocsInLead)
-//     .get(protect, getDocsFromLead);
-router.get("/getApplicantPersonalDetails",getApplicantPersonalDetails)
-
+router.route('/personalDetails/:id').get().post();
 export default router;
