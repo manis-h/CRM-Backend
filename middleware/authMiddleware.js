@@ -4,16 +4,10 @@ import Employees from "../models/Employees.js";
 
 // Protected Routes
 const protect = asyncHandler(async (req, res, next) => {
-    // var userRole = req.cookies.userRole;
-    // token = req.cookies.jwt;
-    let token = req.headers.authorization;
-    // console.log(req.headers.authorization);
+    let token = req.cookies.jwt;
 
     if (token) {
         try {
-            if (token.startsWith("Bearer ")) {
-                token = token.slice(7, token.length).trimLeft();
-            }
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             req.employee = await Employees.findById(decoded.id).select(
                 "-password"
@@ -24,22 +18,6 @@ const protect = asyncHandler(async (req, res, next) => {
             req[role] = req.employee; // Assign the employee's role to req dynamically
 
             next();
-
-            // switch (req.employee.empRole) {
-            //     case "admin":
-            //         req.admin = req.employee;
-            //         break;
-            //     case "screener":
-            //         req.screener = req.employee;
-            //         break;
-            //     case "creditManger":
-            //         req.creditManager = req.employee;
-            //         break;
-            //     default:
-            //         res.status(403);
-            //         throw new Error("Not Authorized!! Invalid role");
-            // }
-            // next();
         } catch (error) {
             console.log(error);
             res.status(401);
