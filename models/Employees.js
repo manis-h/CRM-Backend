@@ -46,7 +46,6 @@ const employeeSchema = new mongoose.Schema({
 employeeSchema.methods.matchPassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
-
 employeeSchema.pre("save", async function (next) {
     if (!this.isModified("password")) {
         next();
