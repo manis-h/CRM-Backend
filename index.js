@@ -23,8 +23,9 @@ app.use(cookieParser()); //cookie parser middlerware
 
 // CORS configuration
 var corsOption = {
-    origin: "*",
+    origin: "http://localhost:5173",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true,
     preflightContinue: false,
     optionsSuccessStatus: 204,
 };

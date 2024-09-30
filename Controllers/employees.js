@@ -2,6 +2,7 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Employee from "../models/Employees.js";
 import { generateToken } from "../utils/generateToken.js";
+
 // @desc Register Employee
 // @route POST /api/employees
 //@access Private
@@ -38,15 +39,14 @@ export const register = asyncHandler(async (req, res) => {
                 empId,
             });
             if (employee) {
-                const token = generateToken(res, employee._id);
+                generateToken(res, employee._id);
                 return res.status(201).json({
                     data: {
                         _id: employee._id,
-                        // token: token,
                         name: employee.fName + " " + employee.lName,
                         email: employee.email,
+                        empRole: employee.empRole,
                     },
-                    token: token,
                 });
             }
         }
@@ -62,16 +62,13 @@ export const login = asyncHandler(async (req, res) => {
     // Find the user by email
     const employee = await Employee.findOne({ email });
     if (employee && (await employee.matchPassword(password))) {
-        const token = generateToken(res, employee._id);
+        generateToken(res, employee._id);
 
         res.status(200).json({
-            data: {
-                _id: employee._id,
-                // token: token,
-                name: employee.fName + " " + employee.lName,
-                email: employee.email,
-            },
-            token: token,
+            _id: employee._id,
+            name: employee.fName + " " + employee.lName,
+            email: employee.email,
+            empRole: employee.empRole,
         });
     } else {
         res.status(401);
