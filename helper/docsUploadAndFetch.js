@@ -2,7 +2,7 @@ import asyncHandler from "../middleware/asyncHandler.js";
 import Lead from "../models/Leads.js";
 import Application from "../models/Applications.js";
 import Employee from "../models/Employees.js";
-import { postLeadLogs } from "../Controllers/leads.js";
+import { postLogs } from "../Controllers/leads.js";
 import {
     uploadFilesToS3,
     deleteFilesFromS3,
@@ -120,7 +120,7 @@ export const addDocs = asyncHandler(async (req, res) => {
     }
 
     const employee = await Employee.findOne({ _id: employeeId });
-    const logs = await postLeadLogs(
+    const logs = await postLogs(
         lead._id,
         "ADDED DOCUMENTS",
         `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,

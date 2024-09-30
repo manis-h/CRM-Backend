@@ -1,7 +1,7 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Application from "../models/Applications.js";
 import Employee from "../models/Employees.js";
-import { postLeadLogs } from "./leads.js";
+import { postLogs } from "./leads.js";
 import {
     uploadFilesToS3,
     deleteFilesFromS3,
@@ -83,7 +83,7 @@ export const allocateApplication = asyncHandler(async (req, res) => {
         throw new Error("Application not found"); // This error will be caught by the error handler
     }
     const employee = await Employee.findOne({ _id: creditManagerId });
-    const logs = await postLeadLogs(
+    const logs = await postLogs(
         application.lead._id,
         "APPLICATION IN PROCESS",
         `${application.lead.fName} ${application.lead.mName ?? ""} ${
@@ -174,7 +174,7 @@ export const applicationOnHold = asyncHandler(async (req, res) => {
     }
 
     const employee = await Employee.findOne({ _id: req.employee._id });
-    const logs = await postLeadLogs(
+    const logs = await postLogs(
         application.lead._id,
         "APPLICATION ON HOLD",
         `${application.lead.fName} ${application.lead.mName ?? ""} ${
@@ -218,7 +218,7 @@ export const unHoldApplication = asyncHandler(async (req, res) => {
         throw new Error("Application not found");
     }
     const employee = await Employee.findOne({ _id: req.employee._id });
-    const logs = await postLeadLogs(
+    const logs = await postLogs(
         application.lead._id,
         "APPLICATION UNHOLD",
         `${application.lead.fName} ${application.lead.mName ?? ""} ${
@@ -314,7 +314,7 @@ export const applicationReject = asyncHandler(async (req, res) => {
         throw new Error("Lead not found");
     }
     const employee = await Employee.findOne({ _id: req.employee._id });
-    const logs = await postLeadLogs(
+    const logs = await postLogs(
         application.lead._id,
         "APPLICATION REJECTED",
         `${application.lead.fName} ${application.lead.mName ?? ""} ${
@@ -417,7 +417,7 @@ export const approveApplication = asyncHandler(async (req, res) => {
     // const response = await newApplication.save();
 
     const employee = await Employee.findOne({ _id: creditManagerId });
-    const logs = await postLeadLogs(
+    const logs = await postLogs(
         application.lead._id,
         "APPLICATION APPROVED. TRANSFERED TO DISBURSAL",
         `${application.lead.fName} ${application.lead.mName ?? ""} ${

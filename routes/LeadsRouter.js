@@ -35,14 +35,14 @@ const uploadFields = upload.fields([
 router.route("/").post(createLead).get(protect, getAllLeads);
 router.route("/bulk-upload").post(protect, upload.single("csv"), bulkUpload);
 router.route("/allocated").get(protect, allocatedLeads);
+router.get("/hold", protect, getHoldLeads);
+router.get("/reject", protect, getRejectedLeads);
 router.route("/:id").get(getLead).patch(protect, allocateLead);
-router.route("/update/:id").patch(protect, updateLead);
+router.get("/old-history/:id", protect, internalDedupe);
 router.patch("/hold/:id", protect, leadOnHold);
 router.patch("/unhold/:id", protect, unHoldLead);
-router.get("/hold", protect, getHoldLeads);
+router.route("/update/:id").patch(protect, updateLead);
 router.patch("/reject/:id", protect, leadReject);
-router.get("/reject", protect, getRejectedLeads);
-router.get("/old-history/:id", protect, internalDedupe);
 router.get("/viewleadlog/:leadId", protect, viewLeadLogs);
 router.patch("/approve/:id", protect, approveLead);
 router

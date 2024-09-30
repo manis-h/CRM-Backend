@@ -47,7 +47,7 @@ export const createLead = asyncHandler(async (req, res) => {
         source,
     });
     // viewLeadsLog(req, res, status || '', borrower || '', leadRemarks = '');
-    const logs = await postLeadLogs(
+    const logs = await postLogs(
         newLead._id,
         "NEW LEAD",
         `${newLead.fName} ${newLead.mName ?? ""} ${newLead.lName}`,
@@ -123,7 +123,7 @@ export const allocateLead = asyncHandler(async (req, res) => {
         throw new Error("Lead not found"); // This error will be caught by the error handler
     }
     const employee = await Employee.findOne({ _id: screenerId });
-    const logs = await postLeadLogs(
+    const logs = await postLogs(
         lead._id,
         "LEAD IN PROCESS",
         `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
@@ -216,7 +216,7 @@ export const updateLead = asyncHandler(async (req, res) => {
     const employee = await Employee.findOne({
         _id: req.employee._id.toString(),
     });
-    const logs = await postLeadLogs(
+    const logs = await postLogs(
         lead._id,
         "LEAD UPDATED",
         `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
@@ -262,7 +262,7 @@ export const leadOnHold = asyncHandler(async (req, res) => {
     }
 
     const employee = await Employee.findOne({ _id: req.employee._id });
-    const logs = await postLeadLogs(
+    const logs = await postLogs(
         lead._id,
         "LEAD ON HOLD",
         `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
@@ -305,7 +305,7 @@ export const unHoldLead = asyncHandler(async (req, res) => {
         throw new Error("Lead not found");
     }
     const employee = await Employee.findOne({ _id: req.employee._id });
-    const logs = await postLeadLogs(
+    const logs = await postLogs(
         lead._id,
         "LEAD UNHOLD",
         `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
@@ -319,6 +319,7 @@ export const unHoldLead = asyncHandler(async (req, res) => {
 // @access Private
 export const getHoldLeads = asyncHandler(async (req, res) => {
     // List of roles that are authorized to hold a lead
+
     const authorizedRoles = [
         "screener",
         "admin",
@@ -342,7 +343,7 @@ export const getHoldLeads = asyncHandler(async (req, res) => {
 
     const employeeId = req.employee._id.toString();
 
-    let query = { isHold: true, isApproved: { $exists: false, $ne: true } };
+    let query = { onHold: true, isApproved: { $ne: true } };
 
     // If the employee is not admint, they only see the leads they rejected
     if (req.employee.empRole !== "admin") {
@@ -401,7 +402,7 @@ export const leadReject = asyncHandler(async (req, res) => {
         throw new Error("Lead not found");
     }
     const employee = await Employee.findOne({ _id: req.employee._id });
-    const logs = await postLeadLogs(
+    const logs = await postLogs(
         lead._id,
         "LEAD REJECTED",
         `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
@@ -491,7 +492,7 @@ export const internalDedupe = asyncHandler(async (req, res) => {
 
 // @desc Post leads logs with status
 // @access Private
-export const postLeadLogs = async (
+export const postLogs = async (
     leadId = "",
     leadStatus = "",
     borrower = "",
@@ -577,7 +578,7 @@ export const approveLead = asyncHandler(async (req, res) => {
     const response = await newApplication.save();
 
     const employee = await Employee.findOne({ _id: screenerId });
-    const logs = await postLeadLogs(
+    const logs = await postLogs(
         lead._id,
         "LEAD APPROVED. TRANSFERED TO CREDIT MANAGER",
         `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
