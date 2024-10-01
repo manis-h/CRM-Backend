@@ -41,12 +41,10 @@ export const register = asyncHandler(async (req, res) => {
             if (employee) {
                 generateToken(res, employee._id);
                 return res.status(201).json({
-                    data: {
-                        _id: employee._id,
-                        name: employee.fName + " " + employee.lName,
-                        email: employee.email,
-                        empRole: employee.empRole,
-                    },
+                    _id: employee._id,
+                    name: employee.fName + " " + employee.lName,
+                    email: employee.email,
+                    empRole: employee.empRole,
                 });
             }
         }

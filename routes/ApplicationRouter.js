@@ -12,6 +12,8 @@ import {
     applicationReject,
     getRejectedApplication,
     approveApplication,
+    addPersonalDeatils,
+    getApplicantPersonalDetails,
 } from "../Controllers/application.js";
 import { addDocs, getDocs } from "../helper/docsUploadAndFetch.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
@@ -41,5 +43,4 @@ router
     .route("/docs/:id")
     .patch(protect, uploadFields, addDocs)
     .get(protect, getDocs);
-
 export default router;
