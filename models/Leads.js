@@ -50,9 +50,6 @@ const leadSchema = new mongoose.Schema(
             type: Number,
             required: true,
         },
-        noOfLoans: {
-            type: Number,
-        },
         salary: {
             type: Number,
             required: true,
@@ -120,6 +117,7 @@ const leadSchema = new mongoose.Schema(
             type: String,
             required: true,
             enum: ["website", "bulk", "landingPage"],
+            default: "website",
         },
     },
     { timestamps: true }

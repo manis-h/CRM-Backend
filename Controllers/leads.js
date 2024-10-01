@@ -3,6 +3,7 @@ import Lead from "../models/Leads.js";
 import Application from "../models/Applications.js";
 import Employee from "../models/Employees.js";
 import LogHistory from "../models/LeadLogHistory.js";
+import { applicantDetails } from "./applicantPersonalDetails.js";
 
 // @desc Create loan leads
 // @route POST /api/leads
@@ -184,7 +185,6 @@ export const allocatedLeads = asyncHandler(async (req, res) => {
 export const updateLead = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
-    console.log(updates);
 
     if (!id) {
         res.status(400);
@@ -439,7 +439,7 @@ export const getRejectedLeads = asyncHandler(async (req, res) => {
 
     const employeeId = req.employee._id.toString();
 
-    let query = { isRejected: true, isApproved: { $exists: false, $ne: true } };
+    let query = { isRejected: true, isApproved: { $ne: true } };
 
     // If the employee is not admint, they only see the leads they rejected
     if (req.employee.empRole !== "admin") {
@@ -574,10 +574,44 @@ export const approveLead = asyncHandler(async (req, res) => {
     lead.approvedBy = screenerId;
     await lead.save();
 
-    const newApplication = new Application({ lead: lead });
+    const employee = await Employee.findOne({ _id: screenerId });
+    const screenerName = `${employee?.fName} ${employee?.lName}`;
+
+    const {
+        pan,
+        aadhaar,
+        fName,
+        mName,
+        lName,
+        gender,
+        dob,
+        mobile,
+        alternateMobile,
+        personalEmail,
+        officeEmail,
+    } = lead;
+    const details = {
+        pan,
+        aadhaar,
+        fName,
+        mName,
+        lName,
+        gender,
+        dob,
+        mobile,
+        alternateMobile,
+        personalEmail,
+        officeEmail,
+        screenedBy: screenerName,
+    };
+    const applicant = await applicantDetails(details);
+
+    const newApplication = new Application({
+        lead: lead,
+        applicant: applicant._id,
+    });
     const response = await newApplication.save();
 
-    const employee = await Employee.findOne({ _id: screenerId });
     const logs = await postLogs(
         lead._id,
         "LEAD APPROVED. TRANSFERED TO CREDIT MANAGER",
