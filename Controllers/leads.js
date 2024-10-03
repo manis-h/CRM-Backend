@@ -630,16 +630,20 @@ export const approveLead = asyncHandler(async (req, res) => {
 // @access Private
 export const emailVerify = asyncHandler(async (req, res) => {
     const { id } = req.params;
+    const lead = await Lead.findById(id);
+
+    if (lead.screenerId.toString() !== req.employee._id.toString()) {
+        res.status(401);
+        throw new Error("You are not authorized!!");
+    }
 
     const otp = generateRandomNumber();
-    // Calculate expiry time
-    const otpExpiry = new Date(Date.now() + OTP_EXPIRY_TIME);
+    const otpExpiry = new Date(Date.now() + 15 * 60 * 1000); // Calculate expiry time
 
-    const lead = await Lead.findByIdAndUpdate(
-        id,
-        { emailOtp: otp, emailOtpExpiredAt: otpExpiry },
-        { new: true, newValidation: true }
-    );
+    lead.emailOtp = otp;
+    lead.emailOtpExpiredAt = otpExpiry;
+    await lead.save();
+
     if (!lead) {
         res.status(404);
         throw new Error("No lead found!!");
@@ -647,6 +651,7 @@ export const emailVerify = asyncHandler(async (req, res) => {
 
     // Perform the email API request or other actions here
     const response = await sendEmail(
+        req.employee.email,
         lead.personalEmail,
         `${lead.fName} ${lead.mName} ${lead.lName}`,
         "Email Verfication",
@@ -670,6 +675,11 @@ export const verifyEmailOtp = asyncHandler(async (req, res) => {
         throw new Error("Lead not found!!!");
     }
 
+    if (lead.screenerId.toString() !== req.employee._id.toString()) {
+        res.status(401);
+        throw new Error("You are not authorized!!");
+    }
+
     // Check if the OTP has expired
     const currentTime = new Date();
     if (currentTime > lead.emailOtpExpiredAt) {
@@ -689,4 +699,45 @@ export const verifyEmailOtp = asyncHandler(async (req, res) => {
         success: true,
         message: "OTP verified successfully, email is now verified",
     });
+});
+
+// @desc Resend OTP due to resend button press or OTP expiration
+// @route api/verify/resend-otp/:id
+// @access Private
+export const resendOtp = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const lead = await Lead.findById(id);
+
+    if (lead.screenerId.toString() !== req.employee._id.toString()) {
+        res.status(401);
+        throw new Error("You are not authorized!!");
+    }
+
+    if (lead.isEmailVerified) {
+        res.json({ success: false, message: "Email is already verified!!" });
+    }
+
+    const otp = generateRandomNumber();
+    const otpExpiry = new Date(Date.now() + 15 * 60 * 1000); // Calculate expiry time
+
+    lead.emailOtp = otp;
+    lead.emailOtpExpiredAt = otpExpiry;
+    await lead.save();
+
+    if (!lead) {
+        res.status(404);
+        throw new Error("No lead found!!");
+    }
+
+    // Perform the email API request or other actions here
+    const response = await sendEmail(
+        req.employee.email,
+        lead.personalEmail,
+        `${lead.fName} ${lead.mName} ${lead.lName}`,
+        "Email Verfication",
+        otp
+    );
+
+    res.json({ message: response.message });
 });
