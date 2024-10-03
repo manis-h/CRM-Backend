@@ -4,6 +4,8 @@ import Application from "../models/Applications.js";
 import Employee from "../models/Employees.js";
 import LogHistory from "../models/LeadLogHistory.js";
 import { applicantDetails } from "./applicantPersonalDetails.js";
+import sendEmail from "../utils/sendEmail.js";
+import generateRandomNumber from "../utils/generateRandomNumbers.js";
 
 // @desc Create loan leads
 // @route POST /api/leads
@@ -621,4 +623,70 @@ export const approveLead = asyncHandler(async (req, res) => {
 
     // Send the approved lead as a JSON response
     return res.json({ response, logs }); // This is a successful response
+});
+
+// @desc verify email
+// @route PATCH /api/verify/email/:id
+// @access Private
+export const emailVerify = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const otp = generateRandomNumber();
+    // Calculate expiry time
+    const otpExpiry = new Date(Date.now() + OTP_EXPIRY_TIME);
+
+    const lead = await Lead.findByIdAndUpdate(
+        id,
+        { emailOtp: otp, emailOtpExpiredAt: otpExpiry },
+        { new: true, newValidation: true }
+    );
+    if (!lead) {
+        res.status(404);
+        throw new Error("No lead found!!");
+    }
+
+    // Perform the email API request or other actions here
+    const response = await sendEmail(
+        lead.personalEmail,
+        `${lead.fName} ${lead.mName} ${lead.lName}`,
+        "Email Verfication",
+        otp
+    );
+
+    res.json({ message: response.message });
+});
+
+// @desc Verify email OTP
+// @route PATCH /api/verify/email-otp/:id
+// @access Private
+export const verifyEmailOtp = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { otp } = req.body;
+
+    const lead = await Lead.findById(id);
+
+    if (!lead) {
+        res.status(404);
+        throw new Error("Lead not found!!!");
+    }
+
+    // Check if the OTP has expired
+    const currentTime = new Date();
+    if (currentTime > lead.emailOtpExpiredAt) {
+        res.status(400);
+        throw new Error("OTP has expired");
+    }
+
+    // Check if the OTP matches
+    if (lead.emailOtp !== otp) {
+        res.status(400);
+        throw new Error("Invalid OTP");
+    }
+    lead.isEmailVerified = true;
+    await lead.save();
+
+    res.json({
+        success: true,
+        message: "OTP verified successfully, email is now verified",
+    });
 });
