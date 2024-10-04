@@ -13,7 +13,7 @@ import {
     getRejectedApplication,
     approveApplication,
     addPersonalDeatils,
-    getApplicantPersonalDetails
+    getApplicantPersonalDetails,
 } from "../Controllers/application.js";
 import { addDocs, getDocs } from "../helper/docsUploadAndFetch.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
@@ -31,18 +31,16 @@ const uploadFields = upload.fields([
 // Other routes
 router.route("/").get(protect, getAllApplication);
 router.route("/allocated").get(protect, allocatedApplications);
+router.get("/hold", protect, getHoldApplication);
+router.get("/reject", protect, getRejectedApplication);
 router.route("/:id").get(getApplication).patch(protect, allocateApplication);
 router.patch("/hold/:id", protect, applicationOnHold);
 router.patch("/unhold/:id", protect, unHoldApplication);
-router.get("/hold", protect, getHoldApplication);
 router.patch("/reject/:id", protect, applicationReject);
-router.get("/reject", protect, getRejectedApplication);
 // router.get("/old-history/:id", protect, internalDedupe);
 router.patch("/approve/:id", protect, approveApplication);
 router
     .route("/docs/:id")
     .patch(protect, uploadFields, addDocs)
     .get(protect, getDocs);
-
-router.route('/personalDetails/:id').get().post();
 export default router;

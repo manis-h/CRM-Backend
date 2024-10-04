@@ -3,6 +3,10 @@ import Lead from "../models/Leads.js";
 import Application from "../models/Applications.js";
 import Employee from "../models/Employees.js";
 import LogHistory from "../models/LeadLogHistory.js";
+import { applicantDetails } from "./applicantPersonalDetails.js";
+import sendEmail from "../utils/sendEmail.js";
+import generateRandomNumber from "../utils/generateRandomNumbers.js";
+import equifax from "../utils/fetchCIBIL.js";
 
 // @desc Create loan leads
 // @route POST /api/leads
@@ -184,7 +188,6 @@ export const allocatedLeads = asyncHandler(async (req, res) => {
 export const updateLead = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
-    console.log(updates);
 
     if (!id) {
         res.status(400);
@@ -439,7 +442,7 @@ export const getRejectedLeads = asyncHandler(async (req, res) => {
 
     const employeeId = req.employee._id.toString();
 
-    let query = { isRejected: true, isApproved: { $exists: false, $ne: true } };
+    let query = { isRejected: true, isApproved: { $ne: true } };
 
     // If the employee is not admint, they only see the leads they rejected
     if (req.employee.empRole !== "admin") {
@@ -574,10 +577,44 @@ export const approveLead = asyncHandler(async (req, res) => {
     lead.approvedBy = screenerId;
     await lead.save();
 
-    const newApplication = new Application({ lead: lead });
+    const employee = await Employee.findOne({ _id: screenerId });
+    const screenerName = `${employee?.fName} ${employee?.lName}`;
+
+    const {
+        pan,
+        aadhaar,
+        fName,
+        mName,
+        lName,
+        gender,
+        dob,
+        mobile,
+        alternateMobile,
+        personalEmail,
+        officeEmail,
+    } = lead;
+    const details = {
+        pan,
+        aadhaar,
+        fName,
+        mName,
+        lName,
+        gender,
+        dob,
+        mobile,
+        alternateMobile,
+        personalEmail,
+        officeEmail,
+        screenedBy: screenerName,
+    };
+    const applicant = await applicantDetails(details);
+
+    const newApplication = new Application({
+        lead: lead,
+        applicant: applicant._id,
+    });
     const response = await newApplication.save();
 
-    const employee = await Employee.findOne({ _id: screenerId });
     const logs = await postLogs(
         lead._id,
         "LEAD APPROVED. TRANSFERED TO CREDIT MANAGER",
@@ -587,4 +624,106 @@ export const approveLead = asyncHandler(async (req, res) => {
 
     // Send the approved lead as a JSON response
     return res.json({ response, logs }); // This is a successful response
+});
+
+// @desc verify email
+// @route PATCH /api/verify/email/:id
+// @access Private
+export const emailVerify = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const lead = await Lead.findById(id);
+
+    if (lead.screenerId.toString() !== req.employee._id.toString()) {
+        res.status(401);
+        throw new Error("You are not authorized!!");
+    }
+
+    if (lead.isEmailVerified) {
+        res.json({ success: false, message: "Email is already verified!!" });
+    }
+
+    const otp = generateRandomNumber();
+    const otpExpiry = new Date(Date.now() + 15 * 60 * 1000); // Calculate expiry time
+
+    lead.emailOtp = otp;
+    lead.emailOtpExpiredAt = otpExpiry;
+    await lead.save();
+
+    if (!lead) {
+        res.status(404);
+        throw new Error("No lead found!!");
+    }
+
+    // Perform the email API request or other actions here
+    const response = await sendEmail(
+        req.employee.email,
+        lead.personalEmail,
+        `${lead.fName} ${lead.mName} ${lead.lName}`,
+        "Email Verfication",
+        otp
+    );
+
+    res.json({ message: response.message });
+});
+
+// @desc Verify email OTP
+// @route PATCH /api/verify/email-otp/:id
+// @access Private
+export const verifyEmailOtp = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { otp } = req.body;
+
+    const lead = await Lead.findById(id);
+
+    if (!lead) {
+        res.status(404);
+        throw new Error("Lead not found!!!");
+    }
+
+    if (lead.screenerId.toString() !== req.employee._id.toString()) {
+        res.status(401);
+        throw new Error("You are not authorized!!");
+    }
+
+    // Check if the OTP has expired
+    const currentTime = new Date();
+    if (currentTime > lead.emailOtpExpiredAt) {
+        res.status(400);
+        throw new Error("OTP has expired");
+    }
+
+    // Check if the OTP matches
+    if (lead.emailOtp !== otp) {
+        res.status(400);
+        throw new Error("Invalid OTP");
+    }
+    lead.isEmailVerified = true;
+    await lead.save();
+
+    res.json({
+        success: true,
+        message: "Email is now verified.",
+    });
+});
+
+// @desc Fetch CIBIL
+// @route GET /api/verify/equifax/:id
+// @access Private
+export const fetchCibil = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const lead = await Lead.findById(id);
+    if (!lead) {
+        res.status(404);
+        throw new Error("Lead not found!!!");
+    }
+
+    if (lead.screenerId.toString() !== req.employee._id.toString()) {
+        res.status(404);
+        throw new Error(
+            "You are not authorized to fetch CIBIL for this lead!!!"
+        );
+    }
+
+    const response = await equifax();
+    res.json({ success: true, value: response });
 });

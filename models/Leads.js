@@ -50,9 +50,6 @@ const leadSchema = new mongoose.Schema(
             type: Number,
             required: true,
         },
-        noOfLoans: {
-            type: Number,
-        },
         salary: {
             type: Number,
             required: true,
@@ -80,6 +77,17 @@ const leadSchema = new mongoose.Schema(
         heldBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Employee",
+        },
+        // phoneOtp: Number,
+        // isPhoneVerified: {
+        //     type: Boolean,
+        //     default: false,
+        // },
+        emailOtp: Number,
+        emailOtpExpiredAt: { type: Date },
+        isEmailVerified: {
+            type: Boolean,
+            default: false,
         },
         isRejected: {
             type: Boolean,
@@ -120,6 +128,7 @@ const leadSchema = new mongoose.Schema(
             type: String,
             required: true,
             enum: ["website", "bulk", "landingPage"],
+            default: "website",
         },
     },
     { timestamps: true }
