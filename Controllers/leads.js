@@ -572,11 +572,6 @@ export const approveLead = asyncHandler(async (req, res) => {
         throw new Error("Lead is on hold, please unhold it first.");
     }
 
-    // Approve the lead by updating its status
-    lead.isApproved = true;
-    lead.approvedBy = screenerId;
-    await lead.save();
-
     const employee = await Employee.findOne({ _id: screenerId });
     const screenerName = `${employee?.fName} ${employee?.lName}`;
 
@@ -608,6 +603,11 @@ export const approveLead = asyncHandler(async (req, res) => {
         screenedBy: screenerName,
     };
     const applicant = await applicantDetails(details);
+
+    // Approve the lead by updating its status
+    lead.isApproved = true;
+    lead.approvedBy = screenerId;
+    await lead.save();
 
     const newApplication = new Application({
         lead: lead,
