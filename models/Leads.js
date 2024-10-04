@@ -31,6 +31,9 @@ const leadSchema = new mongoose.Schema(
             required: true,
             // unique: true,
         },
+        cibilScore: {
+            type: String,
+        },
         mobile: {
             type: Number,
             required: true,

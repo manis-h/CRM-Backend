@@ -20,10 +20,10 @@ async function fetchCibil() {
                 },
                 RequestBody: {
                     InquiryPurpose: "00",
-                    FirstName: "SWADESH",
-                    MiddleName: "RANJAN",
-                    LastName: "MISHRA",
-                    DOB: "1986-02-16",
+                    FirstName: "ABHAY",
+                    MiddleName: "RAJ",
+                    LastName: "CHAUHAN",
+                    DOB: "1993-10-18",
                     InquiryAddresses: [
                         {
                             seq: "1",
@@ -36,7 +36,7 @@ async function fetchCibil() {
                     InquiryPhones: [
                         {
                             seq: "1",
-                            Number: "9711946615",
+                            Number: "7727831882",
                             PhoneType: ["M"],
                         },
                     ],
@@ -44,7 +44,7 @@ async function fetchCibil() {
                         {
                             seq: "1",
                             IDType: "T",
-                            IDValue: "AVXPM1125G",
+                            IDValue: "AVZPC6217D",
                             Source: "Inquiry",
                         },
                         {
