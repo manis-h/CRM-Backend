@@ -1,28 +1,29 @@
 import axios from "axios";
+const apiKey = process.env.ZOHO_APIKEY;
 
 export const generateSenctionLetter = async (
-  subject,
-  letterheadUrl,
-  sanctionDate,
-  title,
-  fullname,
-  residenceAddress,
-  camDetails,
-  PORTAL_NAME,
-  PORTAL_URL,
-  acceptanceButton,
-  acceptanceButtonLink,
-  letterfooterUrl,
-  toEmail,
-  toName
+    subject,
+    letterheadUrl,
+    sanctionDate,
+    title,
+    fullname,
+    residenceAddress,
+    camDetails,
+    PORTAL_NAME,
+    acceptanceButton,
+    acceptanceButtonLink,
+    letterfooterUrl,
+    recipient
 ) => {
-  try {
-    if (!toEmail || !toName || !subject) {
-      throw new Error('Missing required fields: toEmail, toName, subject');
-    }
+    try {
+        if (!recipient || !fullname || !subject) {
+            throw new Error(
+                "Missing required fields: recipient, fullname, subject"
+            );
+        }
 
-    // Plain HTML email body using template literals
-    const htmlBody = `
+        // Plain HTML email body using template literals
+        const htmlBody = `
     <div style="font-family: Arial, Helvetica, sans-serif; line-height: 25px; font-size: 14px; border: solid 1px #ddd; padding: 10px;">
         <table width="667" border="0" align="center" style="padding: 0px 10px;">
             <tbody>
@@ -48,7 +49,9 @@ export const generateSenctionLetter = async (
                     <td>${residenceAddress}</td>
                 </tr>
                 <tr>
-                    <td><strong>Contact No. :</strong> +91-${camDetails?.mobile}</td>
+                    <td><strong>Contact No. :</strong> +91-${
+                        camDetails?.mobile
+                    }</td>
                 </tr>
                 <tr>
                     <td colspan="2">Thank you for showing your interest in ${PORTAL_NAME}.</td>
@@ -68,11 +71,15 @@ export const generateSenctionLetter = async (
                                 </tr>
                                 <tr>
                                     <td bgcolor="#FFFFFF"><strong>Sanctioned Loan Amount (Rs.)</strong></td>
-                                    <td bgcolor="#FFFFFF">${new Intl.NumberFormat().format(camDetails?.loan_recommended)} /-</td>
+                                    <td bgcolor="#FFFFFF">${new Intl.NumberFormat().format(
+                                        camDetails?.loan_recommended
+                                    )} /-</td>
                                 </tr>
                                 <tr>
                                     <td bgcolor="#FFFFFF"><strong>Rate of Interest (%) per day</strong></td>
-                                    <td bgcolor="#FFFFFF">${camDetails?.roi}</td>
+                                    <td bgcolor="#FFFFFF">${
+                                        camDetails?.roi
+                                    }</td>
                                 </tr>
                                 <!-- Other rows go here -->
                             </tbody>
@@ -101,28 +108,35 @@ export const generateSenctionLetter = async (
     </div>
     `;
 
-    // Setup the options for the ZeptoMail API
-    const options = {
-      method: 'POST',
-      url: 'https://api.zeptomail.in/v1.1/email',
-      headers: {
-        accept: 'application/json',
-        authorization: 'Zoho-enczapikey PHtE6r1eFL/rjzF68UcBsPG/Q8L1No16/b5jKgkU44hBCPMFS00Eo49/xjO/ohkqU6JBRqTJy45v572e4u/TcWflNm1JWGqyqK3sx/VYSPOZsbq6x00etVkdd03eVoLue95s0CDfv9fcNA==',
-        'cache-control': 'no-cache',
-        'content-type': 'application/json',
-      },
-      data: JSON.stringify({
-        from: { address: 'badal@only1loan.com' },
-        to: [{ email_address: { address: toEmail, name: toName } }],
-        subject: subject,
-        htmlbody: htmlBody,
-      }),
-    };
+        // Setup the options for the ZeptoMail API
+        const options = {
+            method: "POST",
+            url: "https://api.zeptomail.in/v1.1/email",
+            headers: {
+                accept: "application/json",
+                authorization: apiKey,
+                "cache-control": "no-cache",
+                "content-type": "application/json",
+            },
+            data: JSON.stringify({
+                from: { address: "info@only1loan.com" },
+                to: [{ email_address: { address: recipient, name: fullname } }],
+                subject: subject,
+                htmlbody: htmlBody,
+            }),
+        };
 
-    // Make the request to the ZeptoMail API
-    const response = await axios(options);
-    return { success: true, message: 'Email sent successfully', response: response.data };
-  } catch (error) {
-    return { success: false, message: `"Error in ZeptoMail API" ${error.message}` };
-  }
+        // Make the request to the ZeptoMail API
+        const response = await axios(options);
+        return {
+            success: true,
+            message: "Email sent successfully",
+            response: response.data,
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message: `"Error in ZeptoMail API" ${error.message}`,
+        };
+    }
 };
