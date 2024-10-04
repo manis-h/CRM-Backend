@@ -4,7 +4,11 @@ import {
     verifyAadhaarDetailsWithOtpAndRequestId,
 } from "../Controllers/getAadhaar.js";
 import { getPanController } from "../Controllers/getPanController.js";
-import { emailVerify, verifyEmailOtp } from "../Controllers/leads.js";
+import {
+    emailVerify,
+    verifyEmailOtp,
+    fetchCibil,
+} from "../Controllers/leads.js";
 import { protect } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
@@ -19,4 +23,6 @@ router.patch("/email-otp/:id", protect, verifyEmailOtp);
 // pan verify
 router.post("/pan/:id", getPanController);
 
+// fetch CIBIL
+router.get("/equifax/:id", protect, fetchCibil);
 export default router;
