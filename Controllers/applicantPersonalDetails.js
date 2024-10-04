@@ -59,24 +59,48 @@ export const updateApplicantDetails = asyncHandler(async (req, res) => {
         throw new Error("Applicant not found!");
     }
 
-    // Similar approach for residence, employment, or reference if provided
+    // Update residence if provided
     if (updates.residence) {
-        Object.keys(updates.residence).forEach((key) => {
-            applicant.residence[key] = updates.residence[key];
-        });
+        applicant.residence = {
+            ...applicant.residence, // Retain existing data
+            ...updates.residence, // Merge with new data
+        };
     }
 
+    // Update employment if provided
     if (updates.employment) {
-        Object.keys(updates.employment).forEach((key) => {
-            applicant.employment[key] = updates.employment[key];
-        });
+        applicant.employment = {
+            ...applicant.employment, // Retain existing data
+            ...updates.employment, // Merge with new data
+        };
     }
 
+    // Update reference if provided
     if (updates.reference) {
-        Object.keys(updates.reference).forEach((key) => {
-            applicant.reference[key] = updates.reference[key];
-        });
+        applicant.reference = {
+            ...applicant.reference, // Retain existing data
+            ...updates.reference, // Merge with new data
+        };
     }
+
+    // Similar approach for residence, employment, or reference if provided
+    // if (updates.residence) {
+    //     Object.keys(updates.residence).forEach((key) => {
+    //         applicant.residence[key] = updates.residence[key];
+    //     });
+    // }
+
+    // if (updates.employment) {
+    //     Object.keys(updates.employment).forEach((key) => {
+    //         applicant.employment[key] = updates.employment[key];
+    //     });
+    // }
+
+    // if (updates.reference) {
+    //     Object.keys(updates.reference).forEach((key) => {
+    //         applicant.reference[key] = updates.reference[key];
+    //     });
+    // }
 
     // Save the updated applicant
     const updatedApplicant = await applicant.save();

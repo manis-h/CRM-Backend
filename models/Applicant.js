@@ -14,7 +14,7 @@ const personalDetailsSchema = new mongoose.Schema(
         },
         gender: { type: String, required: true, enum: ["M", "F"] },
         dob: {
-            type: String,
+            type: Date,
             required: true,
         },
         mobile: { type: Number, required: true, unique: true },
@@ -64,7 +64,7 @@ const residenceSchema = new mongoose.Schema({
         required: true,
     },
     pincode: {
-        type: Number,
+        type: String,
         required: true,
     },
     residingSince: {
@@ -91,7 +91,7 @@ const employmentDetailsSchema = new mongoose.Schema({
         required: true,
     },
     pincode: {
-        type: Number,
+        type: String,
         required: true,
     },
     department: {
@@ -118,26 +118,29 @@ const referenceSchema = new mongoose.Schema({
         required: true,
     },
     mobile: {
-        type: Number,
+        type: String,
         required: true,
     },
 });
 
-const applicantSchema = new mongoose.Schema({
-    personalDetails: {
-        type: personalDetailsSchema,
-        required: true,
+const applicantSchema = new mongoose.Schema(
+    {
+        personalDetails: {
+            type: personalDetailsSchema,
+            required: true,
+        },
+        residence: {
+            type: residenceSchema,
+        },
+        employment: {
+            type: employmentDetailsSchema,
+        },
+        reference: {
+            type: referenceSchema,
+        },
     },
-    residence: {
-        type: residenceSchema,
-    },
-    employment: {
-        type: employmentDetailsSchema,
-    },
-    reference: {
-        type: referenceSchema,
-    },
-});
+    { timestamps: true }
+);
 
 const Applicant = mongoose.model("Applicant", applicantSchema);
 export default Applicant;

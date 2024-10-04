@@ -6,7 +6,7 @@ import {
     addApplicantBankDetails,
     getApplicantBankDetails,
 } from "../Controllers/applicantPersonalDetails.js";
-import { protect, admin } from "../middleware/authMiddleware.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 router
     .route("/:id")
