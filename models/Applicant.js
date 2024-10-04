@@ -17,9 +17,9 @@ const personalDetailsSchema = new mongoose.Schema(
             type: Date,
             required: true,
         },
-        mobile: { type: Number, required: true, unique: true },
+        mobile: { type: String, required: true, unique: true },
         alternateMobile: {
-            type: Number,
+            type: String,
             unique: true,
         },
         personalEmail: {

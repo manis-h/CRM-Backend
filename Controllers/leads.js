@@ -712,6 +712,14 @@ export const verifyEmailOtp = asyncHandler(async (req, res) => {
 export const fetchCibil = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const lead = await Lead.findById(id);
+
+    // Replace all '/' with '-'
+    const normalizedDate = lead.dob.replace(/\//g, "-");
+
+    // Split the date string by the "-" character
+    const [day, month, year] = normalizedDate.split("-");
+    const dob = `${year}-${month}-${day}`;
+
     if (!lead) {
         res.status(404);
         throw new Error("Lead not found!!!");
@@ -725,7 +733,14 @@ export const fetchCibil = asyncHandler(async (req, res) => {
     }
 
     if (!lead.cibilScore) {
-        const response = await equifax();
+        const response = await equifax(
+            lead?.fName,
+            lead?.mName,
+            lead?.lName,
+            lead?.pan,
+            dob,
+            lead?.mobile
+        );
         lead.cibilScore = response;
         await lead.save();
 
