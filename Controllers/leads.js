@@ -572,11 +572,6 @@ export const approveLead = asyncHandler(async (req, res) => {
         throw new Error("Lead is on hold, please unhold it first.");
     }
 
-    // Approve the lead by updating its status
-    lead.isApproved = true;
-    lead.approvedBy = screenerId;
-    await lead.save();
-
     const employee = await Employee.findOne({ _id: screenerId });
     const screenerName = `${employee?.fName} ${employee?.lName}`;
 
@@ -608,6 +603,11 @@ export const approveLead = asyncHandler(async (req, res) => {
         screenedBy: screenerName,
     };
     const applicant = await applicantDetails(details);
+
+    // Approve the lead by updating its status
+    lead.isApproved = true;
+    lead.approvedBy = screenerId;
+    await lead.save();
 
     const newApplication = new Application({
         lead: lead,
@@ -712,6 +712,14 @@ export const verifyEmailOtp = asyncHandler(async (req, res) => {
 export const fetchCibil = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const lead = await Lead.findById(id);
+
+    // Replace all '/' with '-'
+    const normalizedDate = lead.dob.replace(/\//g, "-");
+
+    // Split the date string by the "-" character
+    const [day, month, year] = normalizedDate.split("-");
+    const dob = `${year}-${month}-${day}`;
+
     if (!lead) {
         res.status(404);
         throw new Error("Lead not found!!!");
@@ -725,7 +733,14 @@ export const fetchCibil = asyncHandler(async (req, res) => {
     }
 
     if (!lead.cibilScore) {
-        const response = await equifax();
+        const response = await equifax(
+            lead?.fName,
+            lead?.mName,
+            lead?.lName,
+            lead?.pan,
+            dob,
+            lead?.mobile
+        );
         lead.cibilScore = response;
         await lead.save();
 

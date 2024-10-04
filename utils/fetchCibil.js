@@ -1,6 +1,13 @@
 import axios from "axios";
 
-async function fetchCibil() {
+async function fetchCibil(
+    fName = "",
+    mName = "",
+    lName = "",
+    pan = "",
+    dob = "",
+    mobile = ""
+) {
     try {
         const options = {
             method: "POST",
@@ -20,10 +27,10 @@ async function fetchCibil() {
                 },
                 RequestBody: {
                     InquiryPurpose: "00",
-                    FirstName: "ABHAY",
-                    MiddleName: "RAJ",
-                    LastName: "CHAUHAN",
-                    DOB: "1993-10-18",
+                    FirstName: `${fName}`,
+                    MiddleName: `${mName}`,
+                    LastName: `${lName}`,
+                    DOB: `${dob}`,
                     InquiryAddresses: [
                         {
                             seq: "1",
@@ -36,7 +43,7 @@ async function fetchCibil() {
                     InquiryPhones: [
                         {
                             seq: "1",
-                            Number: "7727831882",
+                            Number: `${mobile}`,
                             PhoneType: ["M"],
                         },
                     ],
@@ -44,7 +51,7 @@ async function fetchCibil() {
                         {
                             seq: "1",
                             IDType: "T",
-                            IDValue: "AVZPC6217D",
+                            IDValue: `${pan}`,
                             Source: "Inquiry",
                         },
                         {
