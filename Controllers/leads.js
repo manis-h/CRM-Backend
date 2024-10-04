@@ -701,6 +701,6 @@ export const verifyEmailOtp = asyncHandler(async (req, res) => {
 
     res.json({
         success: true,
-        message: "OTP verified successfully, email is now verified",
+        message: "Email is now verified.",
     });
 });

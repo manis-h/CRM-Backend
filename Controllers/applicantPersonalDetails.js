@@ -9,7 +9,6 @@ import { postLogs } from "./leads.js";
 // @access Private
 export const applicantDetails = async (details = null) => {
     try {
-        console.log(details);
         // Create the new log initally
         const newApplicant = await Applicant.create({
             personalDetails: {
