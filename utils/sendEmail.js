@@ -1,5 +1,7 @@
 import axios from "axios";
 
+const apiKey = process.env.ZOHO_APIKEY;
+
 async function sendEmail(sender, recipient, recipientName, subject, otp) {
     try {
         const options = {
@@ -7,12 +9,12 @@ async function sendEmail(sender, recipient, recipientName, subject, otp) {
             url: "https://api.zeptomail.in/v1.1/email",
             headers: {
                 accept: "application/json",
-                authorization: process.env.ZOHO_APIKEY,
+                authorization: apiKey,
                 "cache-control": "no-cache",
                 "content-type": "application/json",
             },
             data: JSON.stringify({
-                from: { address: `${sender}` },
+                from: { address: "info@only1loan.com" },
                 to: [
                     {
                         email_address: {
@@ -27,6 +29,7 @@ async function sendEmail(sender, recipient, recipientName, subject, otp) {
         };
 
         const response = await axios(options);
+
         return response.data;
     } catch (error) {
         console.log(error);
