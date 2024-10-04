@@ -724,6 +724,12 @@ export const fetchCibil = asyncHandler(async (req, res) => {
         );
     }
 
-    const response = await equifax();
-    res.json({ success: true, value: response });
+    if (!lead.cibilScore) {
+        const response = await equifax();
+        lead.cibilScore = response;
+        await lead.save();
+
+        return res.json({ success: true, value: response });
+    }
+    return res.json({ success: true, value: lead.cibilScore });
 });
