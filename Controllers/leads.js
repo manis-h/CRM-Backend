@@ -6,6 +6,7 @@ import LogHistory from "../models/LeadLogHistory.js";
 import { applicantDetails } from "./applicantPersonalDetails.js";
 import sendEmail from "../utils/sendEmail.js";
 import generateRandomNumber from "../utils/generateRandomNumbers.js";
+import equifax from "../utils/fetchCIBIL.js";
 
 // @desc Create loan leads
 // @route POST /api/leads
@@ -703,4 +704,26 @@ export const verifyEmailOtp = asyncHandler(async (req, res) => {
         success: true,
         message: "Email is now verified.",
     });
+});
+
+// @desc Fetch CIBIL
+// @route GET /api/verify/equifax/:id
+// @access Private
+export const fetchCibil = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const lead = await Lead.findById(id);
+    if (!lead) {
+        res.status(404);
+        throw new Error("Lead not found!!!");
+    }
+
+    if (lead.screenerId.toString() !== req.employee._id.toString()) {
+        res.status(404);
+        throw new Error(
+            "You are not authorized to fetch CIBIL for this lead!!!"
+        );
+    }
+
+    const response = await equifax();
+    res.json({ success: true, value: response });
 });
