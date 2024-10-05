@@ -1,9 +1,6 @@
 import express from "express";
-import {
-    postAadhaarNoForOtp,
-    verifyAadhaarDetailsWithOtpAndRequestId,
-} from "../Controllers/getAadhaar.js";
-import { getPanController } from "../Controllers/getPanController.js";
+import { aadhaarOtp, verifyAadhaar } from "../Controllers/aadhaarController.js";
+import { getPanDetails, panAadhaarLink } from "../Controllers/panController.js";
 import {
     emailVerify,
     verifyEmailOtp,
@@ -13,15 +10,16 @@ import { protect } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 // aadhaar verify
-router.post("/aadhaar", postAadhaarNoForOtp);
-router.post("/otp", verifyAadhaarDetailsWithOtpAndRequestId);
+router.post("/aadhaar/:id", aadhaarOtp);
+router.post("/aadhaar-otp/:trx_id", verifyAadhaar);
 
 // email verify
 router.patch("/email/:id", protect, emailVerify);
 router.patch("/email-otp/:id", protect, verifyEmailOtp);
 
 // pan verify
-router.post("/pan/:id", getPanController);
+router.post("/pan/:id", getPanDetails);
+router.post("/pan-aadhaar-link/:id", panAadhaarLink);
 
 // fetch CIBIL
 router.get("/equifax/:id", protect, fetchCibil);

@@ -544,12 +544,72 @@ export const viewLeadLogs = asyncHandler(async (req, res) => {
     res.json(leadDetails);
 });
 
+const checkLeadApproval = async (lead, screenerId) => {
+    try {
+        if (lead.screenerId.toString() !== screenerId) {
+            return {
+                approved: false,
+                message: "You are not authorized to approve this lead!!",
+            };
+        }
+        // Check if the lead has been rejected
+        if (!lead.screenerId) {
+            res.status(400);
+            throw new Error(
+                "Lead has to be allocated to a screener first for investigation."
+            );
+        }
+        if (lead.isRejected) {
+            res.status(400);
+            throw new Error("Lead has been rejected and cannot be approved.");
+        }
+        if (lead.isHold) {
+            res.status(400);
+            throw new Error("Lead is on hold, please unhold it first.");
+        }
+
+        if (!lead.isEmailVerified) {
+            return { approved: false, message: "Email is not verified!!" };
+        }
+
+        if (!lead.cibilScore) {
+            return { approved: false, message: "CIBIL score is missing!!" };
+        }
+
+        const requiredDocs = [
+            "aadhaarFront",
+            "aadhaarBack",
+            "panCard",
+            "bankStatement",
+            "salarySlip",
+        ];
+
+        // Check if all the required documents are present
+        const uploadedDocs = lead.document.map((doc) => doc.type);
+        const missingDocs = requiredDocs.filter(
+            (docType) => !uploadedDocs.includes(docType)
+        );
+
+        if (missingDocs.length > 0) {
+            return {
+                approved: false,
+                message: `Missing documents: ${missingDocs.join(", ")}`,
+            };
+        }
+        // If all checks pass, approve the lead
+        return { approved: true, message: "Lead can be approved" };
+    } catch (error) {
+        console.error("Error checking lead approval:", error);
+        return { approved: false, message: "Error while checking approval" };
+    }
+};
+
 // @desc Approve the lead
 // @route Patch /api/lead/approve/:id
 // @access Private
 export const approveLead = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const screenerId = req.screener._id.toString();
+    const screenerId = req.employee._id.toString();
 
     // Find the lead by its ID
     const lead = await Lead.findById(id);
@@ -558,18 +618,11 @@ export const approveLead = asyncHandler(async (req, res) => {
         throw new Error("Lead not found"); // This error will be caught by the error handler
     }
 
-    // Check if the lead has been rejected
-    if (!lead.screenerId) {
+    const result = checkLeadApproval(lead, screenerId);
+
+    if (!result.approved) {
         res.status(400);
-        throw new Error(
-            "Lead has to be allocated to a screener first for investigation."
-        );
-    } else if (lead.isRejected) {
-        res.status(400);
-        throw new Error("Lead has been rejected and cannot be approved.");
-    } else if (lead.isHold) {
-        res.status(400);
-        throw new Error("Lead is on hold, please unhold it first.");
+        throw new Error(`${result.message}`);
     }
 
     const employee = await Employee.findOne({ _id: screenerId });

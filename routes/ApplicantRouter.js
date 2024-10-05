@@ -3,7 +3,7 @@ const router = express.Router();
 import {
     updateApplicantDetails,
     getApplicantDetails,
-    addApplicantBankDetails,
+    addOrUpdateApplicantBankDetails,
     getApplicantBankDetails,
 } from "../Controllers/applicantPersonalDetails.js";
 import { protect } from "../middleware/authMiddleware.js";
@@ -16,6 +16,6 @@ router
 router
     .route("/bankDetails/:id")
     .get(protect, getApplicantBankDetails)
-    .post(protect, addApplicantBankDetails);
+    .patch(protect, addOrUpdateApplicantBankDetails);
 
 export default router;
