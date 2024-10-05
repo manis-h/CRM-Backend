@@ -5,6 +5,7 @@ const bankSchema = new mongoose.Schema(
         borrowerId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "ApplicationPersonalDetails",
+            unique: true,
         },
         bankName: {
             type: String,
@@ -17,6 +18,7 @@ const bankSchema = new mongoose.Schema(
         bankAccNo: {
             type: String,
             required: true,
+            unique: true,
         },
         ifscCode: {
             type: String,
