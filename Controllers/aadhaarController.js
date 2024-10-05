@@ -29,10 +29,10 @@ export const aadhaarOtp = asyncHandler(async (req, res) => {
 });
 
 // @desc Verify Aadhaar OTP to fetch Aadhaar details
-// @route POST /api/verify/aaadhaar-otp/:id
+// @route PATCH /api/verify/aaadhaar-otp/:id
 // @access Private
 export const verifyAadhaar = asyncHandler(async (req, res) => {
-    const { trx_id } = req.params;
+    const { id, trx_id } = req.query;
     const { otp } = req.body;
 
     // Check if both OTP and request ID are provided
@@ -52,6 +52,13 @@ export const verifyAadhaar = asyncHandler(async (req, res) => {
         res.status(response.response_code);
         throw new Error(response.response_message);
     }
+
+    await Lead.findByIdAndUpdate(
+        id,
+        { isPhoneVerified: true, isAadhaarVerified: true },
+        { new: true }
+    );
+
     const details = response.result;
     const name = details.name.split(" ");
     const aadhaar_number = details.aadhaar_number.slice(-4);
