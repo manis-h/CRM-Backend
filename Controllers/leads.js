@@ -767,11 +767,7 @@ export const fetchCibil = asyncHandler(async (req, res) => {
     const lead = await Lead.findById(id);
 
     // Replace all '/' with '-'
-    const normalizedDate = lead.dob.replace(/\//g, "-");
-
-    // Split the date string by the "-" character
-    const [day, month, year] = normalizedDate.split("-");
-    const dob = `${year}-${month}-${day}`;
+    const normalizedDob = lead.dob.replace(/\//g, "-");
 
     if (!lead) {
         res.status(404);
@@ -791,7 +787,7 @@ export const fetchCibil = asyncHandler(async (req, res) => {
             lead?.mName,
             lead?.lName,
             lead?.pan,
-            dob,
+            normalizedDob,
             lead?.mobile
         );
         lead.cibilScore = response;

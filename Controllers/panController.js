@@ -31,6 +31,8 @@ export const getPanDetails = asyncHandler(async (req, res) => {
     // Call the get panDetails Function
     const panDetails = await panVerify(pan);
 
+    await Lead.findByIdAndUpdate(id, { isPanVerified: true }, { new: true });
+
     if (existingPan) {
         res.json({
             success: panDetails.success,
@@ -49,7 +51,7 @@ export const getPanDetails = asyncHandler(async (req, res) => {
     // Now respond with status 200 with JSON success true
     return res.json({
         success: true,
-        message: "Pan fetched successfully.",
+        message: "Pan verified successfully.",
         data: panDetails,
     });
 });

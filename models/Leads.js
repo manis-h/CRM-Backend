@@ -81,13 +81,14 @@ const leadSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Employee",
         },
-        // phoneOtp: Number,
-        // isPhoneVerified: {
-        //     type: Boolean,
-        //     default: false,
-        // },
+        isPhoneVerified: {
+            type: Boolean,
+            default: false,
+        },
         emailOtp: Number,
         emailOtpExpiredAt: { type: Date },
+        isAadhaarVerified: { type: Boolean, default: false },
+        isPanVerified: { type: Boolean, default: false },
         isEmailVerified: {
             type: Boolean,
             default: false,
