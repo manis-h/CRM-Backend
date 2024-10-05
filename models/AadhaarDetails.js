@@ -2,13 +2,18 @@ import mongoose from "mongoose";
 
 const aadhaarSchema = new mongoose.Schema(
     {
+        uniqueId: {
+            type: String,
+            required: true,
+            unique: true,
+        },
         details: {
             type: Object,
-            required: true, // Correct spelling
+            required: true,
         },
     },
     { timestamps: true }
 );
 
-const AadharDetails = mongoose.model("AadharDetails", aadhaarSchema);
-export default AadharDetails;
+const AadhaarDetails = mongoose.model("AadhaarDetails", aadhaarSchema);
+export default AadhaarDetails;

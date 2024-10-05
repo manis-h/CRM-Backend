@@ -15,7 +15,7 @@ export async function panVerify(pan) {
             },
         }
     );
-    console.log(response);
+    return response.data;
 }
 
 export async function panAadhaarLinkage(pan, aadhaar) {
@@ -35,6 +35,5 @@ export async function panAadhaarLinkage(pan, aadhaar) {
             },
         }
     );
-
-    console.log(response);
+    return response;
 }

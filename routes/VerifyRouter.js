@@ -10,7 +10,7 @@ import { protect } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 // aadhaar verify
-router.post("/aadhaar/:id", aadhaarOtp);
+router.get("/aadhaar/:id", aadhaarOtp);
 router.post("/aadhaar-otp/:trx_id", verifyAadhaar);
 
 // email verify
@@ -18,7 +18,7 @@ router.patch("/email/:id", protect, emailVerify);
 router.patch("/email-otp/:id", protect, verifyEmailOtp);
 
 // pan verify
-router.post("/pan/:id", getPanDetails);
+router.get("/pan/:id", getPanDetails);
 router.post("/pan-aadhaar-link/:id", panAadhaarLink);
 
 // fetch CIBIL

@@ -25,20 +25,20 @@ export const generateAadhaarOtp = async (aadhaar) => {
 
 export const verifyAadhaarOtp = async (otp, trx_id) => {
     const data = { otp: `${otp}`, trx_id: `${trx_id}` };
-    const config = {
-        method: "post",
-        url: "https://www.timbleglance.com/api/aadhaar_result_okyc/",
-        headers: {
-            "api-key": process.env.TIMBLE_APIKEY,
-            "app-id": process.env.TIMBLE_APPID,
-            "Content-Type": "application/json",
-        },
-        data,
-    };
     try {
-        const response = await axios.request(config);
+        const response = await axios.post(
+            "https://www.timbleglance.com/api/aadhaar_result_okyc/",
+            data,
+            {
+                headers: {
+                    "api-key": process.env.TIMBLE_APIKEY,
+                    "app-id": process.env.TIMBLE_APPID,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
         return response.data; // Return the response data
     } catch (error) {
-        throw new Error(error.response?.data?.message || "An error occurred");
+        throw new Error(error?.data?.response_message || "An error occurred");
     }
 };
