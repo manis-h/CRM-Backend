@@ -26,8 +26,18 @@ export const getPanDetails = asyncHandler(async (req, res) => {
         throw new Error({ success: false, message: "Invalid PAN!!!" });
     }
 
+    const existingPan = await PanDetails.findOne({ "data.input_pan_num": pan });
+
     // Call the get panDetails Function
     const panDetails = await panVerify(pan);
+
+    if (existingPan) {
+        res.json({
+            success: panDetails.success,
+            code: panDetails.response_code,
+            message: panDetails.response_message,
+        });
+    }
 
     // Now save the data in the AadharDetails database
     const newpanDetail = new PanDetails({
