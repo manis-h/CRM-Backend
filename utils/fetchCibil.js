@@ -8,6 +8,8 @@ async function fetchCibil(
     dob = "",
     mobile = ""
 ) {
+    console.log(fName, mName, lName, pan, dob, mobile);
+
     try {
         const data = {
             RequestHeader: {
@@ -21,10 +23,10 @@ async function fetchCibil(
             },
             RequestBody: {
                 InquiryPurpose: "00",
-                FirstName: "ABHAY",
-                MiddleName: "RAJ",
-                LastName: "CHAUHAN",
-                DOB: "1993-10-18",
+                FirstName: fName,
+                MiddleName: mName,
+                LastName: lName,
+                DOB: dob,
                 InquiryAddresses: [
                     {
                         seq: "1",
@@ -37,7 +39,7 @@ async function fetchCibil(
                 InquiryPhones: [
                     {
                         seq: "1",
-                        Number: "7727831882",
+                        Number: mobile,
                         PhoneType: ["M"],
                     },
                 ],
@@ -45,7 +47,7 @@ async function fetchCibil(
                     {
                         seq: "1",
                         IDType: "T",
-                        IDValue: "AVZPC6217D",
+                        IDValue: pan,
                         Source: "Inquiry",
                     },
                     {
@@ -107,6 +109,8 @@ async function fetchCibil(
                 },
             ],
         };
+
+        const stringifiedData = JSON.stringify(data, null, 4);
 
         // = {
         //     RequestHeader: {
@@ -207,25 +211,28 @@ async function fetchCibil(
         //     ],
         // };
 
-        console.log("data");
+        // const response = await fetch(
+        //     "https://ists.equifax.co.in/cir360service/cir360report",
+        //     {
+        //         method: "POST", // Specify the method as POST
+        //         headers: {
+        //             "Content-Type": "application/json", // Specify the content type
+        //         },
+        //         body: JSON.stringify(data), // Convert data object to JSON string
+        //     }
+        // );
 
-        const response = await axios
-            .post(
-                "https://ists.equifax.co.in/cir360service/cir360report",
-                data,
-                {
-                    headers: {
-                        "content-type": "application/json",
-                    },
-                }
-            )
-            .then((res) => console.log({ res }));
-        console.log({ response });
-        const value =
-            response.data?.CCRResponse?.CIRReportDataLst[0]?.CIRReportData
-                ?.ScoreDetails[0]?.Value;
+        const response = await axios.post(
+            "https://ists.equifax.co.in/cir360service/cir360report",
+            stringifiedData,
+            {
+                headers: {
+                    "Content-type": "application/json",
+                },
+            }
+        );
 
-        return value;
+        return response;
     } catch (error) {
         throw new Error("Error fetching CIBIL", error.message);
     }

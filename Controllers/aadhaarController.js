@@ -56,13 +56,21 @@ export const verifyAadhaar = asyncHandler(async (req, res) => {
         throw new Error(response.response_message);
     }
 
-    await Lead.findByIdAndUpdate(
-        id,
-        { isPhoneVerified: true, isAadhaarVerified: true },
-        { new: true }
-    );
-
     const details = response.result;
+    // Respond with a success message
+    return res.json({
+        success: true,
+        details,
+    });
+});
+
+// @desc Save aadhaar details once verified
+// @route POST /api/verify/aadhaar/:id
+// @access Private
+export const saveAadhaarDetails = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { details } = req.body;
+
     const name = details.name.split(" ");
     const aadhaar_number = details.aadhaar_number.slice(-4);
     const uniqueId = `${name[0]}${aadhaar_number}`;
@@ -72,22 +80,30 @@ export const verifyAadhaar = asyncHandler(async (req, res) => {
     });
 
     if (existingAadhaar) {
+        await Lead.findByIdAndUpdate(
+            id,
+            { isMobileVerified: true, isAadhaarVerified: true },
+            { new: true }
+        );
         return res.json({
-            status: response.status,
-            code: response.response_code,
-            message: response.response_message,
+            success: true,
+            details,
         });
     }
 
+    await Lead.findByIdAndUpdate(
+        id,
+        { isMobileVerified: true, isAadhaarVerified: true },
+        { new: true }
+    );
+
     // Save Aaadhaar details in AadharDetails model
-    const aadhaar = await AadhaarDetails.create({
+    await AadhaarDetails.create({
         uniqueId,
         details,
     });
-
-    // Respond with a success message
     return res.json({
         success: true,
-        aadhaar,
+        details,
     });
 });

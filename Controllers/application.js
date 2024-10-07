@@ -3,6 +3,7 @@ import Application from "../models/Applications.js";
 import Employee from "../models/Employees.js";
 import { postLogs } from "./leads.js";
 import { applicantDetails } from "./applicantPersonalDetails.js";
+import { checkApproval } from "../utils/checkApproval.js";
 
 // @desc Get all applications
 // @route GET /api/applications
@@ -373,59 +374,6 @@ export const getRejectedApplication = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc Approve the Application
-// @route Patch /api/applications/approve/:id
-// @access Private
-export const approveApplication = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const creditManagerId = req.creditManager._id.toString();
-
-    // Find the application by its ID
-    const application = await Application.findById(id);
-
-    if (!application) {
-        throw new Error("Application not found"); // This error will be caught by the error handler
-    }
-
-    // Check if the lead has been rejected
-    if (!application.creditManagerId) {
-        res.status(400);
-        throw new Error(
-            "Application has to be allocated to a credit manager first for investigation."
-        );
-    } else if (application.isRejected) {
-        res.status(400);
-        throw new Error(
-            "Application has been rejected and cannot be approved."
-        );
-    } else if (application.isHold) {
-        res.status(400);
-        throw new Error("Application is on hold, please unhold it first.");
-    }
-
-    // Approve the lead by updating its status
-    application.isApproved = true;
-    application.approvedBy = screenerId;
-    await application.save();
-
-    // const newApplication = new Application({ lead: lead });
-    // const response = await newApplication.save();
-
-    const employee = await Employee.findOne({ _id: creditManagerId });
-    const logs = await postLogs(
-        application.lead._id,
-        "APPLICATION APPROVED. TRANSFERED TO DISBURSAL",
-        `${application.lead.fName} ${application.lead.mName ?? ""} ${
-            application.lead.lName
-        }`,
-        `Application approved by ${employee.fName} ${employee.lName}`
-    );
-
-    // Send the approved lead as a JSON response
-    // return res.json(response, logs); // This is a successful response
-    return res.json(logs);
-});
-
 // @desc Add the Personal  Details to the Application By CreditManager
 // @route Post /api/applications/addPersonalDeatils/:id
 // @access Private
@@ -519,4 +467,57 @@ export const getApplicantPersonalDetails = asyncHandler(async (req, res) => {
             message: `There was an error while creating personal details: ${error.message}`,
         });
     }
+});
+
+// @desc Forward the Application to Sanction head
+// @route Patch /api/applications/forward/:id
+// @access Private
+export const forwardApplication = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const creditManagerId = req.creditManager._id.toString();
+
+    // Find the application by its ID
+    const application = await Application.findById(id);
+
+    if (!application) {
+        throw new Error("Application not found"); // This error will be caught by the error handler
+    }
+
+    // Check if the lead has been rejected
+    if (!application.creditManagerId) {
+        res.status(400);
+        throw new Error(
+            "Application has to be allocated to a credit manager first for investigation."
+        );
+    } else if (application.isRejected) {
+        res.status(400);
+        throw new Error(
+            "Application has been rejected and cannot be approved."
+        );
+    } else if (application.isHold) {
+        res.status(400);
+        throw new Error("Application is on hold, please unhold it first.");
+    }
+
+    // Approve the lead by updating its status
+    application.isForwarded = true;
+    application.forwardedBy = creditManagerId;
+    await application.save();
+
+    // const newApplication = new Application({ lead: lead });
+    // const response = await newApplication.save();
+
+    const employee = await Employee.findOne({ _id: creditManagerId });
+    const logs = await postLogs(
+        application.lead._id,
+        "APPLICATION FORWARDED. TRANSFERED TO SACNTION HEAD",
+        `${application.lead.fName} ${application.lead.mName ?? ""} ${
+            application.lead.lName
+        }`,
+        `Application forwarded by ${employee.fName} ${employee.lName}`
+    );
+
+    // Send the approved lead as a JSON response
+    // return res.json(response, logs); // This is a successful response
+    return res.json(logs);
 });

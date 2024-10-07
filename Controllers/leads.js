@@ -7,6 +7,7 @@ import { applicantDetails } from "./applicantPersonalDetails.js";
 import sendEmail from "../utils/sendEmail.js";
 import generateRandomNumber from "../utils/generateRandomNumbers.js";
 import equifax from "../utils/fetchCIBIL.js";
+import { checkApproval } from "../utils/checkApproval.js";
 
 // @desc Create loan leads
 // @route POST /api/leads
@@ -31,6 +32,7 @@ export const createLead = asyncHandler(async (req, res) => {
         city,
         source,
     } = req.body;
+
     const newLead = await Lead.create({
         fName,
         mName: mName ?? "",
@@ -39,8 +41,8 @@ export const createLead = asyncHandler(async (req, res) => {
         dob,
         aadhaar,
         pan,
-        mobile,
-        alternateMobile,
+        mobile: String(mobile),
+        alternateMobile: String(alternateMobile),
         personalEmail,
         officeEmail,
         loanAmount,
@@ -544,66 +546,6 @@ export const viewLeadLogs = asyncHandler(async (req, res) => {
     res.json(leadDetails);
 });
 
-const checkLeadApproval = async (lead, screenerId) => {
-    try {
-        if (lead.screenerId.toString() !== screenerId) {
-            return {
-                approved: false,
-                message: "You are not authorized to approve this lead!!",
-            };
-        }
-        // Check if the lead has been rejected
-        if (!lead.screenerId) {
-            res.status(400);
-            throw new Error(
-                "Lead has to be allocated to a screener first for investigation."
-            );
-        }
-        if (lead.isRejected) {
-            res.status(400);
-            throw new Error("Lead has been rejected and cannot be approved.");
-        }
-        if (lead.isHold) {
-            res.status(400);
-            throw new Error("Lead is on hold, please unhold it first.");
-        }
-
-        if (!lead.isEmailVerified) {
-            return { approved: false, message: "Email is not verified!!" };
-        }
-
-        if (!lead.cibilScore) {
-            return { approved: false, message: "CIBIL score is missing!!" };
-        }
-
-        const requiredDocs = [
-            "aadhaarFront",
-            "aadhaarBack",
-            "panCard",
-            "bankStatement",
-            "salarySlip",
-        ];
-
-        // Check if all the required documents are present
-        const uploadedDocs = lead.document.map((doc) => doc.type);
-        const missingDocs = requiredDocs.filter(
-            (docType) => !uploadedDocs.includes(docType)
-        );
-
-        if (missingDocs.length > 0) {
-            return {
-                approved: false,
-                message: `Missing documents: ${missingDocs.join(", ")}`,
-            };
-        }
-        // If all checks pass, approve the lead
-        return { approved: true, message: "Lead can be approved" };
-    } catch (error) {
-        console.error("Error checking lead approval:", error);
-        return { approved: false, message: "Error while checking approval" };
-    }
-};
-
 // @desc Approve the lead
 // @route Patch /api/lead/approve/:id
 // @access Private
@@ -618,7 +560,7 @@ export const approveLead = asyncHandler(async (req, res) => {
         throw new Error("Lead not found"); // This error will be caught by the error handler
     }
 
-    const result = checkLeadApproval(lead, screenerId);
+    const result = await checkApproval(lead, {}, screenerId, "");
 
     if (!result.approved) {
         res.status(400);
@@ -783,17 +725,26 @@ export const fetchCibil = asyncHandler(async (req, res) => {
 
     if (!lead.cibilScore) {
         const response = await equifax(
-            lead?.fName,
-            lead?.mName,
-            lead?.lName,
+            lead?.fName.toUpperCase(),
+            lead?.mName.toUpperCase(),
+            lead?.lName.toUpperCase(),
             lead?.pan,
             normalizedDob,
             lead?.mobile
         );
-        lead.cibilScore = response;
+        const value =
+            response.data?.CCRResponse?.CIRReportDataLst[0]?.CIRReportData
+                ?.ScoreDetails[0]?.Value;
+
+        console.log(value);
+        lead.cibilScore = value;
         await lead.save();
 
-        return res.json({ success: true, value: response });
+        return res.send(response.data);
+
+        // return res.json(response);
+
+        // return res.json({ success: true, value: response });
     }
     return res.json({ success: true, value: lead.cibilScore });
 });

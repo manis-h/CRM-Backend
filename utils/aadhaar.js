@@ -17,9 +17,9 @@ export const generateAadhaarOtp = async (aadhaar) => {
 
     try {
         const response = await axios.request(config);
-        if (response.status !== "101") {
-            return { message: "Please enter a valid Aadhaar" };
-        }
+        // if (response.status !== "101") {
+        //     return { message: "Please enter a valid Aadhaar" };
+        // }
         return response.data; // Return the response data
     } catch (error) {
         throw new Error(error.response?.data?.message || "An error occurred"); // Handle errors

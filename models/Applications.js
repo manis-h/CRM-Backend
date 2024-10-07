@@ -30,6 +30,11 @@ const applicationSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Employee",
         },
+        isForwarded: { type: Boolean, default: false },
+        forwardedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Employee",
+        },
         isApproved: {
             type: Boolean,
             default: false,

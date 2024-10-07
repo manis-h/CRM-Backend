@@ -3,8 +3,8 @@ import Lead from "../models/Leads.js";
 import { panVerify, panAadhaarLinkage } from "../utils/pan.js";
 import PanDetails from "../models/PanDetails.js";
 
-// @desc Generate OTP with Aaadhaar number.
-// @route Post /api/verify/pan
+// @desc Verify Pan.
+// @route Post /api/verify/pan/:id
 // @access Private
 export const getPanDetails = asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -26,16 +26,27 @@ export const getPanDetails = asyncHandler(async (req, res) => {
         throw new Error({ success: false, message: "Invalid PAN!!!" });
     }
 
-    const existingPan = await PanDetails.findOne({ "data.input_pan_num": pan });
-
     // Call the get panDetails Function
     const panDetails = await panVerify(pan);
 
+    // Now respond with status 200 with JSON success true
+    return res.json({
+        data: panDetails,
+    });
+});
+
+// @desc Save the pan details once verified.
+// @route POST /api/verify/pan-aadhaar-link/:id
+// @access Private
+export const savePanDetails = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { data } = req.body;
+
+    const existingPan = await PanDetails.findOne({ "data.input_pan_num": pan });
+
     if (existingPan) {
         return res.json({
-            success: panDetails.success,
-            code: panDetails.response_code,
-            message: panDetails.response_message,
+            success: true,
         });
     }
 
@@ -43,19 +54,15 @@ export const getPanDetails = asyncHandler(async (req, res) => {
 
     // Now save the data in the AadharDetails database
     const newpanDetail = new PanDetails({
-        data: panDetails,
+        data,
     });
 
     await newpanDetail.save();
-
-    // Now respond with status 200 with JSON success true
-    return res.json({
-        success: true,
-        message: "Pan verified successfully.",
-        data: panDetails,
-    });
 });
 
+// @desc Verify if pan and aadhaar are linked.
+// @route Post /api/verify/pan-aadhaar-link/:id
+// @access Private
 export const panAadhaarLink = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
