@@ -35,11 +35,11 @@ const leadSchema = new mongoose.Schema(
             type: String,
         },
         mobile: {
-            type: Number,
+            type: String,
             required: true,
         },
         alternateMobile: {
-            type: Number,
+            type: String,
         },
         personalEmail: {
             type: String,
@@ -81,7 +81,7 @@ const leadSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Employee",
         },
-        isPhoneVerified: {
+        isMobileVerified: {
             type: Boolean,
             default: false,
         },

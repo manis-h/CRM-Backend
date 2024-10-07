@@ -11,7 +11,7 @@ const router = express.Router();
 
 // aadhaar verify
 router.get("/aadhaar/:id", aadhaarOtp);
-router.post("/aadhaar-otp/:trx_id", verifyAadhaar);
+router.post("/aadhaar-otp/", verifyAadhaar);
 
 // email verify
 router.patch("/email/:id", protect, emailVerify);

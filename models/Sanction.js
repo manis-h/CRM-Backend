@@ -1,16 +1,12 @@
 import mongoose from "mongoose";
 
-const applicationSchema = new mongoose.Schema(
+const sanctionSchema = new mongoose.Schema(
     {
-        lead: {
+        Application: {
             type: Object,
             required: true,
         },
-        applicant: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Applicant",
-        },
-        creditManagerId: {
+        SanctionHeadId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Employee",
         },
@@ -30,11 +26,6 @@ const applicationSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Employee",
         },
-        isForwarded: { type: Boolean, default: false },
-        forwardedBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Employee",
-        },
         isApproved: {
             type: Boolean,
             default: false,
@@ -47,5 +38,5 @@ const applicationSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-const Application = mongoose.model("Application", applicationSchema);
-export default Application;
+const Sanction = mongoose.model("Sanction", sanctionSchema);
+export default Sanction;
