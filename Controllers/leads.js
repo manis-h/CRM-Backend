@@ -560,7 +560,7 @@ export const approveLead = asyncHandler(async (req, res) => {
         throw new Error("Lead not found"); // This error will be caught by the error handler
     }
 
-    const result = checkApproval(lead, screenerId);
+    const result = await checkApproval(lead, {}, screenerId, "");
 
     if (!result.approved) {
         res.status(400);
