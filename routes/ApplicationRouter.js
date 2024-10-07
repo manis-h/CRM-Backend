@@ -11,9 +11,8 @@ import {
     getHoldApplication,
     applicationReject,
     getRejectedApplication,
-    approveApplication,
-    addPersonalDeatils,
-    getApplicantPersonalDetails,
+    forwardApplication,
+    // approveApplication,
 } from "../Controllers/application.js";
 import { addDocs, getDocs } from "../helper/docsUploadAndFetch.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
@@ -38,7 +37,8 @@ router.patch("/hold/:id", protect, applicationOnHold);
 router.patch("/unhold/:id", protect, unHoldApplication);
 router.patch("/reject/:id", protect, applicationReject);
 // router.get("/old-history/:id", protect, internalDedupe);
-router.patch("/approve/:id", protect, approveApplication);
+router.patch("/forward/:id", protect, forwardApplication);
+// router.patch("/approve/:id", protect, approveApplication);
 router
     .route("/docs/:id")
     .patch(protect, uploadFields, addDocs)
