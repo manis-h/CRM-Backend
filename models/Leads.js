@@ -81,7 +81,7 @@ const leadSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Employee",
         },
-        isPhoneVerified: {
+        isMobileVerified: {
             type: Boolean,
             default: false,
         },

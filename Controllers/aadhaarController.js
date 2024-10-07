@@ -58,7 +58,7 @@ export const verifyAadhaar = asyncHandler(async (req, res) => {
 
     await Lead.findByIdAndUpdate(
         id,
-        { isPhoneVerified: true, isAadhaarVerified: true },
+        { isMobileVerified: true, isAadhaarVerified: true },
         { new: true }
     );
 
@@ -72,11 +72,12 @@ export const verifyAadhaar = asyncHandler(async (req, res) => {
     });
 
     if (existingAadhaar) {
-        return res.json({
-            status: response.status,
-            code: response.response_code,
-            message: response.response_message,
-        });
+        const lead = await Lead.findByIdAndUpdate(
+            id,
+            { isMobileVerified: true, isAadhaarVerified: true },
+            { new: true }
+        );
+        return res.json(lead);
     }
 
     // Save Aaadhaar details in AadharDetails model

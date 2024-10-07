@@ -207,7 +207,7 @@ async function fetchCibil(
         //     ],
         // };
 
-        console.log("data");
+        console.log(data);
 
         const response = await axios
             .post(
