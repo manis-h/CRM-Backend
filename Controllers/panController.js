@@ -31,15 +31,15 @@ export const getPanDetails = asyncHandler(async (req, res) => {
     // Call the get panDetails Function
     const panDetails = await panVerify(pan);
 
-    await Lead.findByIdAndUpdate(id, { isPanVerified: true }, { new: true });
-
     if (existingPan) {
-        res.json({
+        return res.json({
             success: panDetails.success,
             code: panDetails.response_code,
             message: panDetails.response_message,
         });
     }
+
+    await Lead.findByIdAndUpdate(id, { isPanVerified: true }, { new: true });
 
     // Now save the data in the AadharDetails database
     const newpanDetail = new PanDetails({

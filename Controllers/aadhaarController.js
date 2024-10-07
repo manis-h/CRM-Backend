@@ -12,6 +12,9 @@ export const aadhaarOtp = asyncHandler(async (req, res) => {
     const lead = await Lead.findById(id);
     const aadhaar = lead?.aadhaar;
 
+    console.log(aadhaar);
+    console.log(typeof aadhaar);
+
     // Validate Aaadhaar number (12 digits)
     if (!/^\d{12}$/.test(aadhaar)) {
         return res.status(400).json({
