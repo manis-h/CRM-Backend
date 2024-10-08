@@ -29,6 +29,7 @@ const uploadFields = upload.fields([
     { name: "panCard", maxCount: 1 },
     { name: "bankStatement", maxCount: 1 },
     { name: "salarySlip", maxCount: 1 },
+    { name: "verficationVideo", maxCount: 1 },
 ]);
 
 // Other routes
