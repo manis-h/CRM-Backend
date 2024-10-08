@@ -737,8 +737,8 @@ export const fetchCibil = asyncHandler(async (req, res) => {
                 ?.ScoreDetails[0]?.Value;
 
         console.log(value);
-        lead.cibilScore = value;
-        await lead.save();
+        // lead.cibilScore = value;
+        // await lead.save();
 
         return res.send(response.data);
 
