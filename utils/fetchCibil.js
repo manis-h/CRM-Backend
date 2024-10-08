@@ -1,21 +1,8 @@
 import axios from "axios";
 
-async function fetchCibil(
-    fName = "",
-    mName = "",
-    lName = "",
-    pan = "",
-    dob = "",
-    mobile = ""
-) {
-    const fname = fName;
-    const mname = mName;
-    const lname = lName;
-    const PAN = pan;
-    const DOB = dob;
-    const MOBILE = mobile;
-
+async function fetchCibil(lead) {
     try {
+        const {fName, mName, lName, dob, mobile, pan} = lead;
         const data = {
             RequestHeader: {
                 CustomerId: "9757",
@@ -28,10 +15,10 @@ async function fetchCibil(
             },
             RequestBody: {
                 InquiryPurpose: "00",
-                FirstName: fname,
-                MiddleName: mname,
-                LastName: lname,
-                DOB: DOB,
+                FirstName: "BADAL",
+                MiddleName: "",
+                LastName: "KUMAR",
+                DOB: "2002-12-22",
                 InquiryAddresses: [
                     {
                         seq: "1",
@@ -44,7 +31,7 @@ async function fetchCibil(
                 InquiryPhones: [
                     {
                         seq: "1",
-                        Number: MOBILE,
+                        Number: "9199479407",
                         PhoneType: ["M"],
                     },
                 ],
@@ -52,7 +39,7 @@ async function fetchCibil(
                     {
                         seq: "1",
                         IDType: "T",
-                        IDValue: PAN,
+                        IDValue: "HKCPK6182A",
                         Source: "Inquiry",
                     },
                     {

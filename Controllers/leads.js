@@ -75,10 +75,24 @@ export const getAllLeads = asyncHandler(async (req, res) => {
         isApproved: { $ne: true },
     };
 
-    const leads = await Lead.find(query)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit);
+    const leads = await Lead.aggregate([
+        { $match: query },
+        {
+            $addFields: {
+                timeComponent: {
+                    $dateToString: { format: "%H:%M:%S", date: "$createdAt" },
+                },
+            },
+        },
+        { $sort: { timeComponent: -1 } }, // Sort by time in descending order
+        { $skip: skip },
+        { $limit: limit },
+    ]);
+
+    // const leads = await Lead.find(query)
+    //     .sort({ createdAt: -1 })
+    //     .skip(skip)
+    //     .limit(limit);
     const totalLeads = await Lead.countDocuments(query);
 
     return res.json({
@@ -169,10 +183,25 @@ export const allocatedLeads = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1; // current page
     const limit = parseInt(req.query.limit) || 10; // items per page
     const skip = (page - 1) * limit;
-    const leads = await Lead.find(query)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit);
+
+    const leads = await Lead.aggregate([
+        { $match: query },
+        {
+            $addFields: {
+                timeComponent: {
+                    $dateToString: { format: "%H:%M:%S", date: "$createdAt" },
+                },
+            },
+        },
+        { $sort: { timeComponent: -1 } }, // Sort by time in descending order
+        { $skip: skip },
+        { $limit: limit },
+    ]);
+
+    // const leads = await Lead.find(query)
+    //     .sort({ createdAt: -1 })
+    //     .skip(skip)
+    //     .limit(limit);
 
     const totalLeads = await Lead.countDocuments(query);
 
@@ -709,29 +738,22 @@ export const fetchCibil = asyncHandler(async (req, res) => {
     const lead = await Lead.findById(id);
 
     // Replace all '/' with '-'
-    const normalizedDob = lead.dob.replace(/\//g, "-");
+    // const normalizedDob = lead.dob.replace(/\//g, "-");
 
     if (!lead) {
         res.status(404);
         throw new Error("Lead not found!!!");
     }
 
-    if (lead.screenerId.toString() !== req.employee._id.toString()) {
-        res.status(404);
-        throw new Error(
-            "You are not authorized to fetch CIBIL for this lead!!!"
-        );
-    }
+    // if (lead.screenerId.toString() !== req.employee._id.toString()) {
+    //     res.status(404);
+    //     throw new Error(
+    //         "You are not authorized to fetch CIBIL for this lead!!!"
+    //     );
+    // }
 
     if (!lead.cibilScore) {
-        const response = await equifax(
-            lead?.fName.toUpperCase(),
-            lead?.mName.toUpperCase(),
-            lead?.lName.toUpperCase(),
-            lead?.pan,
-            normalizedDob,
-            lead?.mobile
-        );
+        const response = await equifax(lead);
         const value =
             response.data?.CCRResponse?.CIRReportDataLst[0]?.CIRReportData
                 ?.ScoreDetails[0]?.Value;
