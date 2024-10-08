@@ -60,6 +60,7 @@ export const savePanDetails = asyncHandler(async (req, res) => {
     });
 
     await newpanDetail.save();
+    res.json({success: true})
 });
 
 // @desc Verify if pan and aadhaar are linked.
