@@ -75,24 +75,8 @@ export const getAllLeads = asyncHandler(async (req, res) => {
         isApproved: { $ne: true },
     };
 
-    const leads = await Lead.aggregate([
-        { $match: query },
-        {
-            $addFields: {
-                timeComponent: {
-                    $dateToString: { format: "%H:%M:%S", date: "$createdAt" },
-                },
-            },
-        },
-        { $sort: { timeComponent: -1 } }, // Sort by time in descending order
-        { $skip: skip },
-        { $limit: limit },
-    ]);
+    const leads = await Lead.find(query).skip(skip).limit(limit);
 
-    // const leads = await Lead.find(query)
-    //     .sort({ createdAt: -1 })
-    //     .skip(skip)
-    //     .limit(limit);
     const totalLeads = await Lead.countDocuments(query);
 
     return res.json({
@@ -184,24 +168,7 @@ export const allocatedLeads = asyncHandler(async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // items per page
     const skip = (page - 1) * limit;
 
-    const leads = await Lead.aggregate([
-        { $match: query },
-        {
-            $addFields: {
-                timeComponent: {
-                    $dateToString: { format: "%H:%M:%S", date: "$createdAt" },
-                },
-            },
-        },
-        { $sort: { timeComponent: -1 } }, // Sort by time in descending order
-        { $skip: skip },
-        { $limit: limit },
-    ]);
-
-    // const leads = await Lead.find(query)
-    //     .sort({ createdAt: -1 })
-    //     .skip(skip)
-    //     .limit(limit);
+    const leads = await Lead.find(query).skip(skip).limit(limit);
 
     const totalLeads = await Lead.countDocuments(query);
 
@@ -266,6 +233,7 @@ export const updateLead = asyncHandler(async (req, res) => {
 // @access Private
 export const leadOnHold = asyncHandler(async (req, res) => {
     const { id } = req.params;
+    const { reason } = req.body;
 
     // List of roles that are authorized to hold a lead
     const authorizedRoles = [
@@ -300,7 +268,8 @@ export const leadOnHold = asyncHandler(async (req, res) => {
         lead._id,
         "LEAD ON HOLD",
         `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
-        `Lead on hold by ${employee.fName} ${employee.lName}`
+        `Lead on hold by ${employee.fName} ${employee.lName}`,
+        `${reason}`
     );
     res.json({ lead, logs });
 });
@@ -407,6 +376,7 @@ export const getHoldLeads = asyncHandler(async (req, res) => {
 // @access Private
 export const leadReject = asyncHandler(async (req, res) => {
     const { id } = req.params;
+    const { reason } = req.body;
 
     // List of roles that are authorized to hold a lead
     const authorizedRoles = [
@@ -440,7 +410,8 @@ export const leadReject = asyncHandler(async (req, res) => {
         lead._id,
         "LEAD REJECTED",
         `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
-        `Lead rejected by ${employee.fName} ${employee.lName}`
+        `Lead rejected by ${employee.fName} ${employee.lName}`,
+        `${reason}`
     );
     res.json({ lead, logs });
 });
@@ -530,7 +501,8 @@ export const postLogs = async (
     leadId = "",
     leadStatus = "",
     borrower = "",
-    leadRemark = ""
+    leadRemark = "",
+    reason = ""
 ) => {
     try {
         // Check if the lead is present
@@ -548,6 +520,7 @@ export const postLogs = async (
             status: leadStatus,
             borrower: borrower,
             leadRemark: leadRemark,
+            reason: reason,
         });
         return createloghistory;
     } catch (error) {
