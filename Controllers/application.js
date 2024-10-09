@@ -25,10 +25,7 @@ export const getAllApplication = asyncHandler(async (req, res) => {
         isApproved: { $ne: true },
     };
 
-    const applications = await Application.find(query)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit);
+    const applications = await Application.find(query).skip(skip).limit(limit);
     const totalApplications = await Application.countDocuments(query);
 
     return res.json({
@@ -121,10 +118,7 @@ export const allocatedApplications = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1; // current page
     const limit = parseInt(req.query.limit) || 10; // items per page
     const skip = (page - 1) * limit;
-    const applications = await Application.find(query)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit);
+    const applications = await Application.find(query).skip(skip).limit(limit);
 
     const totalApplications = await Application.countDocuments(query);
 
@@ -521,3 +515,8 @@ export const forwardApplication = asyncHandler(async (req, res) => {
     // return res.json(response, logs); // This is a successful response
     return res.json(logs);
 });
+
+// @desc Adding CAM details
+// @route POST /api/applications/cam/:id
+// @access Private
+export const camDetails = asyncHandler(async (req, res) => {});

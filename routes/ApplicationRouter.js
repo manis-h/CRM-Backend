@@ -14,6 +14,7 @@ import {
     forwardApplication,
     // approveApplication,
 } from "../Controllers/application.js";
+import { sentBack } from "../helper/sentBack.js";
 import { addDocs, getDocs } from "../helper/docsUploadAndFetch.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
 import upload from "../config/multer.js";
@@ -39,6 +40,7 @@ router.patch("/reject/:id", protect, applicationReject);
 // router.get("/old-history/:id", protect, internalDedupe);
 router.patch("/forward/:id", protect, forwardApplication);
 // router.patch("/approve/:id", protect, approveApplication);
+router.patch("/sent-back/:id", protect, sentBack);
 router
     .route("/docs/:id")
     .patch(protect, uploadFields, addDocs)

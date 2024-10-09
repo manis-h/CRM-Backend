@@ -17,6 +17,9 @@ const leadsLogHistorySchema = new mongoose.Schema({
     leadRemark: {
         type: String,
     },
+    reason: {
+        type: String,
+    },
 });
 
 const LogHistory = new mongoose.model("leadloghistory", leadsLogHistorySchema);
