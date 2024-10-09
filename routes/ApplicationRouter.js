@@ -12,6 +12,9 @@ import {
     applicationReject,
     getRejectedApplication,
     forwardApplication,
+    getCamDetails,
+    postCamDetails,
+    updateCamDetails,
     // approveApplication,
 } from "../Controllers/application.js";
 import { sentBack } from "../helper/sentBack.js";
@@ -26,6 +29,7 @@ const uploadFields = upload.fields([
     { name: "panCard", maxCount: 1 },
     { name: "bankStatement", maxCount: 1 },
     { name: "salarySlip", maxCount: 1 },
+    { name: "verficationVideo", maxCount: 1 },
 ]);
 
 // Other routes
@@ -41,6 +45,12 @@ router.patch("/reject/:id", protect, applicationReject);
 router.patch("/forward/:id", protect, forwardApplication);
 // router.patch("/approve/:id", protect, approveApplication);
 router.patch("/sent-back/:id", protect, sentBack);
+router
+    .route("/cam/:id")
+    .get(protect, getCamDetails)
+    .post(protect, postCamDetails)
+    .patch(protect, updateCamDetails);
+
 router
     .route("/docs/:id")
     .patch(protect, uploadFields, addDocs)

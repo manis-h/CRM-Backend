@@ -3,12 +3,13 @@ const getMimeTypeForDocType = (docType) => {
     switch (docType) {
         case "aadhaarFront":
         case "aadhaarBack":
-            return "image/png"; // or "image/jpeg" depending on your format
         case "panCard":
-            return "image/jpeg";
+            return "image/jpg";
         case "bankStatement":
         case "salarySlip":
             return "application/pdf";
+        case "verificationVideo":
+            return "video/mp4";
         default:
             return "application/octet-stream";
     }
