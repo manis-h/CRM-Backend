@@ -111,6 +111,7 @@ const leadSchema = new mongoose.Schema(
                         "panCard",
                         "bankStatement",
                         "salarySlip",
+                        "verificationVideo",
                         // Add more document types as needed
                     ],
                 },

@@ -4,6 +4,7 @@ import Employee from "../models/Employees.js";
 import { postLogs } from "./leads.js";
 import { applicantDetails } from "./applicantPersonalDetails.js";
 import { checkApproval } from "../utils/checkApproval.js";
+import CamDetails from "../models/CAM.js";
 
 // @desc Get all applications
 // @route GET /api/applications
@@ -519,4 +520,74 @@ export const forwardApplication = asyncHandler(async (req, res) => {
 // @desc Adding CAM details
 // @route POST /api/applications/cam/:id
 // @access Private
-export const camDetails = asyncHandler(async (req, res) => {});
+export const postCamDetails = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { details } = req.body;
+
+    const application = await Application.findById(id);
+    if (!application) {
+        res.status(404);
+        throw new Error("Application not found!!");
+    }
+
+    await CamDetails.create({
+        details: details,
+    });
+
+    res.json({ success: true });
+});
+
+// @desc get CAM details
+// @route GET /api/applications/cam/:id
+// @access Private
+export const getCamDetails = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const application = await Application.findById(id);
+    if (!application) {
+        res.status(404);
+        throw new Error("Application not found!!");
+    }
+
+    const cam = await camDetails.findOne({
+        "details.leadId": application.lead._id.toString(),
+    });
+
+    if (!cam) {
+        return { success: false, message: "No record found!!" };
+    }
+
+    res.json({ details: cam });
+});
+
+// @desc Update CAM details
+// @route PATCH /api/applications/cam/:id
+// @access Private
+export const updateCamDetails = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { details } = req.body;
+
+    const application = await Application.findById(id);
+    if (!application) {
+        res.status(404);
+        throw new Error("Application not found!!");
+    }
+
+    // Find the CamDetails associated with the application (if needed)
+    let cam = await camDetails.findOne({
+        "details.leadId": application.lead._id.toString(),
+    });
+
+    if (!cam) {
+        // If no CAM details found then create a new record
+        await CamDetails.create({
+            details: details,
+        });
+    } else {
+        // Update only the fields that are sent from the frontend
+        cam.details = { ...cam.details, ...details };
+        await cam.save();
+    }
+
+    res.json({ success: true });
+});

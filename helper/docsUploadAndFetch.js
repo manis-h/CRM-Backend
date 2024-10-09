@@ -172,12 +172,11 @@ export const getDocs = asyncHandler(async (req, res) => {
         }
     }
 
+    const mimeType = getMimeTypeForDocType(document.type);
+
     // Generate a pre-signed URL for this specific document
-    const preSignedUrl = generatePresignedUrl(
-        document.url,
-        getMimeTypeForDocType(document.type)
-    );
+    const preSignedUrl = generatePresignedUrl(document.url, mimeType);
 
     // Return the pre-signed URL for this specific document
-    res.json({ type: docType, url: preSignedUrl });
+    res.json({ type: docType, url: preSignedUrl, mimeType: mimeType });
 });
