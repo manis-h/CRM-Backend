@@ -47,7 +47,6 @@ router.patch("/sent-back/:id", protect, sentBack);
 router
     .route("/cam/:id")
     .get(protect, getCamDetails)
-    .post(protect, postCamDetails)
     .patch(protect, updateCamDetails);
 
 router

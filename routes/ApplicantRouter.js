@@ -9,13 +9,13 @@ import {
 import { protect } from "../middleware/authMiddleware.js";
 
 router
+    .route("/bankDetails/:id")
+    .post(protect, addOrUpdateApplicantBankDetails)
+    .get(protect, getApplicantBankDetails);
+
+router
     .route("/:id")
     .get(protect, getApplicantDetails)
     .patch(protect, updateApplicantDetails);
-
-router
-    .route("/bankDetails/:id")
-    .get(protect, getApplicantBankDetails)
-    .patch(protect, addOrUpdateApplicantBankDetails);
 
 export default router;

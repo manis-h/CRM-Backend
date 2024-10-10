@@ -68,7 +68,7 @@ const residenceSchema = new mongoose.Schema({
         required: true,
     },
     residingSince: {
-        type: Date,
+        type: String,
         required: true,
     },
 });
@@ -103,7 +103,7 @@ const employmentDetailsSchema = new mongoose.Schema({
         required: true,
     },
     employedSince: {
-        type: Date,
+        type: String,
         required: true,
     },
 });
