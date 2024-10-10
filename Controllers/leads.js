@@ -8,6 +8,7 @@ import sendEmail from "../utils/sendEmail.js";
 import generateRandomNumber from "../utils/generateRandomNumbers.js";
 import equifax from "../utils/fetchCIBIL.js";
 import { checkApproval } from "../utils/checkApproval.js";
+import { postCamDetails } from "./application.js";
 
 // @desc Create loan leads
 // @route POST /api/leads
@@ -280,6 +281,8 @@ export const approveLead = asyncHandler(async (req, res) => {
         screenedBy: screenerName,
     };
     const applicant = await applicantDetails(details);
+
+    await postCamDetails(id, lead.cibilScore);
 
     // Approve the lead by updating its status
     lead.isApproved = true;
