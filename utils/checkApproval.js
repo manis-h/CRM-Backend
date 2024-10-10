@@ -1,3 +1,6 @@
+import Applicant from "../models/Applicant.js";
+import Bank from "../models/ApplicantBankDetails.js";
+
 export const checkApproval = async (
     lead,
     application,
@@ -80,22 +83,62 @@ export const checkApproval = async (
             }
             // Check if the lead has been rejected
             if (!application.creditManagerId) {
-                res.status(400);
-                throw new Error(
-                    "Application has to be allocated to a credit manager first for investigation."
-                );
+                return {
+                    approved: false,
+                    message:
+                        "Application has to be allocated to a credit manager first for investigation.",
+                };
             }
             if (application.isRejected) {
-                res.status(400);
-                throw new Error(
-                    "Application has been rejected and cannot be approved."
-                );
+                return {
+                    approved: false,
+                    message:
+                        "Application has been rejected and cannot be approved.",
+                };
             }
             if (application.isHold) {
-                res.status(400);
-                throw new Error(
-                    "Application is on hold, please unhold it first."
-                );
+                return {
+                    approved: false,
+                    message: "Application is on hold, please unhold it first.",
+                };
+            }
+
+            // Validation to check if Applicant fields are not empty
+            const applicant = application.applicant;
+            const personalDetails = await Applicant.findById(applicant);
+            if (
+                !personalDetails.personalDetails ||
+                Object.keys(personalDetails.personalDetails).length === 0 ||
+                !personalDetails.residence ||
+                Object.keys(personalDetails.residence).length === 0 ||
+                !personalDetails.employment ||
+                Object.keys(personalDetails.employment).length === 0 ||
+                !personalDetails.reference ||
+                Object.keys(personalDetails.reference).length === 0
+            ) {
+                return {
+                    approved: false,
+                    message:
+                        "All applicant details (personalDetails, residence, employment, and reference) must be provided and cannot be empty.",
+                };
+            }
+
+            // Check if the applicant's bank details are present and not empty
+            const bankDetails = await Bank.findOne({ borrowerId: applicant });
+            if (
+                !bankDetails ||
+                !bankDetails.bankName ||
+                !bankDetails.branchName ||
+                !bankDetails.bankAccNo ||
+                !bankDetails.ifscCode ||
+                !bankDetails.beneficiaryName ||
+                !bankDetails.accountType
+            ) {
+                return {
+                    approved: false,
+                    message:
+                        "Applicant's bank details are missing or incomplete.",
+                };
             }
 
             // If all checks pass, approve the lead

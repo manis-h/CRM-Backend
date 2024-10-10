@@ -68,7 +68,7 @@ const residenceSchema = new mongoose.Schema({
         required: true,
     },
     residingSince: {
-        type: Date,
+        type: String,
         required: true,
     },
 });

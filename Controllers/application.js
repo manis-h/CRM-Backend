@@ -134,24 +134,17 @@ export const allocatedApplications = asyncHandler(async (req, res) => {
 });
 
 // @desc Adding CAM details
-// @route POST /api/applications/cam/:id
 // @access Private
-export const postCamDetails = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const { details } = req.body;
-
-    const application = await Application.findById(id);
-    if (!application) {
-        res.status(404);
-        throw new Error("Application not found!!");
-    }
+export const postCamDetails = async (leadId, cibilScore) => {
+    const details = { cibilScore: cibilScore };
 
     await CamDetails.create({
+        leadId: leadId,
         details: details,
     });
 
-    res.json({ success: true });
-});
+    return { success: true };
+};
 
 // @desc get CAM details
 // @route GET /api/applications/cam/:id
@@ -222,20 +215,10 @@ export const forwardApplication = asyncHandler(async (req, res) => {
         throw new Error("Application not found"); // This error will be caught by the error handler
     }
 
-    // Check if the lead has been rejected
-    if (!application.creditManagerId) {
-        res.status(400);
-        throw new Error(
-            "Application has to be allocated to a credit manager first for investigation."
-        );
-    } else if (application.isRejected) {
-        res.status(400);
-        throw new Error(
-            "Application has been rejected and cannot be approved."
-        );
-    } else if (application.isHold) {
-        res.status(400);
-        throw new Error("Application is on hold, please unhold it first.");
+    const result = await checkApproval({}, application, "", creditManagerId);
+
+    if (!result.approved) {
+        return res.json({ success: false, message: result.message });
     }
 
     // Approve the lead by updating its status
