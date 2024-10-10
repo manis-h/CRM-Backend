@@ -127,6 +127,7 @@ export const updateApplicantDetails = asyncHandler(async (req, res) => {
 export const addOrUpdateApplicantBankDetails = asyncHandler(
     async (req, res) => {
         const { id } = req.params;
+        console.log(id);
 
         const {
             beneficiaryName,

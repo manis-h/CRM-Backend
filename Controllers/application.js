@@ -41,7 +41,7 @@ export const getAllApplication = asyncHandler(async (req, res) => {
 // @access Private
 export const getApplication = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const application = await Application.findOne({ _id: id });
+    const application = await Application.findOne({ _id: id }).populate("lead");
     if (!application) {
         res.status(404);
         throw new Error("Application not found!!!!");
@@ -70,14 +70,14 @@ export const allocateApplication = asyncHandler(async (req, res) => {
         id,
         { creditManagerId },
         { new: true }
-    );
+    ).populate("Lead");
 
     if (!application) {
         throw new Error("Application not found"); // This error will be caught by the error handler
     }
     const employee = await Employee.findOne({ _id: creditManagerId });
     const logs = await postLogs(
-        application.lead._id,
+        application.lead,
         "APPLICATION IN PROCESS",
         `${application.lead.fName} ${application.lead.mName ?? ""} ${
             application.lead.lName

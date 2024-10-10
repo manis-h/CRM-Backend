@@ -3,7 +3,8 @@ import mongoose from "mongoose";
 const applicationSchema = new mongoose.Schema(
     {
         lead: {
-            type: Object,
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Lead",
             required: true,
         },
         applicant: {

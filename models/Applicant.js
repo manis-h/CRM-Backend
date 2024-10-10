@@ -103,7 +103,7 @@ const employmentDetailsSchema = new mongoose.Schema({
         required: true,
     },
     employedSince: {
-        type: Date,
+        type: String,
         required: true,
     },
 });
