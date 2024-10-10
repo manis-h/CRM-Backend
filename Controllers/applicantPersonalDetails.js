@@ -3,7 +3,7 @@ import Bank from "../models/ApplicantBankDetails.js";
 import Applicant from "../models/Applicant.js";
 import Application from "../models/Applications.js";
 import Employee from "../models/Employees.js";
-import { postLogs } from "./leads.js";
+import { postLogs } from "../helper/logs.js";
 
 // @desc Post applicant details
 // @access Private

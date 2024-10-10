@@ -2,7 +2,7 @@ import asyncHandler from "../middleware/asyncHandler.js";
 import Employee from "../models/Employees.js";
 import Lead from "../models/Leads.js";
 import Application from "../models/Applications.js";
-import { postLogs } from "../Controllers/leads.js";
+import { postLogs } from "./logs.js";
 import mongoose from "mongoose";
 
 export const sentBack = asyncHandler(async (req, res) => {

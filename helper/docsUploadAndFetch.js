@@ -2,7 +2,7 @@ import asyncHandler from "../middleware/asyncHandler.js";
 import Lead from "../models/Leads.js";
 import Application from "../models/Applications.js";
 import Employee from "../models/Employees.js";
-import { postLogs } from "../Controllers/leads.js";
+import { postLogs } from "./logs.js";
 import {
     uploadFilesToS3,
     deleteFilesFromS3,
