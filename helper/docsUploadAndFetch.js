@@ -2,7 +2,7 @@ import asyncHandler from "../middleware/asyncHandler.js";
 import Lead from "../models/Leads.js";
 import Application from "../models/Applications.js";
 import Employee from "../models/Employees.js";
-import { postLogs } from "../Controllers/leads.js";
+import { postLogs } from "./logs.js";
 import {
     uploadFilesToS3,
     deleteFilesFromS3,
@@ -172,12 +172,11 @@ export const getDocs = asyncHandler(async (req, res) => {
         }
     }
 
+    const mimeType = getMimeTypeForDocType(document.type);
+
     // Generate a pre-signed URL for this specific document
-    const preSignedUrl = generatePresignedUrl(
-        document.url,
-        getMimeTypeForDocType(document.type)
-    );
+    const preSignedUrl = generatePresignedUrl(document.url, mimeType);
 
     // Return the pre-signed URL for this specific document
-    res.json({ type: docType, url: preSignedUrl });
+    res.json({ type: docType, url: preSignedUrl, mimeType: mimeType });
 });

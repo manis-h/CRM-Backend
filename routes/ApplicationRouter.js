@@ -6,14 +6,14 @@ import {
     getApplication,
     allocateApplication,
     allocatedApplications,
-    applicationOnHold,
-    unHoldApplication,
-    getHoldApplication,
-    applicationReject,
-    getRejectedApplication,
     forwardApplication,
+    getCamDetails,
+    postCamDetails,
+    updateCamDetails,
     // approveApplication,
 } from "../Controllers/application.js";
+import { onHold, unHold, getHold } from "../helper/holdUnhold.js";
+import { rejected, getRejected } from "../helper/rejected.js";
 import { sentBack } from "../helper/sentBack.js";
 import { addDocs, getDocs } from "../helper/docsUploadAndFetch.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
@@ -26,21 +26,30 @@ const uploadFields = upload.fields([
     { name: "panCard", maxCount: 1 },
     { name: "bankStatement", maxCount: 1 },
     { name: "salarySlip", maxCount: 1 },
+    { name: "verificationVideo", maxCount: 1 },
 ]);
 
 // Other routes
 router.route("/").get(protect, getAllApplication);
 router.route("/allocated").get(protect, allocatedApplications);
-router.get("/hold", protect, getHoldApplication);
-router.get("/reject", protect, getRejectedApplication);
-router.route("/:id").get(getApplication).patch(protect, allocateApplication);
-router.patch("/hold/:id", protect, applicationOnHold);
-router.patch("/unhold/:id", protect, unHoldApplication);
-router.patch("/reject/:id", protect, applicationReject);
-// router.get("/old-history/:id", protect, internalDedupe);
+router.get("/hold", protect, getRejected);
+router.get("/reject", protect, rejected);
+router
+    .route("/:id")
+    .get(protect, getApplication)
+    .patch(protect, allocateApplication);
+router.patch("/hold/:id", protect, onHold);
+router.patch("/unhold/:id", protect, unHold);
+router.patch("/reject/:id", protect, getHold);
 router.patch("/forward/:id", protect, forwardApplication);
 // router.patch("/approve/:id", protect, approveApplication);
 router.patch("/sent-back/:id", protect, sentBack);
+router
+    .route("/cam/:id")
+    .get(protect, getCamDetails)
+    .post(protect, postCamDetails)
+    .patch(protect, updateCamDetails);
+
 router
     .route("/docs/:id")
     .patch(protect, uploadFields, addDocs)
