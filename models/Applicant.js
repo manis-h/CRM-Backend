@@ -14,7 +14,7 @@ const personalDetailsSchema = new mongoose.Schema(
         },
         gender: { type: String, required: true, enum: ["M", "F"] },
         dob: {
-            type: Date,
+            type: String,
             required: true,
         },
         mobile: { type: String, required: true, unique: true },
@@ -103,7 +103,7 @@ const employmentDetailsSchema = new mongoose.Schema({
         required: true,
     },
     employedSince: {
-        type: Date,
+        type: String,
         required: true,
     },
 });

@@ -1,5 +1,6 @@
 import Applicant from "../models/Applicant.js";
 import Bank from "../models/ApplicantBankDetails.js";
+import CamDetails from "../models/CAM.js";
 
 export const checkApproval = async (
     lead,
@@ -138,6 +139,22 @@ export const checkApproval = async (
                     approved: false,
                     message:
                         "Applicant's bank details are missing or incomplete.",
+                };
+            }
+
+            // Check if CAM details are present and not empty
+            const camDetails = await CamDetails.findOne({
+                leadId: application.lead._id.toString(),
+            });
+
+            if (
+                !camDetails ||
+                !camDetails.details ||
+                Object.keys(camDetails.details).length === 0
+            ) {
+                return {
+                    approved: false,
+                    message: "CAM details are missing or incomplete.",
                 };
             }
 

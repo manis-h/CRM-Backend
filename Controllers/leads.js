@@ -290,7 +290,7 @@ export const approveLead = asyncHandler(async (req, res) => {
     await lead.save();
 
     const newApplication = new Application({
-        lead: lead,
+        lead: id,
         applicant: applicant._id,
     });
     const response = await newApplication.save();
