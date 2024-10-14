@@ -25,7 +25,10 @@ export const getAllApplication = asyncHandler(async (req, res) => {
         isForwarded: { $ne: true },
     };
 
-    const applications = await Application.find(query).skip(skip).limit(limit);
+    const applications = await Application.find(query)
+        .skip(skip)
+        .limit(limit)
+        .populate("lead");
     const totalApplications = await Application.countDocuments(query);
 
     return res.json({
@@ -70,7 +73,7 @@ export const allocateApplication = asyncHandler(async (req, res) => {
         id,
         { creditManagerId },
         { new: true }
-    ).populate("Lead");
+    ).populate("lead");
 
     if (!application) {
         throw new Error("Application not found"); // This error will be caught by the error handler
@@ -159,7 +162,7 @@ export const getCamDetails = asyncHandler(async (req, res) => {
     }
 
     const cam = await camDetails.findOne({
-        "details.leadId": application.lead._id.toString(),
+        leadId: application.lead,
     });
 
     if (!cam) {
@@ -176,7 +179,7 @@ export const updateCamDetails = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { details } = req.body;
 
-    const application = await Application.findById(id);
+    const application = await Application.findById(id).populate("lead");
     if (!application) {
         res.status(404);
         throw new Error("Application not found!!");
@@ -209,7 +212,7 @@ export const forwardApplication = asyncHandler(async (req, res) => {
     const creditManagerId = req.creditManager._id.toString();
 
     // Find the application by its ID
-    const application = await Application.findById(id);
+    const application = await Application.findById(id).populate("lead");
 
     if (!application) {
         throw new Error("Application not found"); // This error will be caught by the error handler

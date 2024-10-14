@@ -42,7 +42,7 @@ export const savePanDetails = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { data } = req.body;
 
-    const pan = data.result.PAN;
+    const pan = data.PAN;
 
     const existingPan = await PanDetails.findOne({ "data.result.PAN": pan });
 
@@ -60,7 +60,7 @@ export const savePanDetails = asyncHandler(async (req, res) => {
     });
 
     await newpanDetail.save();
-    res.json({success: true})
+    res.json({ success: true });
 });
 
 // @desc Verify if pan and aadhaar are linked.
