@@ -136,7 +136,7 @@ const applicantSchema = new mongoose.Schema(
             type: employmentDetailsSchema,
         },
         reference: {
-            type: referenceSchema,
+            type: [referenceSchema],
         },
     },
     { timestamps: true }
