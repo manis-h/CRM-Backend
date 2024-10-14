@@ -76,10 +76,18 @@ export const updateApplicantDetails = asyncHandler(async (req, res) => {
 
     // Update reference if provided
     if (updates.reference) {
-        applicant.reference = {
-            ...applicant.reference, // Retain existing data
-            ...updates.reference, // Merge with new data
-        };
+        updates.reference.forEach((newRef, index) => {
+            // If there's an existing reference at the same index, merge it
+            if (applicant.reference[index]) {
+                applicant.reference[index] = {
+                    ...applicant.reference[index],
+                    ...newRef, // Merge new reference data
+                };
+            } else {
+                // If no existing reference, add the new one
+                applicant.reference.push(newRef);
+            }
+        });
     }
 
     // Save the updated applicant

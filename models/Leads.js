@@ -21,6 +21,12 @@ const leadSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        fatherName: {
+            type: String,
+        },
+        spouseName: {
+            type: String,
+        },
         aadhaar: {
             type: String,
             required: true,
