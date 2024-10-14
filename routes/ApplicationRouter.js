@@ -32,15 +32,13 @@ const uploadFields = upload.fields([
 // Other routes
 router.route("/").get(protect, getAllApplication);
 router.route("/allocated").get(protect, allocatedApplications);
-router.get("/hold", protect, getRejected);
-router.get("/reject", protect, rejected);
 router
     .route("/:id")
     .get(protect, getApplication)
     .patch(protect, allocateApplication);
-router.patch("/hold/:id", protect, onHold);
+router.route("/hold/:id").get(protect, getHold).patch(protect, onHold);
 router.patch("/unhold/:id", protect, unHold);
-router.patch("/reject/:id", protect, getHold);
+router.patch("/reject/:id").get(protect, getRejected).patch(protect, rejected);
 router.patch("/forward/:id", protect, forwardApplication);
 // router.patch("/approve/:id", protect, approveApplication);
 router.patch("/sent-back/:id", protect, sentBack);

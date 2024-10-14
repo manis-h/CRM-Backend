@@ -124,7 +124,10 @@ export const allocatedApplications = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1; // current page
     const limit = parseInt(req.query.limit) || 10; // items per page
     const skip = (page - 1) * limit;
-    const applications = await Application.find(query).skip(skip).limit(limit);
+    const applications = await Application.find(query)
+        .skip(skip)
+        .limit(limit)
+        .populate("lead");
 
     const totalApplications = await Application.countDocuments(query);
 
