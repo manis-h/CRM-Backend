@@ -38,10 +38,9 @@ export const applicantDetails = async (details = null) => {
 export const updateApplicantDetails = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
-    console.log(updates);
 
     // Check if the application is present
-    const application = await Application.findOne({ _id: id });
+    const application = await Application.findOne({ _id: id }).populate("lead");
 
     // Check if credit Manager matches the one in the application document
     if (
@@ -83,25 +82,6 @@ export const updateApplicantDetails = asyncHandler(async (req, res) => {
         };
     }
 
-    // Similar approach for residence, employment, or reference if provided
-    // if (updates.residence) {
-    //     Object.keys(updates.residence).forEach((key) => {
-    //         applicant.residence[key] = updates.residence[key];
-    //     });
-    // }
-
-    // if (updates.employment) {
-    //     Object.keys(updates.employment).forEach((key) => {
-    //         applicant.employment[key] = updates.employment[key];
-    //     });
-    // }
-
-    // if (updates.reference) {
-    //     Object.keys(updates.reference).forEach((key) => {
-    //         applicant.reference[key] = updates.reference[key];
-    //     });
-    // }
-
     // Save the updated applicant
     const updatedApplicant = await applicant.save();
 
@@ -127,7 +107,6 @@ export const updateApplicantDetails = asyncHandler(async (req, res) => {
 export const addOrUpdateApplicantBankDetails = asyncHandler(
     async (req, res) => {
         const { id } = req.params;
-        console.log(id);
 
         const {
             beneficiaryName,
@@ -187,10 +166,10 @@ export const addOrUpdateApplicantBankDetails = asyncHandler(
 export const getApplicantBankDetails = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const bank = await Bank.find({ borrowerId: id });
+    const bank = await Bank.findOne({ borrowerId: id });
 
     if (!bank) {
-        res.status(404).json({ message: "No bank found!!" });
+        res.json({ success: false });
     }
     res.json(bank);
 });
