@@ -15,7 +15,7 @@ import {
 import { onHold, unHold, getHold } from "../helper/holdUnhold.js";
 import { rejected, getRejected } from "../helper/rejected.js";
 import { sentBack } from "../helper/sentBack.js";
-import { addDocs, getDocs } from "../helper/docsUploadAndFetch.js";
+import { addDocs, getDocuments } from "../helper/docsUploadAndFetch.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
 import upload from "../config/multer.js";
 
@@ -50,5 +50,5 @@ router
 router
     .route("/docs/:id")
     .patch(protect, uploadFields, addDocs)
-    .get(protect, getDocs);
+    .get(protect, getDocuments);
 export default router;

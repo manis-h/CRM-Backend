@@ -9,6 +9,7 @@ import generateRandomNumber from "../utils/generateRandomNumbers.js";
 import equifax from "../utils/fetchCIBIL.js";
 import { checkApproval } from "../utils/checkApproval.js";
 import { postCamDetails } from "./application.js";
+import cibilPdf from "../utils/cibilPdf.js";
 
 // @desc Create loan leads
 // @route POST /api/leads
@@ -409,20 +410,25 @@ export const fetchCibil = asyncHandler(async (req, res) => {
     // }
 
     if (!lead.cibilScore) {
-        const response = await equifax(lead);
-        const value =
-            response.data?.CCRResponse?.CIRReportDataLst[0]?.CIRReportData
-                ?.ScoreDetails[0]?.Value;
+        // const response = await equifax(lead);
+        const pdfResult = await cibilPdf(lead);
+        // console.log(pdfResult);
 
-        console.log(value);
+        // const value =
+        //     response?.CCRResponse?.CIRReportDataLst[0]?.CIRReportData
+        //         ?.ScoreDetails[0]?.Value;
+
+        // if (!value) {
+        //     return res.json({
+        //         status: false,
+        //         message: "CIBIL couldn't be fetched",
+        //     });
+        // }
         // lead.cibilScore = value;
         // await lead.save();
 
-        return res.send(response.data);
-
-        // return res.json(response);
-
-        // return res.json({ success: true, value: response });
+        // return res.json({ success: true, value: value });
+        // return res.send(pdfResult);
     }
     return res.json({ success: true, value: lead.cibilScore });
 });
