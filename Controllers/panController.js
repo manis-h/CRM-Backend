@@ -44,7 +44,7 @@ export const savePanDetails = asyncHandler(async (req, res) => {
 
     const pan = data.PAN;
 
-    const existingPan = await PanDetails.findOne({ "data.result.PAN": pan });
+    const existingPan = await PanDetails.findOne({ "data.PAN": pan });
 
     if (existingPan) {
         return res.json({

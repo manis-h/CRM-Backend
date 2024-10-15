@@ -2,7 +2,7 @@ import axios from "axios";
 
 async function fetchCibil(lead) {
     try {
-        const {fName, mName, lName, dob, mobile, pan} = lead;
+        const { fName, mName, lName, dob, mobile, pan } = lead;
         const data = {
             RequestHeader: {
                 CustomerId: "9757",
