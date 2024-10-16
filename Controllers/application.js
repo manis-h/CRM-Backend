@@ -164,7 +164,7 @@ export const getCamDetails = asyncHandler(async (req, res) => {
         throw new Error("Application not found!!");
     }
 
-    const cam = await camDetails.findOne({
+    const cam = await CamDetails.findOne({
         leadId: application.lead,
     });
 

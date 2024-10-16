@@ -15,7 +15,7 @@ import {
 import { onHold, unHold, getHold } from "../helper/holdUnhold.js";
 import { rejected, getRejected } from "../helper/rejected.js";
 import { sentBack } from "../helper/sentBack.js";
-import { addDocs, getDocs } from "../helper/docsUploadAndFetch.js";
+import { addDocs, getDocuments } from "../helper/docsUploadAndFetch.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
 import upload from "../config/multer.js";
 
@@ -32,16 +32,18 @@ const uploadFields = upload.fields([
 // Other routes
 router.route("/").get(protect, getAllApplication);
 router.route("/allocated").get(protect, allocatedApplications);
+router.get("/hold", protect, getHold);
+router.get("/rejected", protect, getRejected);
 router
     .route("/:id")
     .get(protect, getApplication)
     .patch(protect, allocateApplication);
-router.route("/hold/:id").get(protect, getHold).patch(protect, onHold);
 router.patch("/unhold/:id", protect, unHold);
-router.patch("/reject/:id").get(protect, getRejected).patch(protect, rejected);
+router.patch("/sent-back/:id", protect, sentBack);
 router.patch("/forward/:id", protect, forwardApplication);
 // router.patch("/approve/:id", protect, approveApplication);
-router.patch("/sent-back/:id", protect, sentBack);
+router.route("/hold/:id").patch(protect, onHold);
+router.route("/reject/:id").patch(protect, rejected);
 router
     .route("/cam/:id")
     .get(protect, getCamDetails)
@@ -50,5 +52,5 @@ router
 router
     .route("/docs/:id")
     .patch(protect, uploadFields, addDocs)
-    .get(protect, getDocs);
+    .get(protect, getDocuments);
 export default router;
