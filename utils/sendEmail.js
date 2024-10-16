@@ -2,7 +2,7 @@ import axios from "axios";
 
 const apiKey = process.env.ZOHO_APIKEY;
 
-async function sendEmail(sender, recipient, recipientName, subject, otp) {
+async function sendEmail(recipient, recipientName, subject, otp) {
     try {
         const options = {
             method: "POST",

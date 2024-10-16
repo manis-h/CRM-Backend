@@ -122,11 +122,11 @@ const leadSchema = new mongoose.Schema(
                 },
             },
         ],
-        isApproved: {
+        isRecommended: {
             type: Boolean,
             default: false,
         },
-        approvedBy: {
+        recommendedBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Employee",
         },
