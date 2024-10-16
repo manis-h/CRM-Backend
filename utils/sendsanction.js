@@ -12,6 +12,7 @@ export const generateSanctionLetter = async (
     title,
     fullname,
     residenceAddress,
+    stateCountry,
     camDetails,
     recipientEmail
 ) => {
@@ -26,6 +27,7 @@ export const generateSanctionLetter = async (
             title: `${title}`,
             fullname: `${fullname}`,
             residenceAddress: `${residenceAddress}`,
+            stateCountry: `${stateCountry}`,
             mobile: `${personalMobile}`,
             loanAmount: `${new Intl.NumberFormat().format(
                 camDetails?.loanAmount

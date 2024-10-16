@@ -32,46 +32,41 @@ export const getForwardedApplications = asyncHandler(async (req, res) => {
 //@access Private
 export const sanctionApprove = asyncHandler(async (req, res) => {
     // Extract required fields from the request body
-    // const {
-    //     subject,
-    //     letterheadUrl,
-    //     sanctionDate,
-    //     title,
-    //     fullname,
-    //     residenceAddress,
-    //     camDetails,
-    //     PORTAL_NAME,
-    //     PORTAL_URL,
-    //     acceptanceButton,
-    //     acceptanceButtonLink,
-    //     letterfooterUrl,
-    //     toEmail,
-    //     toName,
-    // } = req.body;
+    const date = new Date();
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = String(date.getFullYear());
+
+    const sanctionDate = `${day}-${month}-${year}`;
+
+    const application = await Application.findById(id).populate("applicant");
+
+    const camDetails = await CamDetails.findOne({ leadId: application.lead });
+
+    if (!application) {
+        res.send(404);
+        throw new Error("Application not found");
+    }
+
+    application.isApproved = true;
+    application.approvedBy = req.employee._id.toString();
+    await application.save();
 
     // Call the generateSanctionLetter utility function
     const response = await generateSanctionLetter(
-        subject,
-        letterheadUrl,
+        `SANCTION LETTER - ${application.applicant.personalDetails.fName} ${application.applicant.personalDetails.mName} ${application.applicant.personalDetails.lName}`,
         sanctionDate,
-        title,
-        fullname,
-        residenceAddress,
+        "Mr./Ms.",
+        `${application.applicant.personalDetails.fName} ${application.applicant.personalDetails.mName} ${application.applicant.personalDetails.lName}`,
+        `${application.applicant.residence.address}, ${application.applicant.residence.city}`,
+        `${application.applicant.residence.state}, India - ${application.applicant.residence.pincode}`,
         camDetails,
-        PORTAL_NAME,
-        PORTAL_URL,
-        acceptanceButton,
-        acceptanceButtonLink,
-        letterfooterUrl,
-        toEmail,
-        toName
+        `${application.applicant.personalDetails.personalEmail}`
     );
 
     // Return a success response if the email is sent successfully
-    if (response.success) {
-        res.status(200).json(response);
-    } else {
-        // Return an error response if there's an issue with sending the email
-        res.status(500).json(response);
+    if (!response.success) {
+        res.json({ success: false });
     }
+    res.json({ success: true });
 });

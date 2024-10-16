@@ -17,16 +17,16 @@ export const sentBack = asyncHandler(async (req, res) => {
 
     if (sendTo === "screener") {
         await Application.deleteOne({
-            "lead._id": new mongoose.Types.ObjectId(id),
+            lead: new mongoose.Types.ObjectId(id),
         });
 
-        lead.isApproved = false;
-        lead.approvedBy = null;
+        lead.isRecommended = false;
+        lead.recommendedBy = null;
         await lead.save();
     }
     if (sendTo === "creditManager") {
-        application.isForwarded = true;
-        application.forwardedBy = null;
+        application.isRecommended = true;
+        application.recommendedBy = null;
         await application.save();
     }
 
