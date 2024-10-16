@@ -1,7 +1,6 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Lead from "../models/Leads.js";
 import Application from "../models/Applications.js";
-import Employee from "../models/Employees.js";
 import { postLogs } from "./logs.js";
 
 // @desc Putting lead or application on hold
@@ -38,7 +37,7 @@ export const onHold = asyncHandler(async (req, res) => {
             id,
             { onHold: true, heldBy: req.employee._id },
             { new: true }
-        ).populate("screenerId");
+        ).populate({ path: "screenerId", select: "fName mName lName" });
 
         if (!lead) {
             throw new Error("Lead not found");
@@ -62,7 +61,7 @@ export const onHold = asyncHandler(async (req, res) => {
             id,
             { onHold: true, heldBy: req.employee._id },
             { new: true }
-        ).populate("creditManagerId");
+        ).populate({ path: "creditManagerId", select: "fName mName lName" });
 
         if (!application) {
             throw new Error("Application not found");

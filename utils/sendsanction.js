@@ -21,6 +21,10 @@ export const generateSenctionLetter = async (
                 "Missing required fields: recipient, fullname, subject"
             );
         }
+        footer =
+            "https://publicramlella.s3.ap-south-1.amazonaws.com/public_assets/Footer.jpg";
+        header =
+            "https://publicramlella.s3.ap-south-1.amazonaws.com/public_assets/Header.jpg";
 
         // Plain HTML email body using template literals
         const htmlBody = `
@@ -30,7 +34,7 @@ export const generateSenctionLetter = async (
                 <tr>
                     <td colspan="2">
                         <p style="color: #0363a3; font-size: 18px;">
-                            <img src="${letterheadUrl}" alt="Sanctionletter-header" width="760" height="123" border="0" />
+                            <img src=${header} alt="Sanctionletter-header" width="760" height="123" border="0" />
                         </p>
                     </td>
                 </tr>
@@ -100,7 +104,7 @@ export const generateSenctionLetter = async (
                 </tr>
                 <tr>
                     <td colspan="2">
-                        <img src="${letterfooterUrl}" alt="Sanctionletter-footer" width="760" height="104" />
+                        <img src=${footer} alt="Sanctionletter-footer" width="760" height="104" />
                     </td>
                 </tr>
             </tbody>

@@ -32,16 +32,17 @@ const uploadFields = upload.fields([
 // Other routes
 router.route("/").get(protect, getAllApplication);
 router.route("/allocated").get(protect, allocatedApplications);
+router.get("/rejected", protect, getRejected);
 router
     .route("/:id")
     .get(protect, getApplication)
     .patch(protect, allocateApplication);
-router.route("/hold/:id").get(protect, getHold).patch(protect, onHold);
 router.patch("/unhold/:id", protect, unHold);
-router.patch("/reject/:id").get(protect, getRejected).patch(protect, rejected);
+router.patch("/sent-back/:id", protect, sentBack);
 router.patch("/forward/:id", protect, forwardApplication);
 // router.patch("/approve/:id", protect, approveApplication);
-router.patch("/sent-back/:id", protect, sentBack);
+router.route("/hold/:id").get(protect, getHold).patch(protect, onHold);
+router.route("/reject/:id").patch(protect, rejected);
 router
     .route("/cam/:id")
     .get(protect, getCamDetails)
