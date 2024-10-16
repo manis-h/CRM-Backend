@@ -112,6 +112,7 @@ const leadSchema = new mongoose.Schema(
                         "bankStatement",
                         "salarySlip",
                         "verificationVideo",
+                        "cibilReport",
                         // Add more document types as needed
                     ],
                 },

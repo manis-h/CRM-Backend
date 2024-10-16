@@ -15,10 +15,10 @@ async function fetchCibil(lead) {
             },
             RequestBody: {
                 InquiryPurpose: "00",
-                FirstName: "BADAL",
-                MiddleName: "",
-                LastName: "KUMAR",
-                DOB: "2002-12-22",
+                FirstName: fName,
+                MiddleName: mName ?? "",
+                LastName: lName ?? "",
+                DOB: dob,
                 InquiryAddresses: [
                     {
                         seq: "1",
@@ -31,7 +31,7 @@ async function fetchCibil(lead) {
                 InquiryPhones: [
                     {
                         seq: "1",
-                        Number: "9199479407",
+                        Number: mobile,
                         PhoneType: ["M"],
                     },
                 ],
@@ -39,7 +39,7 @@ async function fetchCibil(lead) {
                     {
                         seq: "1",
                         IDType: "T",
-                        IDValue: "HKCPK6182A",
+                        IDValue: pan,
                         Source: "Inquiry",
                     },
                     {
@@ -127,7 +127,7 @@ async function fetchCibil(lead) {
             }
         );
 
-        return response;
+        return response.data;
     } catch (error) {
         throw new Error("Error fetching CIBIL", error.message);
     }

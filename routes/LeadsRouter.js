@@ -15,7 +15,7 @@ import { rejected, getRejected } from "../helper/rejected.js";
 import { viewLogs } from "../helper/logs.js";
 import internalDedupe from "../helper/internalDedupe.js";
 import { bulkUpload } from "../helper/bulkUpload.js";
-import { addDocs, getDocs } from "../helper/docsUploadAndFetch.js";
+import { addDocs, getDocuments } from "../helper/docsUploadAndFetch.js";
 import { protect } from "../middleware/authMiddleware.js";
 import upload from "../config/multer.js";
 
@@ -46,6 +46,6 @@ router.patch("/approve/:id", protect, approveLead);
 router
     .route("/docs/:id")
     .patch(protect, uploadFields, addDocs)
-    .get(protect, getDocs);
+    .get(protect, getDocuments);
 
 export default router;
