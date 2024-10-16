@@ -189,7 +189,7 @@ export const updateCamDetails = asyncHandler(async (req, res) => {
     }
 
     // Find the CamDetails associated with the application (if needed)
-    let cam = await camDetails.findOne({
+    let cam = await CamDetails.findOne({
         "details.leadId": application.lead._id.toString(),
     });
 

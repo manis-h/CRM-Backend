@@ -9,6 +9,16 @@ import { postLogs } from "../helper/logs.js";
 // @access Private
 export const applicantDetails = async (details = null) => {
     try {
+        const applicant = await Applicant.findOne({
+            $or: [
+                { "personalDetails.pan": details.pan }, // Check if PAN matches
+                { "personalDetails.aadhaar": details.aadhaar }, // Check if Aadhaar matches
+            ],
+        });
+
+        if (applicant) {
+            return applicant;
+        }
         // Create the new log initally
         const newApplicant = await Applicant.create({
             personalDetails: {

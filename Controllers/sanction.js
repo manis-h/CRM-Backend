@@ -6,13 +6,13 @@ import CamDetails from "../models/CAM.js";
 // @desc Get the forwarded applications
 // @route GET /api/sanction/recommended
 // @access Private
-export const getForwardedApplications = asyncHandler(async (req, res) => {
+export const getRecommendedApplications = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1; // current page
     const limit = parseInt(req.query.limit) || 10; // items per page
     const skip = (page - 1) * limit;
 
     const query = {
-        isForwarded: true,
+        isRecommended: true,
     };
 
     const applications = await Application.find(query).skip(skip).limit(limit);

@@ -30,25 +30,25 @@ export const generateSanctionLetter = async (
             stateCountry: `${stateCountry}`,
             mobile: `${personalMobile}`,
             loanAmount: `${new Intl.NumberFormat().format(
-                camDetails?.loanAmount
+                camDetails?.details.loanAmount
             )}`,
-            roi: `${camDetails?.roi}`,
+            roi: `${camDetails?.details.roi}`,
             sanctionDate: `${sanctionDate}`,
             repaymentAmount: `${new Intl.NumberFormat().format(
-                camDetails?.repaymentAmount
+                camDetails?.details.repaymentAmount
             )}`,
-            tenure: `${tenure}`,
-            repaymentDate: `${repaymentDate}`,
-            penalInterest: `${penalInterest}`,
+            tenure: `${camDetails?.details.tenure}`,
+            repaymentDate: `${camDetails?.details.repaymentDate}`,
+            penalInterest: `${camDetails?.details.penalInterest}`,
             processingFee: `${new Intl.NumberFormat().format(
-                camDetails?.processingFee
+                camDetails?.details.processingFee
             )}`,
-            repaymentCheques: `${repaymentCheques}`,
+            repaymentCheques: `${camDetails?.details.repaymentCheques}`,
             bankName: `${bankName}`,
-            bouncingCharges: `${new Intl.NumberFormat().format(
-                camDetails?.bouncingCharges
+            bouncedCharges: `${new Intl.NumberFormat().format(
+                camDetails?.details.bouncedCharges
             )}`,
-            annualPercentageRate: `${annualPercentageRate}`,
+            annualPercentageRate: `${camDetails?.details.annualPercentageRate}`,
         };
         const htmlToSend = template(replacements);
 

@@ -108,7 +108,11 @@ export const getRejected = asyncHandler(async (req, res) => {
     }
 
     // Fetch the leads based on roles
-    if (req.employee.empRole === "screener") {
+    if (
+        req.employee.empRole === "screener" ||
+        req.employee.empRole === "sanctionHead" ||
+        req.employee.empRole === "admin"
+    ) {
         const leads = await Lead.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -121,7 +125,11 @@ export const getRejected = asyncHandler(async (req, res) => {
             currentPage: page,
             leads,
         });
-    } else if (req.employee.empRole === "creditManager") {
+    } else if (
+        req.employee.empRole === "creditManager" ||
+        req.employee.empRole === "sanctionHead" ||
+        req.employee.empRole === "admin"
+    ) {
         const application = await Application.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -135,5 +143,6 @@ export const getRejected = asyncHandler(async (req, res) => {
             currentPage: page,
             application,
         });
+    } else {
     }
 });
