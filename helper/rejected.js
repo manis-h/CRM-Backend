@@ -62,7 +62,7 @@ export const rejected = asyncHandler(async (req, res) => {
             { new: true }
         );
 
-        if (!lead) {
+        if (!application) {
             throw new Error("Lead not found");
         }
 
@@ -96,7 +96,6 @@ export const getRejected = asyncHandler(async (req, res) => {
     const skip = (page - 1) * limit;
 
     let query = { isRejected: true, isApproved: { $ne: true } };
-    const employeeId = req.employee._id.toString();
 
     if (!req.employee) {
         res.status(403);
@@ -109,17 +108,32 @@ export const getRejected = asyncHandler(async (req, res) => {
     }
 
     // Fetch the leads based on roles
-    const leads = await Lead.find(query)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit);
+    if (req.employee.empRole === "screener") {
+        const leads = await Lead.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
 
-    const totalLeads = await Lead.countDocuments(query);
+        const totalLeads = await Lead.countDocuments(query);
+        return res.json({
+            totalLeads,
+            totalPages: Math.ceil(totalLeads / limit),
+            currentPage: page,
+            leads,
+        });
+    } else if (req.employee.empRole === "creditManager") {
+        const application = await Application.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .populate("lead");
 
-    return res.json({
-        totalLeads,
-        totalPages: Math.ceil(totalLeads / limit),
-        currentPage: page,
-        leads,
-    });
+        const totalApplications = await Application.countDocuments(query);
+        return res.json({
+            totalApplications,
+            totalPages: Math.ceil(totalApplications / limit),
+            currentPage: page,
+            application,
+        });
+    }
 });
