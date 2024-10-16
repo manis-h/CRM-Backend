@@ -213,7 +213,10 @@ export const getHold = asyncHandler(async (req, res) => {
         });
     }
     if (req.employee.empRole === "creditManager") {
-        applications = await Application.find(query).skip(skip).limit();
+        applications = await Application.find(query)
+            .skip(skip)
+            .limit(limit)
+            .populate("lead");
         totalRecords = await Application.countDocuments(query);
 
         return res.json({
