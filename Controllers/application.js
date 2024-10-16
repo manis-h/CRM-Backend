@@ -181,6 +181,7 @@ export const getCamDetails = asyncHandler(async (req, res) => {
 export const updateCamDetails = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { details } = req.body;
+    console.log(req.body);
 
     const application = await Application.findById(id).populate("lead");
     if (!application) {
@@ -190,7 +191,7 @@ export const updateCamDetails = asyncHandler(async (req, res) => {
 
     // Find the CamDetails associated with the application (if needed)
     let cam = await CamDetails.findOne({
-        "details.leadId": application.lead._id.toString(),
+        leadId: application.lead._id.toString(),
     });
 
     if (!cam) {

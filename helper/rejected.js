@@ -108,11 +108,7 @@ export const getRejected = asyncHandler(async (req, res) => {
     }
 
     // Fetch the leads based on roles
-    if (
-        req.employee.empRole === "screener" ||
-        req.employee.empRole === "sanctionHead" ||
-        req.employee.empRole === "admin"
-    ) {
+    if (req.employee.empRole === "screener") {
         const leads = await Lead.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -120,16 +116,14 @@ export const getRejected = asyncHandler(async (req, res) => {
 
         const totalLeads = await Lead.countDocuments(query);
         return res.json({
-            totalLeads,
-            totalPages: Math.ceil(totalLeads / limit),
-            currentPage: page,
-            leads,
+            rejectedLeads: {
+                totalLeads,
+                totalPages: Math.ceil(totalLeads / limit),
+                currentPage: page,
+                leads,
+            },
         });
-    } else if (
-        req.employee.empRole === "creditManager" ||
-        req.employee.empRole === "sanctionHead" ||
-        req.employee.empRole === "admin"
-    ) {
+    } else if (req.employee.empRole === "creditManager") {
         const application = await Application.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -138,11 +132,42 @@ export const getRejected = asyncHandler(async (req, res) => {
 
         const totalApplications = await Application.countDocuments(query);
         return res.json({
-            totalApplications,
-            totalPages: Math.ceil(totalApplications / limit),
-            currentPage: page,
-            application,
+            rejectedApplications: {
+                totalApplications,
+                totalPages: Math.ceil(totalApplications / limit),
+                currentPage: page,
+                application,
+            },
         });
     } else {
+        const leads = await Lead.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const totalLeads = await Lead.countDocuments(query);
+
+        const application = await Application.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .populate("lead");
+
+        const totalApplications = await Application.countDocuments(query);
+
+        return res.json({
+            rejectedLeads: {
+                totalLeads,
+                totalPages: Math.ceil(totalLeads / limit),
+                currentPage: page,
+                leads,
+            },
+            rejectedApplications: {
+                totalApplications,
+                totalPages: Math.ceil(totalApplications / limit),
+                currentPage: page,
+                application,
+            },
+        });
     }
 });
