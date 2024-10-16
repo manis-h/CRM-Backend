@@ -115,7 +115,7 @@ export const allocatedApplications = asyncHandler(async (req, res) => {
             creditManagerId: req.employee.id,
             onHold: { $ne: true },
             isRejected: { $ne: true },
-            isRecommended: { $ne: true },
+            isForwarded: { $ne: true },
         };
     } else {
         res.status(401);
