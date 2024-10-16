@@ -55,11 +55,11 @@ const residenceSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    state: {
+    city: {
         type: String,
         required: true,
     },
-    city: {
+    state: {
         type: String,
         required: true,
     },

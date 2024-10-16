@@ -74,7 +74,7 @@ export const getAllLeads = asyncHandler(async (req, res) => {
 
     const query = {
         $or: [{ screenerId: { $exists: false } }, { screenerId: null }],
-        isApproved: { $ne: true },
+        isRecommended: { $ne: true },
     };
 
     const leads = await Lead.find(query).skip(skip).limit(limit);
@@ -153,14 +153,14 @@ export const allocatedLeads = asyncHandler(async (req, res) => {
             },
             onHold: { $exists: false, $ne: true },
             isRejected: { $exists: false, $ne: true },
-            isApproved: { $ne: true },
+            isRecommended: { $ne: true },
         };
     } else if (req.employee.empRole === "screener") {
         query = {
             screenerId: req.employee.id,
             onHold: { $ne: true },
             isRejected: { $ne: true },
-            isApproved: { $ne: true },
+            isRecommended: { $ne: true },
         };
     } else {
         res.status(401);
@@ -233,7 +233,7 @@ export const updateLead = asyncHandler(async (req, res) => {
 // @desc Approve the lead
 // @route Patch /api/lead/approve/:id
 // @access Private
-export const approveLead = asyncHandler(async (req, res) => {
+export const recommendLead = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const screenerId = req.employee._id.toString();
 
@@ -286,8 +286,8 @@ export const approveLead = asyncHandler(async (req, res) => {
     await postCamDetails(id, lead.cibilScore);
 
     // Approve the lead by updating its status
-    lead.isApproved = true;
-    lead.approvedBy = screenerId;
+    lead.isRecommended = true;
+    lead.recommendedBy = screenerId;
     await lead.save();
 
     const newApplication = new Application({

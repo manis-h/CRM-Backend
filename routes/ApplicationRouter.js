@@ -6,9 +6,8 @@ import {
     getApplication,
     allocateApplication,
     allocatedApplications,
-    forwardApplication,
+    recommendedApplication,
     getCamDetails,
-    postCamDetails,
     updateCamDetails,
     // approveApplication,
 } from "../Controllers/application.js";
@@ -40,7 +39,7 @@ router
     .patch(protect, allocateApplication);
 router.patch("/unhold/:id", protect, unHold);
 router.patch("/sent-back/:id", protect, sentBack);
-router.patch("/forward/:id", protect, forwardApplication);
+router.patch("/forward/:id", protect, recommendedApplication);
 // router.patch("/approve/:id", protect, approveApplication);
 router.route("/hold/:id").patch(protect, onHold);
 router.route("/reject/:id").patch(protect, rejected);

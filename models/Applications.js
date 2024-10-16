@@ -31,8 +31,8 @@ const applicationSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Employee",
         },
-        isForwarded: { type: Boolean, default: false },
-        forwardedBy: {
+        isRecommended: { type: Boolean, default: false },
+        recommendedBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Employee",
         },
