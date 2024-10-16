@@ -10,7 +10,6 @@ import { postLogs } from "./logs.js";
 export const onHold = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { reason } = req.body;
-    const employee = await Employee.findOne({ _id: req.employee._id });
 
     // List of roles that are authorized to hold a lead
     const authorizedRoles = [
@@ -39,7 +38,7 @@ export const onHold = asyncHandler(async (req, res) => {
             id,
             { onHold: true, heldBy: req.employee._id },
             { new: true }
-        );
+        ).populate("screenerId");
 
         if (!lead) {
             throw new Error("Lead not found");
@@ -49,7 +48,7 @@ export const onHold = asyncHandler(async (req, res) => {
             lead._id,
             "LEAD ON HOLD",
             `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
-            `Lead on hold by ${employee.fName} ${employee.lName}`,
+            `Lead on hold by ${lead.screenerId.fName} ${lead.screenerId.lName}`,
             `${reason}`
         );
         return res.json({ lead, logs });
@@ -63,7 +62,7 @@ export const onHold = asyncHandler(async (req, res) => {
             id,
             { onHold: true, heldBy: req.employee._id },
             { new: true }
-        );
+        ).populate("creditManagerId");
 
         if (!application) {
             throw new Error("Application not found");
@@ -75,7 +74,7 @@ export const onHold = asyncHandler(async (req, res) => {
             `${application.lead.fName} ${application.lead.mName ?? ""} ${
                 application.lead.lName
             }`,
-            `Application on hold by ${employee.fName} ${employee.lName}`,
+            `Application on hold by ${application.creditManagerId.fName} ${application.creditManagerId.lName}`,
             `${reason}`
         );
 
@@ -89,7 +88,6 @@ export const onHold = asyncHandler(async (req, res) => {
 export const unHold = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { reason } = req.body;
-    const employee = await Employee.findOne({ _id: req.employee._id });
 
     // List of roles that are authorized to hold a lead
     const authorizedRoles = [
@@ -118,7 +116,7 @@ export const unHold = asyncHandler(async (req, res) => {
             id,
             { onHold: false },
             { new: true }
-        );
+        ).populate("screenerId");
 
         if (!lead) {
             throw new Error("Lead not found!!!");
@@ -128,7 +126,7 @@ export const unHold = asyncHandler(async (req, res) => {
             lead._id,
             "LEAD UNHOLD",
             `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
-            `Lead unhold by ${employee.fName} ${employee.lName}`,
+            `Lead unhold by ${lead.screenerId.fName} ${lead.screenerId.lName}`,
             `${reason}`
         );
         return res.json({ lead, logs });
@@ -139,7 +137,7 @@ export const unHold = asyncHandler(async (req, res) => {
             id,
             { onHold: false },
             { new: true }
-        );
+        ).populate("creditMangerId");
 
         if (!application) {
             throw new Error("Application not found!!");
@@ -151,7 +149,7 @@ export const unHold = asyncHandler(async (req, res) => {
             `${application.lead.fName} ${application.lead.mName ?? ""} ${
                 application.lead.lName
             }`,
-            `Application unhold by ${employee.fName} ${employee.lName}`,
+            `Application unhold by ${application.creditManagerId.fName} ${application.creditManagerId.lName}`,
             `${reason}`
         );
         return res.json({ application, logs });

@@ -9,20 +9,20 @@ export const sentBack = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { sendTo, reason } = req.body;
 
+    // If sendTo is screener this will be used
     const lead = await Lead.findById(id);
-    console.log(lead);
 
-    const application = await Application.findById(id);
-    console.log(application);
+    // If sendTo is Credit Manager this will be used
+    const application = await Application.findOne({ lead: id });
 
     if (sendTo === "screener") {
-        // lead.isApproved = false;
-        // lead.approvedBy = null;
-        // await lead.save();
-
         await Application.deleteOne({
             "lead._id": new mongoose.Types.ObjectId(id),
         });
+
+        lead.isApproved = false;
+        lead.approvedBy = null;
+        await lead.save();
     }
     if (sendTo === "creditManager") {
         application.isForwarded = true;
