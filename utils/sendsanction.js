@@ -6,17 +6,14 @@ import { fileURLToPath } from "url";
 
 const apiKey = process.env.ZOHO_APIKEY;
 
-export const generateSenctionLetter = async (
+export const generateSanctionLetter = async (
     subject,
     sanctionDate,
     title,
     fullname,
     residenceAddress,
     camDetails,
-    PORTAL_NAME,
-    acceptanceButton,
-    acceptanceButtonLink,
-    recipient
+    recipientEmail
 ) => {
     try {
         const __filename = fileURLToPath(import.meta.url);
@@ -39,24 +36,27 @@ export const generateSenctionLetter = async (
                 camDetails?.repaymentAmount
             )}`,
             tenure: `${tenure}`,
-            // mobile: `${}`,
-            // mobile: `${}`,
-            message: `http://localhost:3000/resetPassword`,
+            repaymentDate: `${repaymentDate}`,
+            penalInterest: `${penalInterest}`,
+            processingFee: `${new Intl.NumberFormat().format(
+                camDetails?.processingFee
+            )}`,
+            repaymentCheques: `${repaymentCheques}`,
+            bankName: `${bankName}`,
+            bouncingCharges: `${new Intl.NumberFormat().format(
+                camDetails?.bouncingCharges
+            )}`,
+            annualPercentageRate: `${annualPercentageRate}`,
         };
-        if (!recipient || !fullname || !subject) {
-            throw new Error(
-                "Missing required fields: recipient, fullname, subject"
-            );
-        }
-        footer =
-            "https://publicramlella.s3.ap-south-1.amazonaws.com/public_assets/Footer.jpg";
-        header =
-            "https://publicramlella.s3.ap-south-1.amazonaws.com/public_assets/Header.jpg";
+        const htmlToSend = template(replacements);
+
+        // footer =
+        //     "https://publicramlella.s3.ap-south-1.amazonaws.com/public_assets/Footer.jpg";
+        // header =
+        //     "https://publicramlella.s3.ap-south-1.amazonaws.com/public_assets/Header.jpg";
 
         // Plain HTML email body using template literals
-        const htmlBody = `
-    
-    `;
+        const htmlBody = htmlToSend;
 
         // Setup the options for the ZeptoMail API
         const options = {
@@ -70,9 +70,17 @@ export const generateSenctionLetter = async (
             },
             data: JSON.stringify({
                 from: { address: "info@only1loan.com" },
-                to: [{ email_address: { address: recipient, name: fullname } }],
+                to: [
+                    {
+                        email_address: {
+                            address: recipientEmail,
+                            name: fullname,
+                        },
+                    },
+                ],
                 subject: subject,
                 htmlbody: htmlBody,
+                priority: "high",
             }),
         };
 
@@ -81,7 +89,6 @@ export const generateSenctionLetter = async (
         return {
             success: true,
             message: "Email sent successfully",
-            response: response.data,
         };
     } catch (error) {
         return {

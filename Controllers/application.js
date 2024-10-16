@@ -22,7 +22,7 @@ export const getAllApplication = asyncHandler(async (req, res) => {
             { creditManagerId: { $exists: false } },
             { creditManagerId: null },
         ],
-        isForwarded: { $ne: true },
+        isRecommended: { $ne: true },
     };
 
     const applications = await Application.find(query)
@@ -108,7 +108,7 @@ export const allocatedApplications = asyncHandler(async (req, res) => {
             },
             onHold: { $exists: false, $ne: true },
             isRejected: { $exists: false, $ne: true },
-            isForwarded: { $ne: true },
+            isRecommended: { $ne: true },
         };
     } else if (req.employee.empRole === "creditManager") {
         query = {
@@ -208,9 +208,9 @@ export const updateCamDetails = asyncHandler(async (req, res) => {
 });
 
 // @desc Forward the Application to Sanction head
-// @route Patch /api/applications/forward/:id
+// @route Patch /api/applications/recommended/:id
 // @access Private
-export const forwardApplication = asyncHandler(async (req, res) => {
+export const recommendedApplication = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const creditManagerId = req.creditManager._id.toString();
 
@@ -228,8 +228,8 @@ export const forwardApplication = asyncHandler(async (req, res) => {
     }
 
     // Approve the lead by updating its status
-    application.isForwarded = true;
-    application.forwardedBy = creditManagerId;
+    application.isRecommended = true;
+    application.recommendedBy = creditManagerId;
     await application.save();
 
     // const newApplication = new Application({ lead: lead });

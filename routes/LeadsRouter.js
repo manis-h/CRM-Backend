@@ -8,7 +8,7 @@ import {
     allocateLead,
     allocatedLeads,
     updateLead,
-    approveLead,
+    recommendLead,
 } from "../Controllers/leads.js";
 import { onHold, unHold, getHold } from "../helper/holdUnhold.js";
 import { rejected, getRejected } from "../helper/rejected.js";
@@ -42,7 +42,7 @@ router.patch("/unhold/:id", protect, unHold);
 router.route("/update/:id").patch(protect, updateLead);
 router.patch("/reject/:id", protect, rejected);
 router.get("/viewlogs/:leadId", protect, viewLogs);
-router.patch("/approve/:id", protect, approveLead);
+router.patch("/recommend/:id", protect, recommendLead);
 router
     .route("/docs/:id")
     .patch(protect, uploadFields, addDocs)
