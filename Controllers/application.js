@@ -223,8 +223,10 @@ export const recommendedApplication = asyncHandler(async (req, res) => {
 
     const result = await checkApproval({}, application, "", creditManagerId);
 
-    if (!result.approved) {
-        return res.json({ success: false, message: result.message });
+    if (!result.success) {
+        return res
+            .status(400)
+            .json({ success: false, message: result.message });
     }
 
     // Approve the lead by updating its status
