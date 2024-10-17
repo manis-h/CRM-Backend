@@ -15,7 +15,10 @@ export const getRecommendedApplications = asyncHandler(async (req, res) => {
         isRecommended: true,
     };
 
-    const applications = await Application.find(query).skip(skip).limit(limit);
+    const applications = await Application.find(query)
+        .skip(skip)
+        .limit(limit)
+        .populate("lead");
 
     const totalApplications = await Application.countDocuments(query);
 

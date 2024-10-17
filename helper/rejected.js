@@ -69,9 +69,9 @@ export const rejected = asyncHandler(async (req, res) => {
         logs = await postLogs(
             application.lead._id,
             "APPLICATION REJECTED",
-            `${application.lead.fName} ${application.lead.mName ?? ""} ${
-                application.lead.lName ?? ""
-            }`,
+            `${application.lead.fName}${
+                application.lead.mName && ` ${application.lead.mName}`
+            } ${application.lead.lName ?? ""}`,
             `APPLICATION rejected by ${employee.fName} ${employee.lName}`,
             `${reason}`
         );
