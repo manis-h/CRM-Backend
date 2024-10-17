@@ -143,7 +143,7 @@ export const getRejected = asyncHandler(async (req, res) => {
         const leads = await Lead.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)
-            .limit(limit);
+            .limit(limit).populate("rejectedBy");
 
         const totalLeads = await Lead.countDocuments(query);
 

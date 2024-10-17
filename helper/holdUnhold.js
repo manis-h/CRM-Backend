@@ -186,9 +186,10 @@ export const getHold = asyncHandler(async (req, res) => {
     }
 
     // If the employee is not admint, they only see the leads they rejected
+
     if (
-        req.employee.empRole !== "admin" ||
-        req.employee.empRole !== "sanctionHead"
+        req.employee.empRole === "screener" ||
+        req.employee.empRole === "creditManager"
     ) {
         query = {
             ...query,
@@ -229,13 +230,13 @@ export const getHold = asyncHandler(async (req, res) => {
             },
         });
     } else {
-        leads = await Lead.find(query).skip(skip).limit(limit);
+        leads = await Lead.find(query).skip(skip).limit(limit).populate("heldBy");
         const totalLeads = await Lead.countDocuments(query);
 
         applications = await Application.find(query)
             .skip(skip)
             .limit(limit)
-            .populate("lead");
+            .populate("lead").populate('heldBy');
         const totalApplications = await Application.countDocuments(query);
 
         return res.json({

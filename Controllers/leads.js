@@ -162,6 +162,16 @@ export const allocatedLeads = asyncHandler(async (req, res) => {
             isRejected: { $ne: true },
             isRecommended: { $ne: true },
         };
+    }else if (req.employee.empRole === "sanctionHead") {
+        query = {
+            screenerId: {
+                $exists: true,
+                $ne: null,
+            },
+            onHold: { $ne: true },
+            isRejected: { $ne: true },
+            isRecommended: { $ne: true },
+        };
     } else {
         res.status(401);
         throw new Error("Not authorized!!!");
@@ -170,7 +180,7 @@ export const allocatedLeads = asyncHandler(async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // items per page
     const skip = (page - 1) * limit;
 
-    const leads = await Lead.find(query).skip(skip).limit(limit);
+    const leads = await Lead.find(query).skip(skip).limit(limit).populate('screenerId');
 
     const totalLeads = await Lead.countDocuments(query);
 
