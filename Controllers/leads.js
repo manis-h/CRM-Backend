@@ -402,33 +402,32 @@ export const fetchCibil = asyncHandler(async (req, res) => {
         throw new Error("Lead not found!!!");
     }
 
-    // if (lead.screenerId.toString() !== req.employee._id.toString()) {
-    //     res.status(404);
-    //     throw new Error(
-    //         "You are not authorized to fetch CIBIL for this lead!!!"
-    //     );
-    // }
+    if (lead.screenerId.toString() !== req.employee._id.toString()) {
+        res.status(404);
+        throw new Error(
+            "You are not authorized to fetch CIBIL for this lead!!!"
+        );
+    }
 
     if (!lead.cibilScore) {
-        // const response = await equifax(lead);
-        const pdfResult = await cibilPdf(lead);
+        const response = await equifax(lead);
+        await cibilPdf(lead);
         // console.log(pdfResult);
 
-        // const value =
-        //     response?.CCRResponse?.CIRReportDataLst[0]?.CIRReportData
-        //         ?.ScoreDetails[0]?.Value;
+        const value =
+            response?.CCRResponse?.CIRReportDataLst[0]?.CIRReportData
+                ?.ScoreDetails[0]?.Value;
 
-        // if (!value) {
-        //     return res.json({
-        //         status: false,
-        //         message: "CIBIL couldn't be fetched",
-        //     });
-        // }
-        // lead.cibilScore = value;
-        // await lead.save();
+        if (!value) {
+            return res.json({
+                status: false,
+                message: "CIBIL couldn't be fetched",
+            });
+        }
+        lead.cibilScore = value;
+        await lead.save();
 
-        // return res.json({ success: true, value: value });
-        // return res.send(pdfResult);
+        return res.json({ success: true, value: value });
     }
     return res.json({ success: true, value: lead.cibilScore });
 });

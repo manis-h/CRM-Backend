@@ -37,5 +37,5 @@ router
 router.post("/pan-aadhaar-link/:id", panAadhaarLink);
 
 // fetch CIBIL
-router.get("/equifax/:id", fetchCibil);
+router.get("/equifax/:id", protect, fetchCibil);
 export default router;

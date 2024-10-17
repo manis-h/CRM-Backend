@@ -106,17 +106,6 @@ async function fetchCibil(lead) {
 
         // console.log(stringifiedData);
 
-        // const response = await fetch(
-        //     "https://ists.equifax.co.in/cir360service/cir360report",
-        //     {
-        //         method: "POST", // Specify the method as POST
-        //         headers: {
-        //             "Content-Type": "application/json", // Specify the content type
-        //         },
-        //         body: JSON.stringify(data), // Convert data object to JSON string
-        //     }
-        // );
-
         const response = await axios.post(
             "https://ists.equifax.co.in/cir360service/cir360report",
             stringifiedData,

@@ -115,7 +115,7 @@ export const allocatedApplications = asyncHandler(async (req, res) => {
             creditManagerId: req.employee.id,
             onHold: { $ne: true },
             isRejected: { $ne: true },
-            isForwarded: { $ne: true },
+            isRecommended: { $ne: true },
         };
     } else {
         res.status(401);
@@ -189,8 +189,8 @@ export const updateCamDetails = asyncHandler(async (req, res) => {
     }
 
     // Find the CamDetails associated with the application (if needed)
-    let cam = await camDetails.findOne({
-        "details.leadId": application.lead._id.toString(),
+    let cam = await CamDetails.findOne({
+        leadId: application.lead._id.toString(),
     });
 
     if (!cam) {

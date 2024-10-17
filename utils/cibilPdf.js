@@ -49,10 +49,11 @@ async function htmlToPdf(lead, htmlResponse) {
 async function cibilPdf(lead) {
     const parser = new Parser();
 
-    const url =
-        "https://ists.equifax.co.in/creditreportws/CreditReportWSInquiry/v1.0?wsdl=null";
+    const options = {
+        method: "POST",
+        url: "https://ists.equifax.co.in/creditreportws/CreditReportWSInquiry/v1.0?wsdl=null",
 
-    const xmlPayload = `
+        data: `
         <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://services.equifax.com/eport/ws/schemas/1.0">
             <soapenv:Header/>
             <soapenv:Body>
@@ -84,10 +85,12 @@ async function cibilPdf(lead) {
                         <ns:InquiryPurpose>0E</ns:InquiryPurpose>
                         <ns:TransactionAmount>0</ns:TransactionAmount>
                         <ns:AdditionalSearchField></ns:AdditionalSearchField>
-                        <ns:FullName>SHANKARANARAYANAN S</ns:FullName>
-                        <ns:FirstName>SHANKARANARAYANAN</ns:FirstName>
-                        <ns:MiddleName></ns:MiddleName>
-                        <ns:LastName>S</ns:LastName>
+                        <ns:FullName>${lead.fName}${
+            lead.mName && ` ${lead.mName}`
+        } ${lead.lName}</ns:FullName>
+                        <ns:FirstName>${lead.fName}</ns:FirstName>
+                        <ns:MiddleName>${lead.mName}</ns:MiddleName>
+                        <ns:LastName>${lead.lName}</ns:LastName>
                         <ns:FamilyDetails>
                             <ns:AdditionalNameInfo seq="1">
                                 <ns:AdditionalName>SUMIT</ns:AdditionalName>
@@ -99,16 +102,16 @@ async function cibilPdf(lead) {
                         <ns:City></ns:City>
                         <ns:State>DL</ns:State>
                         <ns:Postal>110057</ns:Postal>
-                        <ns:DOB>1981-10-08</ns:DOB>
-                        <ns:Gender>M</ns:Gender>
+                        <ns:DOB>${lead.dob}</ns:DOB>
+                        <ns:Gender>${lead.gender}</ns:Gender>
                         <ns:MaritalStatus></ns:MaritalStatus>
                         <ns:NationalIdCard></ns:NationalIdCard>
                         <ns:DriverLicense></ns:DriverLicense>
                         <ns:PassportId></ns:PassportId>
                         <ns:RationCard></ns:RationCard>
-                        <ns:PANId>AYJPV5807B</ns:PANId>
+                        <ns:PANId>${lead.pan}</ns:PANId>
                         <ns:VoterId></ns:VoterId>
-                        <ns:MobilePhone>9379166850</ns:MobilePhone>
+                        <ns:MobilePhone>${lead.mobile}</ns:MobilePhone>
                         <ns:RequestAccountDetails seq="1">
                             <ns:AccountNumber></ns:AccountNumber>
                             <ns:BranchIDMFI></ns:BranchIDMFI>
@@ -131,7 +134,11 @@ async function cibilPdf(lead) {
                 </InquiryRequest>
             </soapenv:Body>
         </soapenv:Envelope>
-    `;
+    `,
+        headers: {
+            "Content-type": "text/xml",
+        },
+    };
     // `
     // <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://services.equifax.com/eport/ws/schemas/1.0">
     //     <soapenv:Header/>
@@ -171,16 +178,10 @@ async function cibilPdf(lead) {
 
     try {
         // Sending the POST request
-        const response = await axios.post(url, xmlPayload, {
-            headers: {
-                "Content-type": "text/plain",
-            },
-        });
+        const response = await axios(options);
 
         // Parse the XML response
         const parsedResponse = await parser.parseStringPromise(response.data);
-
-        // console.log(parsedResponse);
 
         // Extract the HTML content inside <sch:HtmlReportResponse>
         const htmlReportResponse =

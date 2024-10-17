@@ -173,7 +173,7 @@ export const getHold = asyncHandler(async (req, res) => {
 
     const employeeId = req.employee._id.toString();
 
-    let query = { onHold: true, isApproved: { $ne: true } };
+    let query = { onHold: true, isRecommended: { $ne: true } };
 
     if (!req.employee) {
         res.status(403);
@@ -206,13 +206,14 @@ export const getHold = asyncHandler(async (req, res) => {
         totalRecords = await Lead.countDocuments(query);
 
         return res.json({
-            totalRecords,
-            totalPages: Math.ceil(totalRecords / limit),
-            currentPage: page,
-            leads,
+            heldLeads: {
+                totalRecords,
+                totalPages: Math.ceil(totalRecords / limit),
+                currentPage: page,
+                leads,
+            },
         });
-    }
-    if (req.employee.empRole === "creditManager") {
+    } else if (req.employee.empRole === "creditManager") {
         applications = await Application.find(query)
             .skip(skip)
             .limit(limit)
@@ -220,10 +221,36 @@ export const getHold = asyncHandler(async (req, res) => {
         totalRecords = await Application.countDocuments(query);
 
         return res.json({
-            totalRecords,
-            totalPages: Math.ceil(totalRecords / limit),
-            currentPage: page,
-            applications,
+            heldApplications: {
+                totalRecords,
+                totalPages: Math.ceil(totalRecords / limit),
+                currentPage: page,
+                applications,
+            },
+        });
+    } else {
+        leads = await Lead.find(query).skip(skip).limit(limit);
+        const totalLeads = await Lead.countDocuments(query);
+
+        applications = await Application.find(query)
+            .skip(skip)
+            .limit(limit)
+            .populate("lead");
+        const totalApplications = await Application.countDocuments(query);
+
+        return res.json({
+            heldLeads: {
+                totalLeads,
+                totalPages: Math.ceil(totalLeads / limit),
+                currentPage: page,
+                leads,
+            },
+            heldApplications: {
+                totalApplications,
+                totalPages: Math.ceil(totalApplications / limit),
+                currentPage: page,
+                applications,
+            },
         });
     }
 });
