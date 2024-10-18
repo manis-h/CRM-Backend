@@ -237,7 +237,7 @@ export const getHold = asyncHandler(async (req, res) => {
             .skip(skip)
             .limit(limit)
             .populate("lead").populate('heldBy');
-        const totalApplications = await Application.countDocuments(query);
+        const totalRecords = await Application.countDocuments(query);
 
         return res.json({
             heldLeads: {
@@ -247,8 +247,8 @@ export const getHold = asyncHandler(async (req, res) => {
                 leads,
             },
             heldApplications: {
-                totalApplications,
-                totalPages: Math.ceil(totalApplications / limit),
+                totalRecords,
+                totalPages: Math.ceil(totalRecords / limit),
                 currentPage: page,
                 applications,
             },
