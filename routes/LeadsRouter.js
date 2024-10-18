@@ -1,6 +1,5 @@
 import express from "express";
-const router = express.Router();
-
+import upload from "../config/multer.js";
 import {
     createLead,
     getAllLeads,
@@ -9,16 +8,17 @@ import {
     allocatedLeads,
     updateLead,
     recommendLead,
-    getTotalLeads,
 } from "../Controllers/leads.js";
-import { onHold, unHold, getHold } from "../helper/holdUnhold.js";
-import { rejected, getRejected } from "../helper/rejected.js";
-import { viewLogs } from "../helper/logs.js";
-import internalDedupe from "../helper/internalDedupe.js";
 import { bulkUpload } from "../helper/bulkUpload.js";
 import { addDocs, getDocuments } from "../helper/docsUploadAndFetch.js";
+import { onHold, unHold, getHold } from "../helper/holdUnhold.js";
+import internalDedupe from "../helper/internalDedupe.js";
+import { viewLogs } from "../helper/logs.js";
+import { rejected, getRejected } from "../helper/rejected.js";
+import { totalRecords } from "../helper/totalRecords.js";
 import { protect } from "../middleware/authMiddleware.js";
-import upload from "../config/multer.js";
+
+const router = express.Router();
 
 // Define the fields you want to upload
 const uploadFields = upload.fields([
@@ -33,7 +33,7 @@ const uploadFields = upload.fields([
 // Other routes
 router.route("/").post(createLead).get(protect, getAllLeads);
 router.route("/bulk-upload").post(protect, upload.single("csv"), bulkUpload);
-router.get("/totalleads", protect, getTotalLeads);
+router.get("/totalRecords", protect, totalRecords);
 router.route("/allocated").get(protect, allocatedLeads);
 router.get("/hold", protect, getHold);
 router.get("/reject", protect, getRejected);

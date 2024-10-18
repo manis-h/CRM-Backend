@@ -89,35 +89,6 @@ export const getAllLeads = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc Get total number of lead
-// @route GET /api/leads/totalleads
-// @access Private
-export const getTotalLeads = asyncHandler(async (req, res) => {
-    const leads = await Lead.find({});
-
-    const totalLeads = leads.length;
-    const newLeads = leads.filter(
-        (lead) => !lead.screenerId && !lead.onHold && !lead.isRejected
-    ).length;
-    const allocatedLeads = leads.filter(
-        (lead) => lead.screenerId && !lead.onHold && !lead.isRejected
-    ).length;
-    const heldLeads = leads.filter(
-        (lead) => lead.screenerId && lead.onHold && !lead.isRejected
-    ).length;
-    const rejectedLeads = leads.filter(
-        (lead) => lead.screenerId && !lead.onHold && lead.isRejected
-    ).length;
-
-    res.json({
-        totalLeads,
-        newLeads,
-        allocatedLeads,
-        heldLeads,
-        rejectedLeads,
-    });
-});
-
 // @desc Get lead
 // @route GET /api/leads/:id
 // @access Private
