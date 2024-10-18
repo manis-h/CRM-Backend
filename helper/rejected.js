@@ -63,7 +63,7 @@ export const rejected = asyncHandler(async (req, res) => {
             id,
             { isRejected: true, rejectedBy: req.employee._id },
             { new: true }
-        );
+        ).populate("lead");
 
         if (!application) {
             throw new Error("Lead not found");

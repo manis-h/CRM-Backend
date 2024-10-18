@@ -148,11 +148,10 @@ export const allocatedLeads = asyncHandler(async (req, res) => {
     if (req.employee.empRole === "admin") {
         query = {
             screenerId: {
-                $exists: true,
                 $ne: null,
             },
-            onHold: { $exists: false, $ne: true },
-            isRejected: { $exists: false, $ne: true },
+            onHold: { $ne: true },
+            isRejected: { $ne: true },
             isRecommended: { $ne: true },
         };
     } else if (req.employee.empRole === "screener") {
@@ -165,7 +164,6 @@ export const allocatedLeads = asyncHandler(async (req, res) => {
     } else if (req.employee.empRole === "sanctionHead") {
         query = {
             screenerId: {
-                $exists: true,
                 $ne: null,
             },
             onHold: { $ne: true },

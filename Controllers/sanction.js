@@ -14,6 +14,7 @@ export const getRecommendedApplications = asyncHandler(async (req, res) => {
 
     const query = {
         isRecommended: true,
+        isRejected: { $ne: true },
     };
 
     const applications = await Application.find(query)
