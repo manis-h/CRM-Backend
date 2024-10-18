@@ -10,7 +10,7 @@ import { protect } from "../middleware/authMiddleware.js";
 
 router
     .route("/bankDetails/:id")
-    .post(protect, addOrUpdateApplicantBankDetails)
+    .patch(protect, addOrUpdateApplicantBankDetails)
     .get(protect, getApplicantBankDetails);
 
 router

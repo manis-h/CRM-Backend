@@ -148,16 +148,24 @@ export const allocatedLeads = asyncHandler(async (req, res) => {
     if (req.employee.empRole === "admin") {
         query = {
             screenerId: {
-                $exists: true,
                 $ne: null,
             },
-            onHold: { $exists: false, $ne: true },
-            isRejected: { $exists: false, $ne: true },
+            onHold: { $ne: true },
+            isRejected: { $ne: true },
             isRecommended: { $ne: true },
         };
     } else if (req.employee.empRole === "screener") {
         query = {
             screenerId: req.employee.id,
+            onHold: { $ne: true },
+            isRejected: { $ne: true },
+            isRecommended: { $ne: true },
+        };
+    } else if (req.employee.empRole === "sanctionHead") {
+        query = {
+            screenerId: {
+                $ne: null,
+            },
             onHold: { $ne: true },
             isRejected: { $ne: true },
             isRecommended: { $ne: true },
@@ -170,7 +178,10 @@ export const allocatedLeads = asyncHandler(async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // items per page
     const skip = (page - 1) * limit;
 
-    const leads = await Lead.find(query).skip(skip).limit(limit);
+    const leads = await Lead.find(query)
+        .skip(skip)
+        .limit(limit)
+        .populate("screenerId");
 
     const totalLeads = await Lead.countDocuments(query);
 

@@ -1,6 +1,5 @@
 import express from "express";
-const router = express.Router();
-
+import upload from "../config/multer.js";
 import {
     getAllApplication,
     getApplication,
@@ -11,12 +10,14 @@ import {
     updateCamDetails,
     // approveApplication,
 } from "../Controllers/application.js";
+import { addDocs, getDocuments } from "../helper/docsUploadAndFetch.js";
 import { onHold, unHold, getHold } from "../helper/holdUnhold.js";
 import { rejected, getRejected } from "../helper/rejected.js";
 import { sentBack } from "../helper/sentBack.js";
-import { addDocs, getDocuments } from "../helper/docsUploadAndFetch.js";
+import { totalRecords } from "../helper/totalRecords.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
-import upload from "../config/multer.js";
+
+const router = express.Router();
 
 // Define the fields you want to upload
 const uploadFields = upload.fields([
@@ -30,6 +31,7 @@ const uploadFields = upload.fields([
 
 // Other routes
 router.route("/").get(protect, getAllApplication);
+router.get("/totalRecords", protect, totalRecords);
 router.route("/allocated").get(protect, allocatedApplications);
 router.get("/hold", protect, getHold);
 router.get("/rejected", protect, getRejected);

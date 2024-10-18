@@ -28,7 +28,12 @@ export const getAllApplication = asyncHandler(async (req, res) => {
     const applications = await Application.find(query)
         .skip(skip)
         .limit(limit)
-        .populate("lead");
+        .populate({
+            path: "lead",
+            populate: {
+                path: "recommendedBy",
+            },
+        });
     const totalApplications = await Application.countDocuments(query);
 
     return res.json({
@@ -103,11 +108,10 @@ export const allocatedApplications = asyncHandler(async (req, res) => {
     ) {
         query = {
             creditManagerId: {
-                $exists: true,
                 $ne: null,
             },
-            onHold: { $exists: false, $ne: true },
-            isRejected: { $exists: false, $ne: true },
+            onHold: { $ne: true },
+            isRejected: { $ne: true },
             isRecommended: { $ne: true },
         };
     } else if (req.employee.empRole === "creditManager") {
@@ -127,7 +131,10 @@ export const allocatedApplications = asyncHandler(async (req, res) => {
     const applications = await Application.find(query)
         .skip(skip)
         .limit(limit)
-        .populate("lead");
+        .populate("lead")
+        .populate("creditManagerId");
+
+    console.log("aapplication", query, applications);
 
     const totalApplications = await Application.countDocuments(query);
 
@@ -224,7 +231,9 @@ export const recommendedApplication = asyncHandler(async (req, res) => {
     const result = await checkApproval({}, application, "", creditManagerId);
 
     if (!result.approved) {
-        return res.json({ success: false, message: result.message });
+        return res
+            .status(400)
+            .json({ success: false, message: result.message });
     }
 
     // Approve the lead by updating its status
