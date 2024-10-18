@@ -30,19 +30,19 @@ export const totalRecords = asyncHandler(async (req, res) => {
             !application.onHold &&
             !application.isRejected
     ).length;
-    const allocatedApplications = leads.filter(
+    const allocatedApplications = applications.filter(
         (application) =>
             application.creditManagerId &&
             !application.onHold &&
             !application.isRejected
     ).length;
-    const heldApplications = leads.filter(
+    const heldApplications = applications.filter(
         (application) =>
             application.creditManagerId &&
             application.onHold &&
             !application.isRejected
     ).length;
-    const rejectedApplications = leads.filter(
+    const rejectedApplications = applications.filter(
         (application) =>
             application.creditManagerId &&
             !application.onHold &&
