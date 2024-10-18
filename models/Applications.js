@@ -15,6 +15,9 @@ const applicationSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Employee",
         },
+        sanctionDate: {
+            type: String,
+        },
         onHold: {
             type: Boolean,
             default: false,

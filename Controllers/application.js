@@ -29,10 +29,10 @@ export const getAllApplication = asyncHandler(async (req, res) => {
         .skip(skip)
         .limit(limit)
         .populate({
-            path:"lead",
-            populate:({
-                path:"recommendedBy"
-            })
+            path: "lead",
+            populate: {
+                path: "recommendedBy",
+            },
         });
     const totalApplications = await Application.countDocuments(query);
 
@@ -110,8 +110,8 @@ export const allocatedApplications = asyncHandler(async (req, res) => {
             creditManagerId: {
                 $ne: null,
             },
-            onHold: {  $ne: true },
-            isRejected: {  $ne: true },
+            onHold: { $ne: true },
+            isRejected: { $ne: true },
             isRecommended: { $ne: true },
         };
     } else if (req.employee.empRole === "creditManager") {
@@ -134,7 +134,7 @@ export const allocatedApplications = asyncHandler(async (req, res) => {
         .populate("lead")
         .populate("creditManagerId");
 
-        console.log('aapplication',query,applications)
+    console.log("aapplication", query, applications);
 
     const totalApplications = await Application.countDocuments(query);
 

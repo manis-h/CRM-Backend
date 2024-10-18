@@ -35,19 +35,12 @@
             </tr>
             <tr>
                 <td>{{residenceAddress}}</td>
+            </tr>
+            <tr>
                 <td>{{stateCountry}}</td>
             </tr>
             <tr>
                 <td><strong>Contact No. :</strong> +91-{{mobile}}</td>
-                <!-- </tr>
-            <tr>
-                <td colspan="2">Thank you for showing your interest in ${PORTAL_NAME}.</td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    We are pleased to inform you that your loan application has been approved.
-                </td>
-            </tr> -->
             </tr>
 
             <tr>
@@ -163,7 +156,7 @@
                                         font-weight: bold;
                                     "
                                 >
-                                    Date of Sanction
+                                    Date of Disbursal
                                 </td>
                                 <td
                                     style="
@@ -172,7 +165,7 @@
                                         color: #333;
                                     "
                                 >
-                                    {{sanctionDate}}
+                                    {{disbursalDate}}
                                 </td>
                             </tr>
                             <tr>
@@ -193,9 +186,7 @@
                                         color: #d9534f;
                                     "
                                 >
-                                    {{new
-                                    Intl.NumberFormat().format(repaymentAmount)}}
-                                    /-
+                                    {{repaymentAmount}}/-
                                 </td>
                             </tr>
                             <tr>
@@ -300,7 +291,7 @@
                                         color: #333;
                                     "
                                 >
-                                    {{repaymentCheques || '-'}}
+                                    -
                                 </td>
                             </tr>
                             <tr>
@@ -321,7 +312,7 @@
                                         color: #333;
                                     "
                                 >
-                                    {{bankName || '-'}}
+                                    -
                                 </td>
                             </tr>
                             <tr>
@@ -363,27 +354,9 @@
                                         color: #333;
                                     "
                                 >
-                                    {{annualPercentageRate}}
+                                    0
                                 </td>
                             </tr>
-
-                            <!-- <tr>
-                                <td width="43%" bgcolor="#FFFFFF"><strong>Customer Name</strong></td>
-                                <td bgcolor="#FFFFFF">${fullname}</td>
-                            </tr>
-                            <tr>
-                                <td bgcolor="#FFFFFF"><strong>Sanctioned Loan Amount (Rs.)</strong></td>
-                                <td bgcolor="#FFFFFF">${new Intl.NumberFormat().format(
-                                    camDetails?.loan_recommended
-                                )} /-</td>
-                            </tr>
-                            <tr>
-                                <td bgcolor="#FFFFFF"><strong>Rate of Interest (%) per day</strong></td>
-                                <td bgcolor="#FFFFFF">${
-                                    camDetails?.roi
-                                }</td>
-                            </tr> -->
-                            <!-- Other rows go here -->
                         </tbody>
                     </table>
                 </td>
@@ -453,12 +426,6 @@
             <tr>
                 <td>This Sanction letter is valid for 24 Hours only.</td>
             </tr>
-            <!-- <tr>
-                <td>${acceptanceButton}</td>
-            </tr>
-            <tr>
-                <td>${acceptanceButtonLink}</td>
-            </tr> -->
             <tr>
                 <td colspan="2">
                     <img
@@ -472,4 +439,3 @@
         </tbody>
     </table>
 </div>
-`

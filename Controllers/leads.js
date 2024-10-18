@@ -89,6 +89,35 @@ export const getAllLeads = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc Get total number of lead
+// @route GET /api/leads/totalleads
+// @access Private
+export const getTotalLeads = asyncHandler(async (req, res) => {
+    const leads = await Lead.find({});
+
+    const totalLeads = leads.length;
+    const newLeads = leads.filter(
+        (lead) => !lead.screenerId && !lead.onHold && !lead.isRejected
+    ).length;
+    const allocatedLeads = leads.filter(
+        (lead) => lead.screenerId && !lead.onHold && !lead.isRejected
+    ).length;
+    const heldLeads = leads.filter(
+        (lead) => lead.screenerId && lead.onHold && !lead.isRejected
+    ).length;
+    const rejectedLeads = leads.filter(
+        (lead) => lead.screenerId && !lead.onHold && lead.isRejected
+    ).length;
+
+    res.json({
+        totalLeads,
+        newLeads,
+        allocatedLeads,
+        heldLeads,
+        rejectedLeads,
+    });
+});
+
 // @desc Get lead
 // @route GET /api/leads/:id
 // @access Private
@@ -162,7 +191,7 @@ export const allocatedLeads = asyncHandler(async (req, res) => {
             isRejected: { $ne: true },
             isRecommended: { $ne: true },
         };
-    }else if (req.employee.empRole === "sanctionHead") {
+    } else if (req.employee.empRole === "sanctionHead") {
         query = {
             screenerId: {
                 $exists: true,
@@ -180,7 +209,10 @@ export const allocatedLeads = asyncHandler(async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // items per page
     const skip = (page - 1) * limit;
 
-    const leads = await Lead.find(query).skip(skip).limit(limit).populate('screenerId');
+    const leads = await Lead.find(query)
+        .skip(skip)
+        .limit(limit)
+        .populate("screenerId");
 
     const totalLeads = await Lead.countDocuments(query);
 

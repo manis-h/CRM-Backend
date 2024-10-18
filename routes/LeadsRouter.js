@@ -9,6 +9,7 @@ import {
     allocatedLeads,
     updateLead,
     recommendLead,
+    getTotalLeads,
 } from "../Controllers/leads.js";
 import { onHold, unHold, getHold } from "../helper/holdUnhold.js";
 import { rejected, getRejected } from "../helper/rejected.js";
@@ -32,6 +33,7 @@ const uploadFields = upload.fields([
 // Other routes
 router.route("/").post(createLead).get(protect, getAllLeads);
 router.route("/bulk-upload").post(protect, upload.single("csv"), bulkUpload);
+router.get("/totalleads", protect, getTotalLeads);
 router.route("/allocated").get(protect, allocatedLeads);
 router.get("/hold", protect, getHold);
 router.get("/reject", protect, getRejected);
