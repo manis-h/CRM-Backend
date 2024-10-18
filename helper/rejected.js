@@ -55,7 +55,10 @@ export const rejected = asyncHandler(async (req, res) => {
         return res.json({ lead, logs });
     }
 
-    if (req.employee.empRole === "creditManager") {
+    if (
+        req.employee.empRole === "creditManager" ||
+        req.employee.empRole === "sanctionHead"
+    ) {
         application = await Application.findByIdAndUpdate(
             id,
             { isRejected: true, rejectedBy: req.employee._id },
@@ -143,7 +146,8 @@ export const getRejected = asyncHandler(async (req, res) => {
         const leads = await Lead.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)
-            .limit(limit).populate("rejectedBy");
+            .limit(limit)
+            .populate("rejectedBy");
 
         const totalLeads = await Lead.countDocuments(query);
 
@@ -151,7 +155,8 @@ export const getRejected = asyncHandler(async (req, res) => {
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
-            .populate("lead").populate('rejectedBy');
+            .populate("lead")
+            .populate("rejectedBy");
 
         const totalApplications = await Application.countDocuments(query);
 

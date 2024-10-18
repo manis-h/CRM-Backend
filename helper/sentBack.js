@@ -25,7 +25,7 @@ export const sentBack = asyncHandler(async (req, res) => {
         await lead.save();
     }
     if (sendTo === "creditManager") {
-        application.isRecommended = true;
+        application.isRecommended = false;
         application.recommendedBy = null;
         await application.save();
     }
