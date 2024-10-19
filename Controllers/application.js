@@ -266,7 +266,7 @@ export const recommendedApplication = asyncHandler(async (req, res) => {
         }
         // Approve the lead by updating its status
         application.isRecommended = true;
-        application.recommendedBy = creditManagerId;
+        application.recommendedBy = req.creditManager._id;
         await application.save();
 
         const logs = await postLogs(
