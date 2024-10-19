@@ -35,7 +35,7 @@ const generatePresignedUrl = (key, mimeType) => {
     const params = {
         Bucket: bucketName,
         Key: key,
-        Expires: 60 * 60, // Set expiration time in seconds (e.g., 1 hour)
+        Expires: 3 * 60 * 60, // Set expiration time in seconds (e.g., 1 hour)
         ResponseContentDisposition: "inline", // Display the file in the browser
         ResponseContentType: mimeType || "application/octet-stream", // Ensure correct MIME type
     };

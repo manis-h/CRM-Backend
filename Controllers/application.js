@@ -1,7 +1,7 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Application from "../models/Applications.js";
 import Employee from "../models/Employees.js";
-import { postLogs } from "../helper/logs.js";
+import { postLogs } from "./logs.js";
 import { checkApproval } from "../utils/checkApproval.js";
 import CamDetails from "../models/CAM.js";
 

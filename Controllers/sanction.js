@@ -110,15 +110,15 @@ export const sanctionApprove = asyncHandler(async (req, res) => {
     }
     const disbursalDate = new Date(camDetails?.details.disbursalDate);
 
-    if (
-        new Date(application.sanctionDate) > disbursalDate ||
-        sanctionDate > disbursalDate
-    ) {
-        res.status(400);
-        throw new Error(
-            "Disbursal Date cannot be in the past. It must be the present date or future date!"
-        );
-    }
+    // if (
+    //     new Date(application.sanctionDate) > disbursalDate ||
+    //     sanctionDate > disbursalDate
+    // ) {
+    //     res.status(400);
+    //     throw new Error(
+    //         "Disbursal Date cannot be in the past. It must be the present date or future date!"
+    //     );
+    // }
 
     application.sanctionDate = application.sanctionDate ?? sanctionDate;
     application.isApproved = true;
@@ -142,5 +142,5 @@ export const sanctionApprove = asyncHandler(async (req, res) => {
     if (!response) {
         return res.json({ success: false });
     }
-    res.json({ success: true });
+    res.json({ success: response.success, message: response.message });
 });
