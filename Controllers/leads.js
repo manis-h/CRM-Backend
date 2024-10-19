@@ -248,7 +248,10 @@ export const recommendLead = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
     // Find the lead by its ID
-    const lead = await Lead.findById(id).populate("screenerId");
+    const lead = await Lead.findById(id).populate({
+        path: "screenerId",
+        select: "fName mName lName",
+    });
 
     if (!lead) {
         throw new Error("Lead not found"); // This error will be caught by the error handler
@@ -265,6 +268,10 @@ export const recommendLead = asyncHandler(async (req, res) => {
         res.status(400);
         throw new Error(`${result.message}`);
     }
+
+    const screenerName = `${lead.screenerId.fname}${
+        lead.screenerId.fName && ` ${lead.screenerId.mName}`
+    } ${lead.screenerId.lName}`;
 
     const {
         pan,
@@ -299,7 +306,7 @@ export const recommendLead = asyncHandler(async (req, res) => {
 
     // Approve the lead by updating its status
     lead.isRecommended = true;
-    lead.recommendedBy = screenerId;
+    lead.recommendedBy = req.screener._id;
     await lead.save();
 
     const newApplication = new Application({
@@ -312,7 +319,7 @@ export const recommendLead = asyncHandler(async (req, res) => {
         lead._id,
         "LEAD APPROVED. TRANSFERED TO CREDIT MANAGER",
         `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
-        `Lead approved by ${employee.fName} ${employee.lName}`
+        `Lead approved by ${lead.screenerId.fName} ${lead.screenerId.lName}`
     );
 
     // Send the approved lead as a JSON response
