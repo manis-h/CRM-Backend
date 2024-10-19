@@ -18,7 +18,7 @@ export const checkApproval = async (
         ];
 
         if (screenerId) {
-            if (lead.screenerId.toString() !== screenerId) {
+            if (lead.screenerId._id.toString() !== screenerId) {
                 return {
                     approved: false,
                     message: "You are not authorized to approve this lead!!",

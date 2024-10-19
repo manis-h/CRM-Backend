@@ -2,7 +2,7 @@ import asyncHandler from "../middleware/asyncHandler.js";
 import Lead from "../models/Leads.js";
 import Application from "../models/Applications.js";
 import Employee from "../models/Employees.js";
-import { postLogs } from "../helper/logs.js";
+import { postLogs } from "./logs.js";
 import { applicantDetails } from "./applicantPersonalDetails.js";
 import sendEmail from "../utils/sendEmail.js";
 import generateRandomNumber from "../utils/generateRandomNumbers.js";
@@ -241,29 +241,37 @@ export const updateLead = asyncHandler(async (req, res) => {
     return res.json({ updatedLead, logs }); // This is a successful response
 });
 
-// @desc Approve the lead
-// @route Patch /api/lead/approve/:id
+// @desc Recommend the lead
+// @route Patch /api/lead/recommend/:id
 // @access Private
 export const recommendLead = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const screenerId = req.employee._id.toString();
 
     // Find the lead by its ID
-    const lead = await Lead.findById(id);
+    const lead = await Lead.findById(id).populate({
+        path: "screenerId",
+        select: "fName mName lName",
+    });
 
     if (!lead) {
         throw new Error("Lead not found"); // This error will be caught by the error handler
     }
 
-    const result = await checkApproval(lead, {}, screenerId, "");
+    const result = await checkApproval(
+        lead,
+        {},
+        req.screener._id.toString(),
+        ""
+    );
 
     if (!result.approved) {
         res.status(400);
         throw new Error(`${result.message}`);
     }
 
-    const employee = await Employee.findOne({ _id: screenerId });
-    const screenerName = `${employee?.fName} ${employee?.lName}`;
+    const screenerName = `${lead.screenerId.fname}${
+        lead.screenerId.fName && ` ${lead.screenerId.mName}`
+    } ${lead.screenerId.lName}`;
 
     const {
         pan,
@@ -294,11 +302,11 @@ export const recommendLead = asyncHandler(async (req, res) => {
     };
     const applicant = await applicantDetails(details);
 
-    await postCamDetails(id, lead.cibilScore);
+    await postCamDetails(id, lead.cibilScore, lead.loanAmount);
 
     // Approve the lead by updating its status
     lead.isRecommended = true;
-    lead.recommendedBy = screenerId;
+    lead.recommendedBy = req.screener._id;
     await lead.save();
 
     const newApplication = new Application({
@@ -311,7 +319,7 @@ export const recommendLead = asyncHandler(async (req, res) => {
         lead._id,
         "LEAD APPROVED. TRANSFERED TO CREDIT MANAGER",
         `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
-        `Lead approved by ${employee.fName} ${employee.lName}`
+        `Lead approved by ${lead.screenerId.fName} ${lead.screenerId.lName}`
     );
 
     // Send the approved lead as a JSON response

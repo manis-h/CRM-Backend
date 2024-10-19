@@ -6,16 +6,7 @@ import puppeteer from "puppeteer";
 import { uploadDocs } from "./docsUploadAndFetch.js";
 
 async function htmlToPdf(lead, htmlResponse) {
-    const key = `${lead._id}/cibilReport-${Date.now()}-cibilReport.pdf`;
-    const uploadPromises = [];
-    const documentUpdates = [];
-
     try {
-        // Check if the document type already exists in the lead's document array
-        // const existingDocIndex = lead.document.findIndex(
-        //     (doc) => doc.type === "cibilReport"
-        // );
-
         // Launch a new browser instance
         const browser = await puppeteer.launch();
         const page = await browser.newPage();
@@ -30,6 +21,7 @@ async function htmlToPdf(lead, htmlResponse) {
 
         //   close the browser
         await browser.close();
+
         // Use the utility function to upload the PDF buffer
         const result = await uploadDocs(lead, null, {
             isBuffer: true,

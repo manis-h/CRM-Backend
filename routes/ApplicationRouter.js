@@ -10,11 +10,11 @@ import {
     updateCamDetails,
     // approveApplication,
 } from "../Controllers/application.js";
-import { addDocs, getDocuments } from "../helper/docsUploadAndFetch.js";
-import { onHold, unHold, getHold } from "../helper/holdUnhold.js";
-import { rejected, getRejected } from "../helper/rejected.js";
-import { sentBack } from "../helper/sentBack.js";
-import { totalRecords } from "../helper/totalRecords.js";
+import { addDocs, getDocuments } from "../Controllers/docsUploadAndFetch.js";
+import { onHold, unHold, getHold } from "../Controllers/holdUnhold.js";
+import { rejected, getRejected } from "../Controllers/rejected.js";
+import { sentBack } from "../Controllers/sentBack.js";
+import { totalRecords } from "../Controllers/totalRecords.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();

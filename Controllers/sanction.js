@@ -1,8 +1,9 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Application from "../models/Applications.js";
 import { generateSanctionLetter } from "../utils/sendsanction.js";
-import { dateFormatter } from "../utils/sendsanction.js";
+import { dateFormatter, dateStripper } from "../utils/dateFormatter.js";
 import CamDetails from "../models/CAM.js";
+import { getSanctionData } from "../utils/sanctionData.js";
 
 // @desc Get the forwarded applications
 // @route GET /api/sanction/recommended
@@ -38,56 +39,11 @@ export const getRecommendedApplications = asyncHandler(async (req, res) => {
 export const sanctionPreview = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    // Extract required fields from the request body
-    const sanctionDate = new Date();
-
-    const application = await Application.findById(id).populate("applicant");
-
-    const camDetails = await CamDetails.findOne({ leadId: application.lead });
-
-    if (!application) {
-        return res.send(404).json({ message: "Application not found" });
-        // throw new Error("Application not found");
-    }
-    const disbursalDate = new Date(camDetails?.details.disbursalDate);
-
-    if (
-        new Date(application.sanctionDate) > disbursalDate ||
-        sanctionDate > disbursalDate
-    ) {
-        res.status(400);
-        throw new Error(
-            "Disbursal Date cannot be in the past. It must be the present date or future date!"
-        );
-    }
+    const { response } = await getSanctionData(id);
 
     return res.json({
-        sanctionDate: dateFormatter(application.sanctionDate),
-        title: "Mr./Ms.",
-        fullname: `${application.applicant.personalDetails.fName} ${application.applicant.personalDetails.mName} ${application.applicant.personalDetails.lName}`,
-        residenceAddress: `${application.applicant.residence.address}, ${application.applicant.residence.city}`,
-        stateCountry: `${application.applicant.residence.state}, India - ${application.applicant.residence.pincode}`,
-        mobile: `${application.applicant.personalDetails.mobile}`,
-        loanAmount: `${new Intl.NumberFormat().format(
-            camDetails?.details.loanRecommended
-        )}`,
-        roi: `${camDetails?.details.eligibleRoi}`,
-        disbursalDate: dateFormatter(camDetails?.details.disbursalDate),
-        repaymentAmount: `${new Intl.NumberFormat().format(
-            camDetails?.details.repaymentAmount
-        )}`,
-        tenure: `${camDetails?.details.eligibleTenure}`,
-        repaymentDate: dateFormatter(camDetails?.details.repaymentDate),
-        penalInterest: `${camDetails?.details.penalInterest || "0"}`,
-        processingFee: `${new Intl.NumberFormat().format(
-            camDetails?.details.totalAdminFeeAmount
-        )}`,
-        // repaymentCheques: `${camDetails?.details.repaymentCheques || "-"}`,
-        // bankName: `${bankName || "-"}`,
-        bouncedCharges: "1000",
-        // annualPercentageRate: `${
-        //     camDetails?.details.annualPercentageRate || "0"
-        // }`,
+        ...response,
+        sanctionDate: dateFormatter(response.sanctionDate),
     });
 });
 
@@ -97,28 +53,7 @@ export const sanctionPreview = asyncHandler(async (req, res) => {
 export const sanctionApprove = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    // Extract required fields from the request body
-    const sanctionDate = new Date();
-
-    const application = await Application.findById(id).populate("applicant");
-
-    const camDetails = await CamDetails.findOne({ leadId: application.lead });
-
-    if (!application) {
-        return res.send(404).json({ message: "Application not found" });
-        // throw new Error("Application not found");
-    }
-    const disbursalDate = new Date(camDetails?.details.disbursalDate);
-
-    if (
-        new Date(application.sanctionDate) > disbursalDate ||
-        sanctionDate > disbursalDate
-    ) {
-        res.status(400);
-        throw new Error(
-            "Disbursal Date cannot be in the past. It must be the present date or future date!"
-        );
-    }
+    const { application, camDetails, response } = await getSanctionData(id);
 
     application.sanctionDate = application.sanctionDate ?? sanctionDate;
     application.isApproved = true;
@@ -126,21 +61,21 @@ export const sanctionApprove = asyncHandler(async (req, res) => {
     await application.save();
 
     // Call the generateSanctionLetter utility function
-    const response = await generateSanctionLetter(
-        `SANCTION LETTER - ${application.applicant.personalDetails.fName} ${application.applicant.personalDetails.mName} ${application.applicant.personalDetails.lName}`,
+    const emailResponse = await generateSanctionLetter(
+        `SANCTION LETTER - ${response.fullname}`,
         dateFormatter(application.sanctionDate),
-        "Mr./Ms.",
-        `${application.applicant.personalDetails.fName} ${application.applicant.personalDetails.mName} ${application.applicant.personalDetails.lName}`,
-        `${application.applicant.personalDetails.mobile}`,
-        `${application.applicant.residence.address}, ${application.applicant.residence.city}`,
-        `${application.applicant.residence.state}, India - ${application.applicant.residence.pincode}`,
+        response.title,
+        response.fullname,
+        response.mobile,
+        response.residenceAddress,
+        response.stateCountry,
         camDetails,
         `${application.applicant.personalDetails.personalEmail}`
     );
 
-    // Return a success response if the email is sent successfully
-    if (!response) {
+    // Return a success response
+    if (!emailResponse) {
         return res.json({ success: false });
     }
-    res.json({ success: true });
+    res.json({ success: response.success, message: response.message });
 });

@@ -5,7 +5,7 @@ import Employee from "../models/Employees.js";
 import { postLogs } from "./logs.js";
 
 // @desc Rejecting a lead
-// @route PATCH /api/leads/reject/:id
+// @route PATCH /api/leads/reject/:id or /api/applications/reject/:id
 // @access Private
 export const rejected = asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -34,12 +34,12 @@ export const rejected = asyncHandler(async (req, res) => {
     let application;
     let logs;
 
-    if (req.employee.empRole === "screener") {
+    if (req.screener) {
         lead = await Lead.findByIdAndUpdate(
             id,
             { isRejected: true, rejectedBy: req.employee._id },
             { new: true }
-        );
+        ).populate({ path: "screenerId", select: "fName mName lName" });
 
         if (!lead) {
             throw new Error("Lead not found");
@@ -49,16 +49,13 @@ export const rejected = asyncHandler(async (req, res) => {
             lead._id,
             "LEAD REJECTED",
             `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
-            `Lead rejected by ${employee.fName} ${employee.lName}`,
+            `Lead rejected by ${lead.screenerId.fName} ${lead.screenerId.lName}`,
             `${reason}`
         );
         return res.json({ lead, logs });
     }
 
-    if (
-        req.employee.empRole === "creditManager" ||
-        req.employee.empRole === "sanctionHead"
-    ) {
+    if (req.creditManger || req.sanctionHead) {
         application = await Application.findByIdAndUpdate(
             id,
             { isRejected: true, rejectedBy: req.employee._id },
@@ -111,7 +108,7 @@ export const getRejected = asyncHandler(async (req, res) => {
     }
 
     // Fetch the leads based on roles
-    if (req.employee.empRole === "screener") {
+    if (req.screener) {
         const leads = await Lead.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -126,7 +123,7 @@ export const getRejected = asyncHandler(async (req, res) => {
                 leads,
             },
         });
-    } else if (req.employee.empRole === "creditManager") {
+    } else if (req.creditManager) {
         const application = await Application.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -147,7 +144,7 @@ export const getRejected = asyncHandler(async (req, res) => {
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
-            .populate("rejectedBy");
+            .populate({ path: "rejectedBy", select: "fName mName lName" });
 
         const totalLeads = await Lead.countDocuments(query);
 
@@ -156,7 +153,7 @@ export const getRejected = asyncHandler(async (req, res) => {
             .skip(skip)
             .limit(limit)
             .populate("lead")
-            .populate("rejectedBy");
+            .populate({ path: "rejectedBy", select: "fName mName lName" });
 
         const totalApplications = await Application.countDocuments(query);
 

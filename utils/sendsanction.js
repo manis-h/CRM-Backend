@@ -6,15 +6,6 @@ import { fileURLToPath } from "url";
 
 const apiKey = process.env.ZOHO_APIKEY;
 
-export function dateFormatter(incommingDate) {
-    const date = new Date(incommingDate);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = String(date.getFullYear());
-
-    return `${day}-${month}-${year}`;
-}
-
 export const generateSanctionLetter = async (
     subject,
     sanctionDate,
@@ -66,7 +57,6 @@ export const generateSanctionLetter = async (
         let htmlToSend;
         try {
             htmlToSend = template(replacements);
-            console.log(htmlToSend);
         } catch (error) {
             console.log(error);
         }
@@ -88,11 +78,11 @@ export const generateSanctionLetter = async (
                 "content-type": "application/json",
             },
             data: JSON.stringify({
-                from: { address: "info@only1loan.com" },
+                from: { address: "ajay@only1loan.com" },
                 to: [
                     {
                         email_address: {
-                            address: recipientEmail,
+                            address: "abhay@only1loan.com",
                             name: fullname,
                         },
                     },
@@ -104,11 +94,20 @@ export const generateSanctionLetter = async (
 
         try {
             // Make the request to the ZeptoMail API
-            await axios(options);
-            return {
-                success: true,
-                message: "Email sent successfully",
-            };
+            axios(options)
+                .then((_response) => {
+                    return {
+                        success: true,
+                        message: "Email sent successfully",
+                    };
+                })
+                .catch((error) => {
+                    return {
+                        success: false,
+                        message: "Failed to send email",
+                        error: error.message,
+                    };
+                });
         } catch (error) {
             console.log("Some error occurred");
         }

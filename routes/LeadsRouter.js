@@ -1,5 +1,9 @@
 import express from "express";
 import upload from "../config/multer.js";
+import { bulkUpload } from "../Controllers/bulkUpload.js";
+import { addDocs, getDocuments } from "../Controllers/docsUploadAndFetch.js";
+import { onHold, unHold, getHold } from "../Controllers/holdUnhold.js";
+import internalDedupe from "../Controllers/internalDedupe.js";
 import {
     createLead,
     getAllLeads,
@@ -9,13 +13,9 @@ import {
     updateLead,
     recommendLead,
 } from "../Controllers/leads.js";
-import { bulkUpload } from "../helper/bulkUpload.js";
-import { addDocs, getDocuments } from "../helper/docsUploadAndFetch.js";
-import { onHold, unHold, getHold } from "../helper/holdUnhold.js";
-import internalDedupe from "../helper/internalDedupe.js";
-import { viewLogs } from "../helper/logs.js";
-import { rejected, getRejected } from "../helper/rejected.js";
-import { totalRecords } from "../helper/totalRecords.js";
+import { viewLogs } from "../Controllers/logs.js";
+import { rejected, getRejected } from "../Controllers/rejected.js";
+import { totalRecords } from "../Controllers/totalRecords.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
