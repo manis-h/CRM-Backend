@@ -275,7 +275,7 @@ export const recommendedApplication = asyncHandler(async (req, res) => {
             `${application.lead.fName} ${application.lead.mName ?? ""} ${
                 application.lead.lName
             }`,
-            `Application forwarded by ${application.lead.fName} ${application.lead.lName}`
+            `Application forwarded by ${application.creditManagerId.fName} ${application.creditManagerId.lName}`
         );
         return res.json(logs);
     } else {
