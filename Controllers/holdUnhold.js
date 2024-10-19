@@ -32,7 +32,7 @@ export const onHold = asyncHandler(async (req, res) => {
     let application;
     let logs;
 
-    if (req.employee.empRole === "screener") {
+    if (req.screener) {
         lead = await Lead.findByIdAndUpdate(
             id,
             { onHold: true, heldBy: req.employee._id },
@@ -53,10 +53,7 @@ export const onHold = asyncHandler(async (req, res) => {
         return res.json({ lead, logs });
     }
 
-    if (
-        req.employee.empRole === "creditManager" ||
-        req.employee.empRole === "sanctionHead"
-    ) {
+    if (req.creditManager) {
         application = await Application.findByIdAndUpdate(
             id,
             { onHold: true, heldBy: req.employee._id },
@@ -110,12 +107,12 @@ export const unHold = asyncHandler(async (req, res) => {
     let application;
     let logs;
 
-    if (req.employee.empRole === "screener") {
+    if (req.screener) {
         lead = await Lead.findByIdAndUpdate(
             id,
             { onHold: false },
             { new: true }
-        ).populate("screenerId");
+        ).populate({ path: "screenerId", select: "fName mName lName" });
 
         if (!lead) {
             throw new Error("Lead not found!!!");
@@ -131,12 +128,12 @@ export const unHold = asyncHandler(async (req, res) => {
         return res.json({ lead, logs });
     }
 
-    if (req.employee.empRole === "creditManager") {
+    if (req.creditManager) {
         application = await Application.findByIdAndUpdate(
             id,
             { onHold: false },
             { new: true }
-        ).populate("creditMangerId");
+        ).populate({ path: "creditManagerId", select: "fName mName lName" });
 
         if (!application) {
             throw new Error("Application not found!!");
@@ -187,10 +184,7 @@ export const getHold = asyncHandler(async (req, res) => {
 
     // If the employee is not admint, they only see the leads they rejected
 
-    if (
-        req.employee.empRole === "screener" ||
-        req.employee.empRole === "creditManager"
-    ) {
+    if (req.screener || req.creditManager) {
         query = {
             ...query,
             heldBy: employeeId,
@@ -201,7 +195,7 @@ export const getHold = asyncHandler(async (req, res) => {
     let applications;
     let totalRecords;
 
-    if (req.employee.empRole === "screener") {
+    if (req.screener) {
         leads = await Lead.find(query).skip(skip).limit(limit);
 
         totalRecords = await Lead.countDocuments(query);
@@ -214,7 +208,7 @@ export const getHold = asyncHandler(async (req, res) => {
                 leads,
             },
         });
-    } else if (req.employee.empRole === "creditManager") {
+    } else if (req.creditManager) {
         applications = await Application.find(query)
             .skip(skip)
             .limit(limit)
@@ -230,13 +224,17 @@ export const getHold = asyncHandler(async (req, res) => {
             },
         });
     } else {
-        leads = await Lead.find(query).skip(skip).limit(limit).populate("heldBy");
+        leads = await Lead.find(query)
+            .skip(skip)
+            .limit(limit)
+            .populate({ path: "heldBy", select: "fName mName lName" });
         const totalLeads = await Lead.countDocuments(query);
 
         applications = await Application.find(query)
             .skip(skip)
             .limit(limit)
-            .populate("lead").populate('heldBy');
+            .populate("lead")
+            .populate({ path: "heldBy", select: "fName mName lName" });
         const totalRecords = await Application.countDocuments(query);
 
         return res.json({

@@ -257,7 +257,7 @@ export const recommendedApplication = asyncHandler(async (req, res) => {
             {},
             application,
             "",
-            creditManagerId
+            req.creditManager._id.toString()
         );
         if (!result.approved) {
             return res
