@@ -241,15 +241,14 @@ export const updateLead = asyncHandler(async (req, res) => {
     return res.json({ updatedLead, logs }); // This is a successful response
 });
 
-// @desc Approve the lead
-// @route Patch /api/lead/approve/:id
+// @desc Recommend the lead
+// @route Patch /api/lead/recommend/:id
 // @access Private
 export const recommendLead = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const screenerId = req.employee._id.toString();
 
     // Find the lead by its ID
-    const lead = await Lead.findById(id);
+    const lead = await Lead.findById(id).populate("screenerId");
 
     if (!lead) {
         throw new Error("Lead not found"); // This error will be caught by the error handler
@@ -261,9 +260,6 @@ export const recommendLead = asyncHandler(async (req, res) => {
         res.status(400);
         throw new Error(`${result.message}`);
     }
-
-    const employee = await Employee.findOne({ _id: screenerId });
-    const screenerName = `${employee?.fName} ${employee?.lName}`;
 
     const {
         pan,
@@ -294,7 +290,7 @@ export const recommendLead = asyncHandler(async (req, res) => {
     };
     const applicant = await applicantDetails(details);
 
-    await postCamDetails(id, lead.cibilScore);
+    await postCamDetails(id, lead.cibilScore, lead.loanAmount);
 
     // Approve the lead by updating its status
     lead.isRecommended = true;

@@ -85,7 +85,7 @@ export const allocateApplication = asyncHandler(async (req, res) => {
     }
     const employee = await Employee.findOne({ _id: creditManagerId });
     const logs = await postLogs(
-        application.lead,
+        application.lead._id,
         "APPLICATION IN PROCESS",
         `${application.lead.fName} ${application.lead.mName ?? ""} ${
             application.lead.lName
@@ -148,8 +148,8 @@ export const allocatedApplications = asyncHandler(async (req, res) => {
 
 // @desc Adding CAM details
 // @access Private
-export const postCamDetails = async (leadId, cibilScore) => {
-    const details = { cibilScore: cibilScore };
+export const postCamDetails = async (leadId, cibilScore, loanAmount) => {
+    const details = { cibilScore: cibilScore, loanAmount: loanAmount };
 
     await CamDetails.create({
         leadId: leadId,
@@ -189,29 +189,49 @@ export const updateCamDetails = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { details } = req.body;
 
-    const application = await Application.findById(id).populate("lead");
+    const application = await Application.findById(id)
+        .populate("lead")
+        .populate("creditManagerId");
     if (!application) {
         res.status(404);
         throw new Error("Application not found!!");
     }
 
-    // Find the CamDetails associated with the application (if needed)
-    let cam = await CamDetails.findOne({
-        leadId: application.lead._id.toString(),
-    });
-
-    if (!cam) {
-        // If no CAM details found then create a new record
-        await CamDetails.create({
-            details: details,
+    if (
+        req.creditManager._id.toString() ===
+        application.creditManagerId._id.toString()
+    ) {
+        // Find the CamDetails associated with the application (if needed)
+        let cam = await CamDetails.findOne({
+            leadId: application.lead._id.toString(),
         });
-    } else {
-        // Update only the fields that are sent from the frontend
-        cam.details = { ...cam.details, ...details };
-        await cam.save();
-    }
 
-    res.json({ success: true });
+        if (!cam) {
+            // If no CAM details found then create a new record
+            await CamDetails.create({
+                details: details,
+            });
+        } else {
+            // Update only the fields that are sent from the frontend
+            cam.details = { ...cam.details, ...details };
+            await cam.save();
+        }
+
+        const logs = await postLogs(
+            application.lead._id,
+            "APPLICATION IN PROCESS",
+            `${application.lead.fName} ${application.lead.mName ?? ""} ${
+                application.lead.lName
+            }`,
+            `CAM details added by ${application.creditManagerId.fName} ${application.creditManagerId.lName}`,
+            `${cam.details?.loanAmount} ${cam.details?.loanRecommended} ${cam.details?.netDisbursalAmount} ${cam.details?.disbursalDate} ${cam.details?.repaymentDate} ${cam.details?.eligibleTenure} ${cam.details?.repaymentAmount}`
+        );
+
+        res.json({ success: true, log: logs });
+    } else {
+        res.status(401);
+        throw new Error("You are not authorized to update CAM!!");
+    }
 });
 
 // @desc Forward the Application to Sanction head
@@ -219,42 +239,49 @@ export const updateCamDetails = asyncHandler(async (req, res) => {
 // @access Private
 export const recommendedApplication = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const creditManagerId = req.creditManager._id.toString();
 
     // Find the application by its ID
-    const application = await Application.findById(id).populate("lead");
+    const application = await Application.findById(id)
+        .populate("lead")
+        .populate("creditManagerId");
 
     if (!application) {
         throw new Error("Application not found"); // This error will be caught by the error handler
     }
 
-    const result = await checkApproval({}, application, "", creditManagerId);
+    if (
+        req.creditManager._id.toString() ===
+        application.creditManagerId._id.toString()
+    ) {
+        const result = await checkApproval(
+            {},
+            application,
+            "",
+            creditManagerId
+        );
+        if (!result.approved) {
+            return res
+                .status(400)
+                .json({ success: false, message: result.message });
+        }
+        // Approve the lead by updating its status
+        application.isRecommended = true;
+        application.recommendedBy = creditManagerId;
+        await application.save();
 
-    if (!result.approved) {
-        return res
-            .status(400)
-            .json({ success: false, message: result.message });
+        const logs = await postLogs(
+            application.lead._id,
+            "APPLICATION FORWARDED. TRANSFERED TO SACNTION HEAD",
+            `${application.lead.fName} ${application.lead.mName ?? ""} ${
+                application.lead.lName
+            }`,
+            `Application forwarded by ${application.lead.fName} ${application.lead.lName}`
+        );
+        return res.json(logs);
+    } else {
+        res.status(401);
+        throw new Error(
+            "You are not authorized to recommend this application!!"
+        );
     }
-
-    // Approve the lead by updating its status
-    application.isRecommended = true;
-    application.recommendedBy = creditManagerId;
-    await application.save();
-
-    // const newApplication = new Application({ lead: lead });
-    // const response = await newApplication.save();
-
-    const employee = await Employee.findOne({ _id: creditManagerId });
-    const logs = await postLogs(
-        application.lead._id,
-        "APPLICATION FORWARDED. TRANSFERED TO SACNTION HEAD",
-        `${application.lead.fName} ${application.lead.mName ?? ""} ${
-            application.lead.lName
-        }`,
-        `Application forwarded by ${employee.fName} ${employee.lName}`
-    );
-
-    // Send the approved lead as a JSON response
-    // return res.json(response, logs); // This is a successful response
-    return res.json(logs);
 });
