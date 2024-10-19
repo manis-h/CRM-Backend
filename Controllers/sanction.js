@@ -78,5 +78,8 @@ export const sanctionApprove = asyncHandler(async (req, res) => {
     if (!emailResponse) {
         return res.json({ success: false });
     }
-    res.json({ success: response.success, message: response.message });
+    res.json({
+        success: emailResponse.success,
+        message: emailResponse.message,
+    });
 });
