@@ -1,9 +1,10 @@
 import asyncHandler from "../middleware/asyncHandler.js";
+import Application from "../models/Applications.js";
+import CamDetails from "../models/CAM.js";
 import Employee from "../models/Employees.js";
 import Lead from "../models/Leads.js";
-import Application from "../models/Applications.js";
-import { postLogs } from "./logs.js";
 import mongoose from "mongoose";
+import { postLogs } from "./logs.js";
 
 export const sentBack = asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -16,6 +17,10 @@ export const sentBack = asyncHandler(async (req, res) => {
     const application = await Application.findOne({ lead: id });
 
     if (sendTo === "screener") {
+        await CamDetails.deleteOne({
+            leadId: new mongoose.Types.ObjectId(id),
+        });
+
         await Application.deleteOne({
             lead: new mongoose.Types.ObjectId(id),
         });

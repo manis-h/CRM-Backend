@@ -3,14 +3,14 @@ const router = express.Router();
 import {
     updateApplicantDetails,
     getApplicantDetails,
-    addOrUpdateApplicantBankDetails,
+    updateApplicantBankDetails,
     getApplicantBankDetails,
 } from "../Controllers/applicantPersonalDetails.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 router
     .route("/bankDetails/:id")
-    .patch(protect, addOrUpdateApplicantBankDetails)
+    .patch(protect, updateApplicantBankDetails)
     .get(protect, getApplicantBankDetails);
 
 router

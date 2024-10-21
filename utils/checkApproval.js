@@ -75,7 +75,9 @@ export const checkApproval = async (
             // If all checks pass, approve the lead
             return { approved: true, message: "Lead can be approved" };
         } else if (creditManagerId) {
-            if (application.creditManagerId.toString() !== creditManagerId) {
+            if (
+                application.creditManagerId._id.toString() !== creditManagerId
+            ) {
                 return {
                     approved: false,
                     message:

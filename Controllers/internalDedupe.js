@@ -22,10 +22,45 @@ const internalDedupe = asyncHandler(async (req, res) => {
         $or: [{ aadhaar: aadhaar }, { pan: pan }],
     });
 
-    const relatedApplications = await Application.find({
-        "lead._id": { $ne: id }, // Exclude the original lead
-        $or: [{ "lead.aadhaar": aadhaar }, { "lead.pan": pan }],
-    });
+    // const relatedApplications = await Application.find({
+    //     "lead": { $ne: id }, // Exclude the original lead
+    //     $or: [{ "lead.aadhaar": aadhaar }, { "lead.pan": pan }],
+    // });
+   
+    const relatedApplications = await Application.aggregate([
+        {
+            $lookup: {
+                from: 'leads',
+                localField: 'lead', 
+                foreignField: '_id',
+                as: 'leadDetails' 
+            }
+        },
+        {
+            $unwind: '$leadDetails'
+        },
+        {
+            $match: {
+                lead: { $ne: id }, 
+                $or: [
+                    { 'leadDetails.aadhaar': aadhaar },
+                    { 'leadDetails.pan': pan }
+                ]
+            }
+        },
+        // {
+        //     $project: {
+        //         _id: 1, 
+        //         lead: 1, 
+        //         leadDetails: 1 
+                
+        //     }
+        // }
+    ]);
+
+    console.log('related applications',relatedApplications)
+    
+      
 
     return res.json({
         relatedLeads,

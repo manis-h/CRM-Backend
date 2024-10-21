@@ -55,7 +55,7 @@ export const sanctionApprove = asyncHandler(async (req, res) => {
 
     const { application, camDetails, response } = await getSanctionData(id);
 
-    application.sanctionDate = application.sanctionDate ?? sanctionDate;
+    application.sanctionDate = response.sanctionDate;
     application.isApproved = true;
     application.approvedBy = req.employee._id.toString();
     await application.save();
@@ -77,5 +77,8 @@ export const sanctionApprove = asyncHandler(async (req, res) => {
     if (!emailResponse) {
         return res.json({ success: false });
     }
-    res.json({ success: response.success, message: response.message });
+    res.json({
+        success: emailResponse.success,
+        message: emailResponse.message,
+    });
 });

@@ -207,15 +207,12 @@ export const updateCamDetails = asyncHandler(async (req, res) => {
         });
 
         if (!cam) {
-            // If no CAM details found then create a new record
-            await CamDetails.create({
-                details: details,
-            });
-        } else {
-            // Update only the fields that are sent from the frontend
-            cam.details = { ...cam.details, ...details };
-            await cam.save();
+            return res.json({ success: false, message: "No CAM found!!" });
         }
+
+        // Update only the fields that are sent from the frontend
+        cam.details = { ...cam.details, ...details };
+        await cam.save();
 
         const logs = await postLogs(
             application.lead._id,
@@ -266,7 +263,7 @@ export const recommendedApplication = asyncHandler(async (req, res) => {
         }
         // Approve the lead by updating its status
         application.isRecommended = true;
-        application.recommendedBy = creditManagerId;
+        application.recommendedBy = req.creditManager._id;
         await application.save();
 
         const logs = await postLogs(
@@ -275,7 +272,7 @@ export const recommendedApplication = asyncHandler(async (req, res) => {
             `${application.lead.fName} ${application.lead.mName ?? ""} ${
                 application.lead.lName
             }`,
-            `Application forwarded by ${application.lead.fName} ${application.lead.lName}`
+            `Application forwarded by ${application.creditManagerId.fName} ${application.creditManagerId.lName}`
         );
         return res.json(logs);
     } else {
