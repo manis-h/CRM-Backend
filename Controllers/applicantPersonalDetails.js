@@ -11,7 +11,7 @@ import { verifyBank } from "../utils/verifyBank.js";
 export const applicantDetails = async (details = null) => {
     try {
         const applicant = await Applicant.findOne({
-            $or: [
+            $and: [
                 { "personalDetails.pan": details.pan }, // Check if PAN matches
                 { "personalDetails.aadhaar": details.aadhaar }, // Check if Aadhaar matches
             ],

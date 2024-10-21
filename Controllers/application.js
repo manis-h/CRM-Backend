@@ -207,15 +207,12 @@ export const updateCamDetails = asyncHandler(async (req, res) => {
         });
 
         if (!cam) {
-            // If no CAM details found then create a new record
-            await CamDetails.create({
-                details: details,
-            });
-        } else {
-            // Update only the fields that are sent from the frontend
-            cam.details = { ...cam.details, ...details };
-            await cam.save();
+            return res.json({ success: false, message: "No CAM found!!" });
         }
+
+        // Update only the fields that are sent from the frontend
+        cam.details = { ...cam.details, ...details };
+        await cam.save();
 
         const logs = await postLogs(
             application.lead._id,
