@@ -4,6 +4,7 @@ import Applicant from "../models/Applicant.js";
 import Application from "../models/Applications.js";
 import Employee from "../models/Employees.js";
 import { postLogs } from "./logs.js";
+import { verifyBank } from "../utils/verifyBank.js";
 
 // @desc Post applicant details
 // @access Private
@@ -41,6 +42,38 @@ export const applicantDetails = async (details = null) => {
         throw new Error(error.message);
     }
 };
+
+// @desc Bank Verify and add the back.
+// @route POST /api/verify/bank
+// @access Private
+export const bankVerification = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const {
+        beneficiaryName,
+        bankAccNo,
+        accountType,
+        ifscCode,
+        bankName,
+        branchName,
+    } = req.body;
+
+    const applicant = await Applicant.findById(id);
+
+    if (!applicant) {
+        res.status(404);
+        throw new Error("No applicant found!!!");
+    }
+
+    const response = await verifyBank(
+        beneficiaryName,
+        bankAccNo,
+        accountType,
+        ifscCode,
+        bankName,
+        branchName,
+        applicant
+    );
+});
 
 // @desc Update applicant details
 // @route PATCH /api/applicant/:id
@@ -119,64 +152,48 @@ export const updateApplicantDetails = asyncHandler(async (req, res) => {
     return res.json({ updatedApplicant, logs });
 });
 
-// @desc Add or update Applicant Bank Details
+// @desc Update Applicant Bank Details
 // @route PATCH /api/applicant/bankDetails/:id
 // @access Private
-export const addOrUpdateApplicantBankDetails = asyncHandler(
-    async (req, res) => {
-        const { id } = req.params;
+export const updateApplicantBankDetails = asyncHandler(async (req, res) => {
+    const { id } = req.params;
 
-        const {
-            beneficiaryName,
-            bankAccNo,
-            accountType,
-            ifscCode,
-            bankName,
-            branchName,
-        } = req.body;
+    const {
+        beneficiaryName,
+        bankAccNo,
+        accountType,
+        ifscCode,
+        bankName,
+        branchName,
+    } = req.body;
 
-        const applicant = await Applicant.findById(id);
+    const applicant = await Applicant.findById(id);
 
-        if (!applicant) {
-            res.status(404);
-            throw new Error("No applicant found!!!");
-        }
-
-        // Check if there's already existing bank details for this applicant
-        let bankDetails = await Bank.findOne({ borrowerId: id });
-
-        if (bankDetails) {
-            // Update existing bank details
-            bankDetails.beneficiaryName =
-                beneficiaryName || bankDetails.beneficiaryName;
-            bankDetails.bankAccNo = bankAccNo || bankDetails.bankAccNo;
-            bankDetails.accountType = accountType || bankDetails.accountType;
-            bankDetails.ifscCode = ifscCode || bankDetails.ifscCode;
-            bankDetails.bankName = bankName || bankDetails.bankName;
-            bankDetails.branchName = branchName || bankDetails.branchName;
-
-            await bankDetails.save();
-            return res.json({ bankDetails });
-        }
-
-        const newBank = await Bank.create({
-            borrowerId: id,
-            beneficiaryName,
-            bankName,
-            bankAccNo,
-            accountType,
-            ifscCode,
-            branchName,
-        });
-
-        if (newBank) {
-            return res.json(newBank);
-        }
-
-        res.status(400);
-        throw new Error("Unable to add or update bank details");
+    if (!applicant) {
+        res.status(404);
+        throw new Error("No applicant found!!!");
     }
-);
+
+    // Check if there's already existing bank details for this applicant
+    let bankDetails = await Bank.findOne({ borrowerId: id });
+
+    if (bankDetails) {
+        // Update existing bank details
+        bankDetails.beneficiaryName =
+            beneficiaryName || bankDetails.beneficiaryName;
+        bankDetails.bankAccNo = bankAccNo || bankDetails.bankAccNo;
+        bankDetails.accountType = accountType || bankDetails.accountType;
+        bankDetails.ifscCode = ifscCode || bankDetails.ifscCode;
+        bankDetails.bankName = bankName || bankDetails.bankName;
+        bankDetails.branchName = branchName || bankDetails.branchName;
+
+        await bankDetails.save();
+        return res.json({ bankDetails });
+    }
+
+    res.status(400);
+    throw new Error("Unable to add or update bank details");
+});
 
 // @desc Get applicant Bank Details
 // @route GET /api/applicant/bankDetails/:id

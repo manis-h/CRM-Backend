@@ -4,6 +4,7 @@ import {
     verifyAadhaar,
     saveAadhaarDetails,
 } from "../Controllers/aadhaarController.js";
+import { bankVerification } from "../Controllers/applicantPersonalDetails.js";
 import {
     getPanDetails,
     savePanDetails,
@@ -16,6 +17,9 @@ import {
 } from "../Controllers/leads.js";
 import { protect } from "../middleware/authMiddleware.js";
 const router = express.Router();
+
+// Bank Verify
+router.route("/bank/:id").post(bankVerification);
 
 // aadhaar verify
 // router.post('/aadhaar/:id');
