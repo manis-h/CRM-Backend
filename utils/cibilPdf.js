@@ -1,7 +1,5 @@
 import axios from "axios";
-import fs from "fs/promises";
 import { Parser } from "xml2js";
-import { join } from "path";
 import puppeteer from "puppeteer";
 import { uploadDocs } from "./docsUploadAndFetch.js";
 
