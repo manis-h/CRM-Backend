@@ -16,8 +16,6 @@ export const verifyBank = async (
             borrowerId: applicant._id.toString(),
         });
 
-        console.log(bankDetails);
-
         const { mobile, personalEmail } = applicant.personalDetails;
         console.log(mobile, personalEmail);
 
