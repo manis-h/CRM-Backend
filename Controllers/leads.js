@@ -438,7 +438,7 @@ export const fetchCibil = asyncHandler(async (req, res) => {
                 ?.ScoreDetails[0]?.Value;
 
         if (!value) {
-            return res.json({
+            return res.status(400).json({
                 status: false,
                 message: "CIBIL couldn't be fetched",
             });

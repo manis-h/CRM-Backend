@@ -19,48 +19,46 @@ const internalDedupe = asyncHandler(async (req, res) => {
     // Now find all other leads with the same aadhaar or pan
     const relatedLeads = await Lead.find({
         _id: { $ne: id }, // Exclude the original lead
-        $or: [{ aadhaar: aadhaar }, { pan: pan }],
+        $and: [{ aadhaar: aadhaar }, { pan: pan }, { isRecommended: false }],
     });
 
     // const relatedApplications = await Application.find({
     //     "lead": { $ne: id }, // Exclude the original lead
     //     $or: [{ "lead.aadhaar": aadhaar }, { "lead.pan": pan }],
     // });
-   
+
     const relatedApplications = await Application.aggregate([
         {
             $lookup: {
-                from: 'leads',
-                localField: 'lead', 
-                foreignField: '_id',
-                as: 'leadDetails' 
-            }
+                from: "leads",
+                localField: "lead",
+                foreignField: "_id",
+                as: "leadDetails",
+            },
         },
         {
-            $unwind: '$leadDetails'
+            $unwind: "$leadDetails",
         },
         {
             $match: {
-                lead: { $ne: id }, 
-                $or: [
-                    { 'leadDetails.aadhaar': aadhaar },
-                    { 'leadDetails.pan': pan }
-                ]
-            }
+                lead: { $ne: id },
+                $and: [
+                    { "leadDetails.aadhaar": aadhaar },
+                    { "leadDetails.pan": pan },
+                ],
+            },
         },
         // {
         //     $project: {
-        //         _id: 1, 
-        //         lead: 1, 
-        //         leadDetails: 1 
-                
+        //         _id: 1,
+        //         lead: 1,
+        //         leadDetails: 1
+
         //     }
         // }
     ]);
 
-    console.log('related applications',relatedApplications)
-    
-      
+    console.log("related applications", relatedApplications);
 
     return res.json({
         relatedLeads,

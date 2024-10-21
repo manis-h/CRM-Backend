@@ -189,6 +189,24 @@ export const updateApplicantBankDetails = asyncHandler(async (req, res) => {
 
         await bankDetails.save();
         return res.json({ bankDetails });
+    } else {
+        const newBank = await Bank.create({
+            borrowerId: id,
+            beneficiaryName,
+            bankName,
+            bankAccNo,
+            accountType,
+            ifscCode,
+            branchName,
+        });
+
+        if (newBank) {
+            return res.json({
+                success: true,
+                message: "Bank verified and saved.",
+                newbank,
+            });
+        }
     }
 
     res.status(400);
@@ -204,7 +222,7 @@ export const getApplicantBankDetails = asyncHandler(async (req, res) => {
     const bank = await Bank.findOne({ borrowerId: id });
 
     if (!bank) {
-        res.json({ success: false });
+        return res.status(404).json({ success: false });
     }
     res.json(bank);
 });
