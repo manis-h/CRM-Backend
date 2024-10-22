@@ -104,8 +104,6 @@ async function fetchCibil(lead) {
 
         const stringifiedData = JSON.stringify(data, null, 4);
 
-        // console.log(stringifiedData);
-
         const response = await axios.post(
             "https://ists.equifax.co.in/cir360service/cir360report",
             stringifiedData,

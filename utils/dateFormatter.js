@@ -8,12 +8,8 @@ export function dateFormatter(incommingDate) {
 }
 
 export function dateStripper(incommingDate) {
-    console.log("incoming date: ", incommingDate);
-
     let date = new Date(incommingDate);
     date.setUTCHours(0, 0, 0, 0);
-
-    console.log("fixed date: ", date);
 
     return date;
 }
