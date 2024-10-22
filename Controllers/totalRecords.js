@@ -13,15 +13,33 @@ export const totalRecords = asyncHandler(async (req, res) => {
     const newLeads = leads.filter(
         (lead) => !lead.screenerId && !lead.onHold && !lead.isRejected
     ).length;
-    const allocatedLeads = leads.filter(
+
+    let allocatedLeads = leads.filter(
         (lead) => lead.screenerId && !lead.onHold && !lead.isRejected
     ).length;
-    const heldLeads = leads.filter(
+
+    let heldLeads = leads.filter(
         (lead) => lead.screenerId && lead.onHold && !lead.isRejected
     ).length;
-    const rejectedLeads = leads.filter(
+
+    let rejectedLeads = leads.filter(
         (lead) => lead.screenerId && !lead.onHold && lead.isRejected
     ).length;
+
+    if (req.screener) {
+        allocatedLeads = allocatedLeads.filter(
+            (allocated) =>
+                allocated.screenerId.toString() === req.screener._id.toString()
+        );
+
+        heldLeads = heldLeads.filer((held) => {
+            held.screenerId.toString() === req.screener._id.toString();
+        });
+
+        rejectedLeads = rejectedLeads.filer((rejected) => {
+            rejected.screenerId.toString() === req.screener._id.toString();
+        });
+    }
 
     const totalApplications = applications.length;
     const newApplications = applications.filter(
@@ -30,19 +48,49 @@ export const totalRecords = asyncHandler(async (req, res) => {
             !application.onHold &&
             !application.isRejected
     ).length;
-    const allocatedApplications = applications.filter(
+
+    let allocatedApplications;
+    let heldApplications;
+    let rejectedApplications;
+
+    if (req.creditManager) {
+        allocatedApplications = applications.filter(
+            (application) =>
+                application.creditManagerId.toString() ===
+                    req.creditManagery._id.toString() &&
+                !application.onHold &&
+                !application.isRejected
+        ).length;
+
+        heldApplications = applications.filter(
+            (application) =>
+                application.creditManagerId.toString() ===
+                    req.creditManagery._id.toString() &&
+                application.onHold &&
+                !application.isRejected
+        ).length;
+
+        rejectedApplications = applications.filter(
+            (application) =>
+                application.creditManagerId.toString() ===
+                    req.creditManagery._id.toString() &&
+                !application.onHold &&
+                application.isRejected
+        ).length;
+    }
+    allocatedApplications = applications.filter(
         (application) =>
             application.creditManagerId &&
             !application.onHold &&
             !application.isRejected
     ).length;
-    const heldApplications = applications.filter(
+    heldApplications = applications.filter(
         (application) =>
             application.creditManagerId &&
             application.onHold &&
             !application.isRejected
     ).length;
-    const rejectedApplications = applications.filter(
+    rejectedApplications = applications.filter(
         (application) =>
             application.creditManagerId &&
             !application.onHold &&

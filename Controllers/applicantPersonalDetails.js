@@ -93,8 +93,13 @@ export const updateApplicantDetails = asyncHandler(async (req, res) => {
         throw new Error("Unauthorized: You can not update this application!!");
     }
 
+    const allApplicants = await Applicant.find({});
+
     // Find the applicant
-    const applicant = await Applicant.findById(application.applicant);
+    const applicant = allApplicants.find(
+        (applicant) =>
+            applicant._id.toString() === application.applicant.toString()
+    );
 
     if (!applicant) {
         res.status(404);
@@ -117,24 +122,30 @@ export const updateApplicantDetails = asyncHandler(async (req, res) => {
         };
     }
 
+    let refCheck = {};
     // Update reference if provided
     if (updates.reference) {
-        updates.reference.forEach((newRef, index) => {
-            // If there's an existing reference at the same index, merge it
-            if (applicant.reference[index]) {
-                applicant.reference[index] = {
-                    ...applicant.reference[index],
-                    ...newRef, // Merge new reference data
-                };
-            } else {
-                // If no existing reference, add the new one
-                applicant.reference.push(newRef);
-            }
+        updates.reference.forEach((newRef) => {
+            allApplicants.forEach((applicants) => {
+                applicants.reference.forEach((oldRef) => {
+                    if (newRef.mobile === oldRef.mobile) {
+                        refCheck.applicant = `${
+                            applicants.personalDetails.fName
+                        }${
+                            applicants.personalDetails.mName ??
+                            ` ${applicants.personalDetails.mName} ${applicants.personalDetails.lName}`
+                        }`;
+                        refCheck.mobile = `${applicants.personalDetails.mobile}`;
+                        refCheck.companyName = `${applicants.employment.companyName}`;
+                    }
+                });
+            });
+            applicant.reference.push(newRef);
         });
     }
 
     // Save the updated applicant
-    const updatedApplicant = await applicant.save();
+    await applicant.save();
 
     const employee = await Employee.findOne({
         _id: req.employee._id.toString(),
@@ -149,7 +160,7 @@ export const updateApplicantDetails = asyncHandler(async (req, res) => {
     );
 
     // Send the updated personal details as a JSON response
-    return res.json({ updatedApplicant, logs });
+    return res.json({ refCheck, logs });
 });
 
 // @desc Update Applicant Bank Details

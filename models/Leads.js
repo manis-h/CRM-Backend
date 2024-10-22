@@ -18,7 +18,7 @@ const leadSchema = new mongoose.Schema(
             enum: ["M", "F"],
         },
         dob: {
-            type: String,
+            type: Date,
             required: true,
         },
         aadhaar: {

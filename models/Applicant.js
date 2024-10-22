@@ -14,7 +14,7 @@ const personalDetailsSchema = new mongoose.Schema(
         },
         gender: { type: String, required: true, enum: ["M", "F"] },
         dob: {
-            type: String,
+            type: Date,
             required: true,
         },
         mobile: { type: String, required: true, unique: true },
