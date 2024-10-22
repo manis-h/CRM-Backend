@@ -14,9 +14,9 @@ export const totalRecords = asyncHandler(async (req, res) => {
         (lead) => !lead.screenerId && !lead.onHold && !lead.isRejected
     ).length;
 
-    let allocatedLeads = (allocatedLeads = leads.filter(
+    let allocatedLeads = leads.filter(
         (lead) => lead.screenerId && !lead.onHold && !lead.isRejected
-    ).length);
+    ).length;
 
     let heldLeads = leads.filter(
         (lead) => lead.screenerId && lead.onHold && !lead.isRejected
