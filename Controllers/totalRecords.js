@@ -11,20 +11,28 @@ export const totalRecords = asyncHandler(async (req, res) => {
 
     const totalLeads = leads.length;
     const newLeads = leads.filter(
-        (lead) => !lead.screenerId && !lead.onHold && !lead.isRejected
+        (lead) =>
+            !lead.screenerId &&
+            !lead.onHold &&
+            !lead.isRejected &&
+            !lead.isRecommended
     ).length;
 
     let allocatedLeads = leads.filter(
-        (lead) => lead.screenerId && !lead.onHold && !lead.isRejected
-    ).length;
+        (lead) =>
+            lead.screenerId &&
+            !lead.onHold &&
+            !lead.isRejected &&
+            !lead.isRecommended
+    );
 
     let heldLeads = leads.filter(
         (lead) => lead.screenerId && lead.onHold && !lead.isRejected
-    ).length;
+    );
 
     let rejectedLeads = leads.filter(
         (lead) => lead.screenerId && !lead.onHold && lead.isRejected
-    ).length;
+    );
 
     if (req.screener) {
         allocatedLeads = allocatedLeads.filter(
@@ -32,13 +40,9 @@ export const totalRecords = asyncHandler(async (req, res) => {
                 allocated.screenerId.toString() === req.screener._id.toString()
         );
 
-        heldLeads = heldLeads.filer((held) => {
-            held.screenerId.toString() === req.screener._id.toString();
-        });
-
-        rejectedLeads = rejectedLeads.filer((rejected) => {
-            rejected.screenerId.toString() === req.screener._id.toString();
-        });
+        heldLeads = heldLeads.filter(
+            (held) => held.heldBy.toString() === req.screener._id.toString()
+        );
     }
 
     const totalApplications = applications.length;
@@ -101,9 +105,9 @@ export const totalRecords = asyncHandler(async (req, res) => {
         leads: {
             totalLeads,
             newLeads,
-            allocatedLeads,
-            heldLeads,
-            rejectedLeads,
+            allocatedLeads: allocatedLeads.length,
+            heldLeads: heldLeads.length,
+            rejectedLeads: rejectedLeads.length,
         },
         applications: {
             totalApplications,

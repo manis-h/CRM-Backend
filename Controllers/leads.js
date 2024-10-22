@@ -6,7 +6,7 @@ import { postLogs } from "./logs.js";
 import { applicantDetails } from "./applicantPersonalDetails.js";
 import sendEmail from "../utils/sendEmail.js";
 import generateRandomNumber from "../utils/generateRandomNumbers.js";
-import equifax from "../utils/fetchCIBIL.js";
+import equifax from "../utils/fetchCibil.js";
 import { checkApproval } from "../utils/checkApproval.js";
 import { postCamDetails } from "./application.js";
 import cibilPdf from "../utils/cibilPdf.js";
