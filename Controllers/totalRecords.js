@@ -14,42 +14,32 @@ export const totalRecords = asyncHandler(async (req, res) => {
         (lead) => !lead.screenerId && !lead.onHold && !lead.isRejected
     ).length;
 
-    let allocatedLeads;
-    let heldLeads;
-    let rejectedLeads;
-
-    if (req.screener) {
-        allocatedLeads = leads.filter(
-            (lead) =>
-                lead.screenerId.toString() === req.screener._id.toString() &&
-                !lead.onHold &&
-                !lead.isRejected
-        ).length;
-
-        heldLeads = leads.filter(
-            (lead) =>
-                lead.screenerId.toString() === req.screener._id.toString() &&
-                lead.onHold &&
-                !lead.isRejected
-        ).length;
-
-        rejectedLeads = leads.filter(
-            (lead) =>
-                lead.screenerId.toString() === req.screener._id.toString() &&
-                !lead.onHold &&
-                lead.isRejected
-        ).length;
-    }
-
-    allocatedLeads = leads.filter(
+    let allocatedLeads = (allocatedLeads = leads.filter(
         (lead) => lead.screenerId && !lead.onHold && !lead.isRejected
-    ).length;
-    heldLeads = leads.filter(
+    ).length);
+
+    let heldLeads = leads.filter(
         (lead) => lead.screenerId && lead.onHold && !lead.isRejected
     ).length;
-    rejectedLeads = leads.filter(
+
+    let rejectedLeads = leads.filter(
         (lead) => lead.screenerId && !lead.onHold && lead.isRejected
     ).length;
+
+    if (req.screener) {
+        allocatedLeads = allocatedLeads.filter(
+            (allocated) =>
+                allocated.screenerId.toString() === req.screener._id.toString()
+        );
+
+        heldLeads = heldLeads.filer((held) => {
+            held.screenerId.toString() === req.screener._id.toString();
+        });
+
+        rejectedLeads = rejectedLeads.filer((rejected) => {
+            rejected.screenerId.toString() === req.screener._id.toString();
+        });
+    }
 
     const totalApplications = applications.length;
     const newApplications = applications.filter(
