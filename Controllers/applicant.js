@@ -1,5 +1,5 @@
-import asyncHandler from "../middleware/asyncHandler";
-import Applicant from "../models/Applicant";
+import asyncHandler from "../middleware/asyncHandler.js";
+import Applicant from "../models/Applicant.js";
 
 export const login = asyncHandler(async (req, res) => {
     const { mobile, source } = req.body;
