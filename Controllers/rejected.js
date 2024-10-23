@@ -37,7 +37,7 @@ export const rejected = asyncHandler(async (req, res) => {
     if (req.screener) {
         lead = await Lead.findByIdAndUpdate(
             id,
-            { isRejected: true, rejectedBy: req.employee._id },
+            { onHold: false, isRejected: true, rejectedBy: req.employee._id },
             { new: true }
         ).populate({ path: "screenerId", select: "fName mName lName" });
 

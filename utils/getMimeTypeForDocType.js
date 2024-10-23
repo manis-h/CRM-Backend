@@ -6,6 +6,7 @@ const getMimeTypeForDocType = (docType) => {
         case "panCard":
             return "image/jpg";
         case "bankStatement":
+        case "cibilReport":
         case "salarySlip":
             return "application/pdf";
         case "verificationVideo":
