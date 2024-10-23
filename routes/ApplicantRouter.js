@@ -1,5 +1,6 @@
 import express from "express";
 const router = express.Router();
+import { login } from "../Controllers/applicant.js";
 import {
     updateApplicantDetails,
     getApplicantDetails,
@@ -8,6 +9,7 @@ import {
 } from "../Controllers/applicantPersonalDetails.js";
 import { protect } from "../middleware/authMiddleware.js";
 
+router.post("/login", login);
 router
     .route("/bankDetails/:id")
     .patch(protect, updateApplicantBankDetails)
