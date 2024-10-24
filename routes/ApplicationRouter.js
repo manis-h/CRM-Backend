@@ -42,7 +42,6 @@ router
 router.patch("/unhold/:id", protect, unHold);
 router.patch("/sent-back/:id", protect, sentBack);
 router.patch("/recommend/:id", protect, recommendedApplication);
-// router.patch("/approve/:id", protect, approveApplication);
 router.route("/hold/:id").patch(protect, onHold);
 router.route("/reject/:id").patch(protect, rejected);
 router

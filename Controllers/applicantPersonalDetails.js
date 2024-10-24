@@ -73,6 +73,12 @@ export const bankVerification = asyncHandler(async (req, res) => {
         branchName,
         applicant
     );
+
+    if (!response.success) {
+        res.status(400);
+        throw new Error(response.message);
+    }
+    res.json({ success: response.success, message: response.message });
 });
 
 // @desc Update applicant details
@@ -230,24 +236,6 @@ export const updateApplicantBankDetails = asyncHandler(async (req, res) => {
 
         await bankDetails.save();
         return res.json({ bankDetails });
-    } else {
-        const newBank = await Bank.create({
-            borrowerId: id,
-            beneficiaryName,
-            bankName,
-            bankAccNo,
-            accountType,
-            ifscCode,
-            branchName,
-        });
-
-        if (newBank) {
-            return res.json({
-                success: true,
-                message: "Bank verified and saved.",
-                newbank,
-            });
-        }
     }
 
     res.status(400);

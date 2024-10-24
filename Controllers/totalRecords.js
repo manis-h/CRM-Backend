@@ -53,53 +53,44 @@ export const totalRecords = asyncHandler(async (req, res) => {
             !application.isRejected
     ).length;
 
-    let allocatedApplications;
-    let heldApplications;
-    let rejectedApplications;
-
-    if (req.creditManager) {
-        allocatedApplications = applications.filter(
-            (application) =>
-                application.creditManagerId.toString() ===
-                    req.creditManagery._id.toString() &&
-                !application.onHold &&
-                !application.isRejected
-        ).length;
-
-        heldApplications = applications.filter(
-            (application) =>
-                application.creditManagerId.toString() ===
-                    req.creditManagery._id.toString() &&
-                application.onHold &&
-                !application.isRejected
-        ).length;
-
-        rejectedApplications = applications.filter(
-            (application) =>
-                application.creditManagerId.toString() ===
-                    req.creditManagery._id.toString() &&
-                !application.onHold &&
-                application.isRejected
-        ).length;
-    }
-    allocatedApplications = applications.filter(
+    let allocatedApplications = applications.filter(
         (application) =>
             application.creditManagerId &&
             !application.onHold &&
             !application.isRejected
-    ).length;
-    heldApplications = applications.filter(
+    );
+
+    let heldApplications = applications.filter(
         (application) =>
             application.creditManagerId &&
             application.onHold &&
             !application.isRejected
-    ).length;
-    rejectedApplications = applications.filter(
+    );
+
+    let rejectedApplications = applications.filter(
         (application) =>
             application.creditManagerId &&
             !application.onHold &&
             application.isRejected
-    ).length;
+    );
+
+    if (req.creditManager) {
+        allocatedApplications = allocatedApplications.filter(
+            (application) =>
+                application?.creditManagerId.toString() ===
+                    req.creditManager._id.toString() &&
+                !application.onHold &&
+                !application.isRejected
+        );
+
+        heldApplications = heldApplications.filter(
+            (application) =>
+                application?.creditManagerId.toString() ===
+                    req.creditManager._id.toString() &&
+                application.onHold &&
+                !application.isRejected
+        );
+    }
 
     res.json({
         leads: {
@@ -112,9 +103,9 @@ export const totalRecords = asyncHandler(async (req, res) => {
         applications: {
             totalApplications,
             newApplications,
-            allocatedApplications,
-            heldApplications,
-            rejectedApplications,
+            allocatedApplications: allocatedApplications.length,
+            heldApplications: heldApplications.length,
+            rejectedApplications: rejectedApplications.length,
         },
     });
 });

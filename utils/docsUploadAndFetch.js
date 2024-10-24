@@ -115,7 +115,7 @@ export const getDocs = async (lead, docType) => {
         throw new Error(`Document of type ${docType} not found`);
     }
 
-    const mimeType = getMimeTypeForDocType(document.type);
+    const mimeType = getMimeTypeForDocType(document.url, document.type);
 
     // Generate a pre-signed URL for this specific document
     const preSignedUrl = generatePresignedUrl(document.url, mimeType);

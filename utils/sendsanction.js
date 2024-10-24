@@ -1,8 +1,7 @@
 import axios from "axios";
-import handlebars from "handlebars";
-import * as fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import { initiateEsignContract } from "./eSign.js";
+import { htmlToPdf } from "./htmlToPdf.js";
+import { sanctionLetter } from "./sanctionLetter.js";
 
 const apiKey = process.env.ZOHO_APIKEY;
 
@@ -15,51 +14,30 @@ export const generateSanctionLetter = async (
     residenceAddress,
     stateCountry,
     camDetails,
+    lead,
     recipientEmail
 ) => {
     try {
-        const __filename = fileURLToPath(import.meta.url);
-        const __dirname = path.dirname(__filename);
-        const filePath = path.join(__dirname, "../config/sanction.html");
-        const source = fs.readFileSync(filePath, "utf-8").toString();
+        const htmlToSend = sanctionLetter(
+            sanctionDate,
+            title,
+            fullname,
+            mobile,
+            residenceAddress,
+            stateCountry,
+            camDetails
+        );
 
-        const template = handlebars.compile(source);
+        // Save the sanction letter in S3
+        await htmlToPdf(lead, htmlToSend);
 
-        let replacements = {
-            sanctionDate: `${sanctionDate}`,
-            title: `${title}`,
-            fullname: `${fullname}`,
-            residenceAddress: `${residenceAddress}`,
-            stateCountry: `${stateCountry}`,
-            mobile: `${mobile}`,
-            loanAmount: `${new Intl.NumberFormat().format(
-                camDetails?.details.loanRecommended
-            )}`,
-            roi: `${camDetails?.details.eligibleRoi}`,
-            disbursalDate: dateFormatter(camDetails?.details.disbursalDate),
-            repaymentAmount: `${new Intl.NumberFormat().format(
-                camDetails?.details.repaymentAmount
-            )}`,
-            tenure: `${camDetails?.details.eligibleTenure}`,
-            repaymentDate: dateFormatter(camDetails?.details.repaymentDate),
-            penalInterest: `${camDetails?.details.penalInterest || "0"}`,
-            processingFee: `${new Intl.NumberFormat().format(
-                camDetails?.details.totalAdminFeeAmount
-            )}`,
-            // repaymentCheques: `${camDetails?.details.repaymentCheques || "-"}`,
-            // bankName: `${bankName || "-"}`,
-            bouncedCharges: "1000",
-            // annualPercentageRate: `${
-            //     camDetails?.details.annualPercentageRate || "0"
-            // }`,
-        };
+        // Call eSign API
+        const contract = await initiateEsignContract(
+            lead._id,
+            "sanctionLetter"
+        );
 
-        let htmlToSend;
-        try {
-            htmlToSend = template(replacements);
-        } catch (error) {
-            console.log(error);
-        }
+        // response?.data?.signerdetail[0]?.workflowUrl  eSign url
 
         // footer =
         //     "https://publicramlella.s3.ap-south-1.amazonaws.com/public_assets/Footer.jpg";
@@ -82,35 +60,28 @@ export const generateSanctionLetter = async (
                 to: [
                     {
                         email_address: {
-                            address: "abhay@only1loan.com",
+                            address: recipientEmail,
                             name: fullname,
                         },
                     },
                 ],
                 subject: subject,
-                htmlbody: htmlToSend,
+                htmlbody: `<div><p>To approve the loan, please verify and sign the sanction letter.</p><br/><a href=${response?.data?.signerdetail[0]?.workflowUrl}>${response?.data?.signerdetail[0]?.workflowUrl}</a></div>`,
             }),
         };
-
-        try {
-            // Make the request to the ZeptoMail API
-            axios(options)
-                .then((_response) => {
-                    return {
-                        success: true,
-                        message: "Email sent successfully",
-                    };
-                })
-                .catch((error) => {
-                    return {
-                        success: false,
-                        message: "Failed to send email",
-                        error: error.message,
-                    };
-                });
-        } catch (error) {
-            console.log("Some error occurred");
-        }
+        // Make the request to the ZeptoMail API
+        // const response = await axios(options);
+        // if (response.data.message === "OK") {
+        //     await htmlToPdf(lead, htmlToSend);
+        //     return {
+        //         success: true,
+        //         message: "Sanction letter sent and saved successfully",
+        //     };
+        // }
+        // return {
+        //     success: false,
+        //     message: "Failed to send email",
+        // };
     } catch (error) {
         return {
             success: false,

@@ -33,7 +33,8 @@ export const getAllApplication = asyncHandler(async (req, res) => {
             populate: {
                 path: "recommendedBy",
             },
-        });
+        })
+        .sort({ updatedAt: -1 });
     const totalApplications = await Application.countDocuments(query);
 
     return res.json({

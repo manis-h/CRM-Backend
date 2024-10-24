@@ -4,6 +4,7 @@ import { generateSanctionLetter } from "../utils/sendsanction.js";
 import { dateFormatter, dateStripper } from "../utils/dateFormatter.js";
 import CamDetails from "../models/CAM.js";
 import { getSanctionData } from "../utils/sanctionData.js";
+import Lead from "../models/Leads.js";
 
 // @desc Get the forwarded applications
 // @route GET /api/sanction/recommended
@@ -55,30 +56,36 @@ export const sanctionApprove = asyncHandler(async (req, res) => {
 
     const { application, camDetails, response } = await getSanctionData(id);
 
-    application.sanctionDate = response.sanctionDate;
-    application.isApproved = true;
-    application.approvedBy = req.employee._id.toString();
-    await application.save();
+    const lead = await Lead.findById({ _id: application.lead });
 
     // Call the generateSanctionLetter utility function
     const emailResponse = await generateSanctionLetter(
         `SANCTION LETTER - ${response.fullname}`,
-        dateFormatter(application.sanctionDate),
+        dateFormatter(response.sanctionDate),
         response.title,
         response.fullname,
         response.mobile,
         response.residenceAddress,
         response.stateCountry,
         camDetails,
+        lead,
         `${application.applicant.personalDetails.personalEmail}`
     );
 
-    // Return a success response
-    if (!emailResponse) {
-        return res.json({ success: false });
-    }
+    console.log("Response: ", emailResponse);
+
+    // Return a unsuccessful response
+    // if (!emailResponse.success) {
+    //     return res.json({ success: false });
+    // }
+
+    // application.sanctionDate = response.sanctionDate;
+    // application.isApproved = true;
+    // application.approvedBy = req.employee._id.toString();
+    // await application.save();
+
     res.json({
-        success: emailResponse.success,
-        message: emailResponse.message,
+        success: true,
+        // message: ,
     });
 });

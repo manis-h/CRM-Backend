@@ -113,6 +113,7 @@ const leadSchema = new mongoose.Schema(
                         "salarySlip",
                         "verificationVideo",
                         "cibilReport",
+                        "sanctionLetter",
                         // Add more document types as needed
                     ],
                 },

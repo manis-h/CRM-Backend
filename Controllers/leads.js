@@ -40,7 +40,7 @@ export const createLead = asyncHandler(async (req, res) => {
         mName: mName ?? "",
         lName: lName ?? "",
         gender,
-        dob,
+        dob: new Date(dob),
         aadhaar,
         pan,
         mobile: String(mobile),

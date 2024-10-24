@@ -6,6 +6,7 @@ const applicationSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Lead",
             required: true,
+            unique: true,
         },
         applicant: {
             type: mongoose.Schema.Types.ObjectId,
