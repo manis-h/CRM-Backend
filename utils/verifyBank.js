@@ -17,7 +17,6 @@ export const verifyBank = async (
         });
 
         const { mobile, personalEmail } = applicant.personalDetails;
-        console.log(mobile, personalEmail);
 
         if (!bankDetails) {
             const options = {
