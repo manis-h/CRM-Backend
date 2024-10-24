@@ -58,7 +58,6 @@ const internalDedupe = asyncHandler(async (req, res) => {
         // }
     ]);
 
-    console.log("related applications", relatedApplications);
 
     return res.json({
         relatedLeads,

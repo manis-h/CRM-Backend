@@ -74,7 +74,6 @@ export const bulkUpload = asyncHandler(async (req, res) => {
         })
         .on("end", async () => {
             try {
-                console.log('result ',results)
                 if (results.length > 0) {
                     await insertBatch(results);
                     insertedCount += results.length;
