@@ -58,7 +58,7 @@ export const verifyBank = async (
             // }
 
             const newBank = await Bank.create({
-                borrowerId: id,
+                borrowerId: applicant._id.toString(),
                 beneficiaryName,
                 bankName,
                 bankAccNo,

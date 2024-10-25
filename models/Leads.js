@@ -101,28 +101,66 @@ const leadSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Employee",
         },
-        document: [
-            {
-                type: {
-                    type: String,
-                    enum: [
-                        "aadhaarFront",
-                        "aadhaarBack",
-                        "panCard",
-                        "bankStatement",
-                        "salarySlip",
-                        "verificationVideo",
-                        "cibilReport",
-                        "sanctionLetter",
-                        // Add more document types as needed
-                    ],
+
+        document: {
+            singleDocuments: [
+                {
+                    type: {
+                        type: String,
+                        enum: [
+                            "aadhaarFront",
+                            "aadhaarBack",
+                            "panCard",
+                            "cibilReport",
+                            "sanctionLetter",
+                            // Add more document types as needed
+                        ],
+                    },
+                    url: {
+                        type: String,
+                        required: true,
+                    },
+                    remarks: {
+                        type: String,
+                    },
                 },
-                url: {
-                    type: String,
-                    required: true,
-                },
+            ],
+            multipleDocuments: {
+                bankStatement: [
+                    {
+                        url: {
+                            type: String,
+                            required: true,
+                        },
+                        remarks: {
+                            type: String,
+                        },
+                    },
+                ],
+                salarySlip: [
+                    {
+                        url: {
+                            type: String,
+                            required: true,
+                        },
+                        remarks: {
+                            type: String,
+                        },
+                    },
+                ],
+                others: [
+                    {
+                        url: {
+                            type: String,
+                            required: true,
+                        },
+                        remarks: {
+                            type: String,
+                        },
+                    },
+                ],
             },
-        ],
+        },
         isRecommended: {
             type: Boolean,
             default: false,

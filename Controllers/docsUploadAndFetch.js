@@ -11,6 +11,8 @@ export const addDocs = asyncHandler(async (req, res) => {
     const { id } = req.params;
     let employeeId;
 
+    const { remarks } = req.body;
+
     let lead = await Lead.findById(id);
     if (!lead) {
         throw new Error("Lead not found");
@@ -28,7 +30,10 @@ export const addDocs = asyncHandler(async (req, res) => {
     }
 
     if (req.screener || req.creditManager) {
-        const result = await uploadDocs(lead, req.files);
+        console.log(req.files);
+        console.log(req.body);
+
+        const result = await uploadDocs(lead, req.files, remarks);
         // Loop through each field and upload the files to S3
         if (!result) {
             res.status(400);
@@ -56,6 +61,7 @@ export const addDocs = asyncHandler(async (req, res) => {
 export const getDocuments = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { docType } = req.query;
+    const index = Number(req.query.index);
 
     let lead = await Lead.findById(id);
     if (!lead) {
@@ -63,7 +69,7 @@ export const getDocuments = asyncHandler(async (req, res) => {
         throw new Error("Lead not found!!!");
     }
 
-    const result = await getDocs(lead, docType);
+    const result = await getDocs(lead, docType, index);
 
     // Return the pre-signed URL for this specific document
     res.json({
