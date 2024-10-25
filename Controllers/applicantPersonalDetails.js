@@ -5,6 +5,7 @@ import Application from "../models/Applications.js";
 import Employee from "../models/Employees.js";
 import { postLogs } from "./logs.js";
 import { verifyBank } from "../utils/verifyBank.js";
+import Lead from "../models/Leads.js";
 
 // @desc Post applicant details
 // @access Private
