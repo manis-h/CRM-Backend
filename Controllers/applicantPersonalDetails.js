@@ -251,7 +251,7 @@ export const getApplicantBankDetails = asyncHandler(async (req, res) => {
     const bank = await Bank.findOne({ borrowerId: id });
 
     if (!bank) {
-        return res.status(404).json({ success: false });
+        return res.json({ message: "No bank found!!" });
     }
     res.json(bank);
 });
