@@ -77,7 +77,10 @@ export const getAllLeads = asyncHandler(async (req, res) => {
         isRecommended: { $ne: true },
     };
 
-    const leads = await Lead.find(query).skip(skip).limit(limit);
+    const leads = await Lead.find(query)
+        .skip(skip)
+        .limit(limit)
+        .sort({ updatedAt: -1 });
 
     const totalLeads = await Lead.countDocuments(query);
 
