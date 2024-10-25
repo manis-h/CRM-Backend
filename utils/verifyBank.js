@@ -19,43 +19,61 @@ export const verifyBank = async (
         const { mobile, personalEmail } = applicant.personalDetails;
 
         if (!bankDetails) {
-            const options = {
-                method: "POST",
-                url: "https://api-preproduction.signzy.app/api/v3/bankaccountverifications/advancedverification",
-                data: {
-                    beneficiaryAccount: bankAccNo,
-                    beneficiaryIFSC: ifscCode,
-                    beneficiaryMobile: mobile,
-                    nameFuzzy: true,
-                    beneficiaryName: beneficiaryName,
-                    email: personalEmail,
-                },
-                headers: {
-                    "Content-type": "application/json",
-                    Authorization: process.env.SIGNZY_PRE_PRODUCTION_KEY,
-                },
-            };
+            // const options = {
+            //     method: "POST",
+            //     url: "https://api-preproduction.signzy.app/api/v3/bankaccountverifications/advancedverification",
+            //     data: {
+            //         beneficiaryAccount: bankAccNo,
+            //         beneficiaryIFSC: ifscCode,
+            //         beneficiaryMobile: mobile,
+            //         nameFuzzy: true,
+            //         beneficiaryName: beneficiaryName,
+            //         email: personalEmail,
+            //     },
+            //     headers: {
+            //         "Content-type": "application/json",
+            //         Authorization: process.env.SIGNZY_PRE_PRODUCTION_KEY,
+            //     },
+            // };
 
-            const response = await axios(options);
+            // const response = await axios(options);
 
-            if (response.result.reason === "success") {
-                const newBank = await Bank.create({
-                    borrowerId: id,
-                    beneficiaryName,
-                    bankName,
-                    bankAccNo,
-                    accountType,
-                    ifscCode,
-                    branchName,
-                });
+            // if (response.result.reason === "success") {
+            //     const newBank = await Bank.create({
+            //         borrowerId: id,
+            //         beneficiaryName,
+            //         bankName,
+            //         bankAccNo,
+            //         accountType,
+            //         ifscCode,
+            //         branchName,
+            //     });
 
-                if (newBank) {
-                    return {
-                        success: true,
-                        message: "Bank verified and saved.",
-                    };
-                }
+            //     if (newBank) {
+            //         return {
+            //             success: true,
+            //             message: "Bank verified and saved.",
+            //         };
+            //     }
+            // }
+
+            const newBank = await Bank.create({
+                borrowerId: id,
+                beneficiaryName,
+                bankName,
+                bankAccNo,
+                accountType,
+                ifscCode,
+                branchName,
+            });
+
+            if (newBank) {
+                return {
+                    success: true,
+                    message: "Bank verified and saved.",
+                };
             }
+
             return { success: false, message: "Bank couldn't be verified!!" };
         }
     } catch (error) {
