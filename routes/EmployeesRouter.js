@@ -13,7 +13,7 @@ router.route("/").get(protect, admin, getAllEmployees);
 router.route("/:id").get(protect, getAnEmployee);
 
 // Route to register a new user
-router.route("/register").post(protect, admin, register);
+router.route("/register").post(protect, register);
 
 // Route to login
 router.route("/login").post(login);

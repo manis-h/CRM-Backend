@@ -13,28 +13,28 @@ export const rejected = asyncHandler(async (req, res) => {
     const employee = await Employee.findOne({ _id: req.employee._id });
 
     // List of roles that are authorized to hold a lead
-    const authorizedRoles = [
-        "screener",
-        "admin",
-        "creditManager",
-        "sanctionHead",
-    ];
+    // const authorizedRoles = [
+    //     "screener",
+    //     "admin",
+    //     "creditManager",
+    //     "sanctionHead",
+    // ];
 
     if (!req.employee) {
         res.status(403);
         throw new Error("Not Authorized!!");
     }
 
-    if (!authorizedRoles.includes(req.employee.empRole)) {
-        res.status(403);
-        throw new Error("Not Authorized to reject a lead!!");
-    }
+    // if (!authorizedRoles.includes(req.employee.empRole)) {
+    //     res.status(403);
+    //     throw new Error("Not Authorized to reject a lead!!");
+    // }
 
     let lead;
     let application;
     let logs;
 
-    if (req.screener) {
+    if (req.roles.has("screener")) {
         lead = await Lead.findByIdAndUpdate(
             id,
             { onHold: false, isRejected: true, rejectedBy: req.employee._id },
@@ -55,7 +55,7 @@ export const rejected = asyncHandler(async (req, res) => {
         return res.json({ lead, logs });
     }
 
-    if (req.creditManger || req.sanctionHead) {
+    if (req.roles.has("creditManager") || req.roles.has("sanctionHead")) {
         application = await Application.findByIdAndUpdate(
             id,
             { isRejected: true, rejectedBy: req.employee._id },

@@ -7,7 +7,7 @@ import { generateToken } from "../utils/generateToken.js";
 // @route POST /api/employees
 //@access Private
 export const register = asyncHandler(async (req, res) => {
-    if (req.admin) {
+    if (req.roles && req.roles.has("admin")) {
         const {
             fName,
             lName,
@@ -26,28 +26,35 @@ export const register = asyncHandler(async (req, res) => {
             throw new Error("Employee already exists!!!");
         }
 
-        // const empId = generateEmpId();
-        if (password === confPassword) {
-            const employee = await Employee.create({
-                fName,
-                lName,
-                email,
-                password,
-                gender,
-                mobile,
-                empRole,
-                empId,
-            });
-            if (employee) {
-                generateToken(res, employee._id);
-                return res.status(201).json({
-                    _id: employee._id,
-                    name: employee.fName + " " + employee.lName,
-                    email: employee.email,
-                    empRole: employee.empRole,
-                });
-            }
+        if (password !== confPassword) {
+            res.status(400);
+            throw new Error("Passwords do not match");
         }
+
+        // const empId = generateEmpId();
+        const employee = await Employee.create({
+            fName,
+            lName,
+            email,
+            password,
+            gender,
+            mobile,
+            empRole,
+            empId,
+        });
+        if (employee) {
+            generateToken(res, employee._id);
+            return res.status(201).json({
+                _id: employee._id,
+                name: employee.fName + " " + employee.lName,
+                email: employee.email,
+                empRole: employee.empRole,
+            });
+        }
+    } else {
+        // If user is not an admin, deny access
+        res.status(403);
+        throw new Error("Not authorized to register employees");
     }
 });
 

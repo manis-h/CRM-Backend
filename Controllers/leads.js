@@ -113,14 +113,17 @@ export const allocateLead = asyncHandler(async (req, res) => {
     const { id } = req.params;
     let screenerId;
 
-    if (req.admin) {
-        screenerId = req.body.screenerId;
-    } else {
-        screenerId = req.screener._id.toString();
+    if (req.roles.has("screener")) {
+        screenerId = req.employee._id.toString(); // Current user is a screener
     }
-    if (!req.screener) {
-        throw new Error("Screener not found");
-    }
+
+    // if (req.roles.has("sanctionHead")) {
+    //     screenerId = req.body.screenerId;
+    // } else if (req.roles.has("screener")) {
+    //     screenerId = req.screener._id.toString();
+    // } else {
+    //     throw new Error("Not authorized to allocate leads");
+    // }
 
     const lead = await Lead.findByIdAndUpdate(
         id,
@@ -148,7 +151,7 @@ export const allocateLead = asyncHandler(async (req, res) => {
 // @access Private
 export const allocatedLeads = asyncHandler(async (req, res) => {
     let query;
-    if (req.employee.empRole === "admin") {
+    if (req.roles.has("admin") || req.roles.has("sanctionHead")) {
         query = {
             screenerId: {
                 $ne: null,
@@ -157,18 +160,9 @@ export const allocatedLeads = asyncHandler(async (req, res) => {
             isRejected: { $ne: true },
             isRecommended: { $ne: true },
         };
-    } else if (req.employee.empRole === "screener") {
+    } else if (req.roles.has("screener")) {
         query = {
             screenerId: req.employee.id,
-            onHold: { $ne: true },
-            isRejected: { $ne: true },
-            isRecommended: { $ne: true },
-        };
-    } else if (req.employee.empRole === "sanctionHead") {
-        query = {
-            screenerId: {
-                $ne: null,
-            },
             onHold: { $ne: true },
             isRejected: { $ne: true },
             isRecommended: { $ne: true },
@@ -263,7 +257,7 @@ export const recommendLead = asyncHandler(async (req, res) => {
     const result = await checkApproval(
         lead,
         {},
-        req.screener._id.toString(),
+        req.employee._id.toString(),
         ""
     );
 
@@ -345,12 +339,12 @@ export const emailVerify = asyncHandler(async (req, res) => {
         res.json({ success: false, message: "Email is already verified!!" });
     }
 
-    const otp = generateRandomNumber();
-    const otpExpiry = new Date(Date.now() + 15 * 60 * 1000); // Calculate expiry time
+    // const otp = generateRandomNumber();
+    // const otpExpiry = new Date(Date.now() + 15 * 60 * 1000); // Calculate expiry time
 
-    lead.emailOtp = otp;
-    lead.emailOtpExpiredAt = otpExpiry;
-    await lead.save();
+    // lead.emailOtp = otp;
+    // lead.emailOtpExpiredAt = otpExpiry;
+    // await lead.save();
 
     if (!lead) {
         res.status(404);
@@ -358,55 +352,49 @@ export const emailVerify = asyncHandler(async (req, res) => {
     }
 
     // Perform the email API request or other actions here
-    const response = await sendEmail(
-        req.employee.email,
-        lead.personalEmail,
-        `${lead.fName} ${lead.mName} ${lead.lName}`,
-        "Email Verfication",
-        otp
-    );
+    // const response = await sendEmail(
+    //     req.employee.email,
+    //     lead.personalEmail,
+    //     `${lead.fName} ${lead.mName} ${lead.lName}`,
+    //     "Email Verfication",
+    //     otp
+    // );
 
-    res.json({ message: response.message });
+    res.json({ success: true, message: "Email is now verified." });
 });
 
 // @desc Verify email OTP
 // @route PATCH /api/verify/email-otp/:id
 // @access Private
 export const verifyEmailOtp = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const { otp } = req.body;
-
-    const lead = await Lead.findById(id);
-
-    if (!lead) {
-        res.status(404);
-        throw new Error("Lead not found!!!");
-    }
-
-    if (lead.screenerId.toString() !== req.employee._id.toString()) {
-        res.status(401);
-        throw new Error("You are not authorized!!");
-    }
-
-    // Check if the OTP has expired
-    const currentTime = new Date();
-    if (currentTime > lead.emailOtpExpiredAt) {
-        res.status(400);
-        throw new Error("OTP has expired");
-    }
-
-    // Check if the OTP matches
-    if (lead.emailOtp !== otp) {
-        res.status(400);
-        throw new Error("Invalid OTP");
-    }
-    lead.isEmailVerified = true;
-    await lead.save();
-
-    res.json({
-        success: true,
-        message: "Email is now verified.",
-    });
+    // const { id } = req.params;
+    // const { otp } = req.body;
+    // const lead = await Lead.findById(id);
+    // if (!lead) {
+    //     res.status(404);
+    //     throw new Error("Lead not found!!!");
+    // }
+    // if (lead.screenerId.toString() !== req.employee._id.toString()) {
+    //     res.status(401);
+    //     throw new Error("You are not authorized!!");
+    // }
+    // // Check if the OTP has expired
+    // const currentTime = new Date();
+    // if (currentTime > lead.emailOtpExpiredAt) {
+    //     res.status(400);
+    //     throw new Error("OTP has expired");
+    // }
+    // // Check if the OTP matches
+    // if (lead.emailOtp !== otp) {
+    //     res.status(400);
+    //     throw new Error("Invalid OTP");
+    // }
+    // lead.isEmailVerified = true;
+    // await lead.save();
+    // res.json({
+    //     success: true,
+    //     message: "Email is now verified.",
+    // });
 });
 
 // @desc Fetch CIBIL

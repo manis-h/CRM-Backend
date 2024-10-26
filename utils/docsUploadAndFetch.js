@@ -58,6 +58,7 @@ export const uploadDocs = async (lead, files, remarks, options = {}) => {
             const isSingleType = [
                 "aadhaarFront",
                 "aadhaarBack",
+                "eAadhaar",
                 "panCard",
                 "cibilReport",
                 "sanctionLetter",
@@ -120,7 +121,7 @@ export const uploadDocs = async (lead, files, remarks, options = {}) => {
                     }`;
                     const fileRemark = Array.isArray(remarks)
                         ? remarks[index]
-                        : ""; // Get corresponding remark for each file
+                        : remarks; // Get corresponding remark for each file
 
                     uploadPromises.push(
                         uploadFilesToS3(file.buffer, key).then((res) => {
@@ -161,12 +162,13 @@ export const uploadDocs = async (lead, files, remarks, options = {}) => {
     return { success: true };
 };
 
-export const getDocs = async (lead, docType, index = 0) => {
+export const getDocs = async (lead, docType, docId) => {
     // Find the specific document based on docType
     let document;
     const isSingleType = [
         "aadhaarFront",
         "aadhaarBack",
+        "eAadhaar",
         "panCard",
         "cibilReport",
         "sanctionLetter",
@@ -177,7 +179,9 @@ export const getDocs = async (lead, docType, index = 0) => {
             (doc) => doc.type === docType
         );
     } else {
-        document = lead.document.multipleDocuments[docType]?.[index];
+        document = lead.document.multipleDocuments[docType]?.find(
+            (doc) => doc._id.toString() === docId
+        );
     }
 
     if (!document) {

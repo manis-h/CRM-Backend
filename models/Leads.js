@@ -110,6 +110,7 @@ const leadSchema = new mongoose.Schema(
                         enum: [
                             "aadhaarFront",
                             "aadhaarBack",
+                            "eAadhaar",
                             "panCard",
                             "cibilReport",
                             "sanctionLetter",
@@ -128,6 +129,10 @@ const leadSchema = new mongoose.Schema(
             multipleDocuments: {
                 bankStatement: [
                     {
+                        name: {
+                            type: String,
+                            required: true,
+                        },
                         url: {
                             type: String,
                             required: true,
@@ -139,6 +144,10 @@ const leadSchema = new mongoose.Schema(
                 ],
                 salarySlip: [
                     {
+                        name: {
+                            type: String,
+                            required: true,
+                        },
                         url: {
                             type: String,
                             required: true,
@@ -150,6 +159,10 @@ const leadSchema = new mongoose.Schema(
                 ],
                 others: [
                     {
+                        name: {
+                            type: String,
+                            required: true,
+                        },
                         url: {
                             type: String,
                             required: true,

@@ -24,6 +24,7 @@ const router = express.Router();
 const uploadFields = upload.fields([
     { name: "aadhaarFront", maxCount: 1 },
     { name: "aadhaarBack", maxCount: 1 },
+    { name: "eAadhaar", maxCount: 1 },
     { name: "panCard", maxCount: 1 },
     { name: "bankStatement", maxCount: 10 }, // Allows up to 10 bank statements
     { name: "salarySlip", maxCount: 10 }, // Allows up to 10 salary slips
@@ -37,7 +38,7 @@ router.get("/totalRecords", protect, totalRecords);
 router.route("/allocated").get(protect, allocatedLeads);
 router.get("/hold", protect, getHold);
 router.get("/reject", protect, getRejected);
-router.route("/:id").get(getLead).patch(protect, allocateLead);
+router.route("/:id").get(protect, getLead).patch(protect, allocateLead);
 router.get("/old-history/:id", protect, internalDedupe);
 router.patch("/hold/:id", protect, onHold);
 router.patch("/unhold/:id", protect, unHold);

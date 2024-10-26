@@ -18,9 +18,9 @@ export const addDocs = asyncHandler(async (req, res) => {
         throw new Error("Lead not found");
     }
 
-    if (req.screener) {
-        employeeId = req.screener._id.toString();
-    } else if (req.creditManager) {
+    if (req.roles.has("screener")) {
+        employeeId = req.employee._id.toString();
+    } else if (req.roles.has("creditManager")) {
         employeeId = req.creditManager._id.toString();
     }
 
@@ -29,15 +29,41 @@ export const addDocs = asyncHandler(async (req, res) => {
         throw new Error("No files uploaded");
     }
 
-    if (req.screener || req.creditManager) {
-        console.log(req.files);
-        console.log(req.body);
+    if (req.roles.has("screener") || req.roles.has("creditManager")) {
+        // Validate document uploads
+        const aadhaarFrontUploaded =
+            req.files.aadhaarFront && req.files.aadhaarFront.length > 0;
+        const aadhaarBackUploaded =
+            req.files.aadhaarBack && req.files.aadhaarBack.length > 0;
+        const eAadhaarUploaded =
+            req.files.eAadhaar && req.files.eAadhaar.length > 0;
 
-        const result = await uploadDocs(lead, req.files, remarks);
-        // Loop through each field and upload the files to S3
-        if (!result) {
-            res.status(400);
-            throw new Error("Couldn't store documents.");
+        // Check validation logic
+        if (aadhaarFrontUploaded && aadhaarBackUploaded && eAadhaarUploaded) {
+            return res.status(400).json({
+                message:
+                    "You cannot upload both aadhaar documents and eAadhaar.",
+            });
+        }
+        if (aadhaarFrontUploaded && aadhaarBackUploaded && !eAadhaarUploaded) {
+            // Proceed with document upload for aadhaarFront and aadhaarBack
+            const result = await uploadDocs(lead, req.files, remarks);
+            if (!result) {
+                res.status(400);
+                throw new Error("Couldn't store documents.");
+            }
+        } else if (eAadhaarUploaded) {
+            // Proceed with document upload for eAadhaar
+            const result = await uploadDocs(lead, req.files, remarks);
+            if (!result) {
+                res.status(400);
+                throw new Error("Couldn't store documents.");
+            }
+        } else {
+            return res.status(400).json({
+                message:
+                    "At least one of the aadhaar documents or eAadhaar must be uploaded.",
+            });
         }
     } else {
         res.status(401);
@@ -61,7 +87,7 @@ export const addDocs = asyncHandler(async (req, res) => {
 export const getDocuments = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { docType } = req.query;
-    const index = Number(req.query.index);
+    const docId = Number(req.query.docId);
 
     let lead = await Lead.findById(id);
     if (!lead) {
@@ -69,7 +95,7 @@ export const getDocuments = asyncHandler(async (req, res) => {
         throw new Error("Lead not found!!!");
     }
 
-    const result = await getDocs(lead, docType, index);
+    const result = await getDocs(lead, docType, docId);
 
     // Return the pre-signed URL for this specific document
     res.json({

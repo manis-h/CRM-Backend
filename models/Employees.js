@@ -34,7 +34,7 @@ const employeeSchema = new mongoose.Schema({
         required: true,
     },
     empRole: {
-        type: String,
+        type: [String],
         required: true,
     },
     isActive: {

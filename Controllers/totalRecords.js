@@ -34,14 +34,14 @@ export const totalRecords = asyncHandler(async (req, res) => {
         (lead) => lead.screenerId && !lead.onHold && lead.isRejected
     );
 
-    if (req.screener) {
+    if (req.roles.has("screener")) {
         allocatedLeads = allocatedLeads.filter(
             (allocated) =>
-                allocated.screenerId.toString() === req.screener._id.toString()
+                allocated.screenerId.toString() === req.employee._id.toString()
         );
 
         heldLeads = heldLeads.filter(
-            (held) => held.heldBy.toString() === req.screener._id.toString()
+            (held) => held.heldBy.toString() === req.employee._id.toString()
         );
     }
 
@@ -74,21 +74,17 @@ export const totalRecords = asyncHandler(async (req, res) => {
             application.isRejected
     );
 
-    if (req.creditManager) {
+    if (req.roles.has("creditManager")) {
         allocatedApplications = allocatedApplications.filter(
             (application) =>
-                application?.creditManagerId.toString() ===
-                    req.creditManager._id.toString() &&
-                !application.onHold &&
-                !application.isRejected
+                application.creditManagerId.toString() ===
+                req.employee._id.toString()
         );
 
         heldApplications = heldApplications.filter(
             (application) =>
                 application?.creditManagerId.toString() ===
-                    req.creditManager._id.toString() &&
-                application.onHold &&
-                !application.isRejected
+                req.employee._id.toString()
         );
     }
 

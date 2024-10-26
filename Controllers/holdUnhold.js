@@ -11,28 +11,28 @@ export const onHold = asyncHandler(async (req, res) => {
     const { reason } = req.body;
 
     // List of roles that are authorized to hold a lead
-    const authorizedRoles = [
-        "admin",
-        "screener",
-        "creditManager",
-        "sanctionHead",
-    ];
+    // const authorizedRoles = [
+    //     "admin",
+    //     "screener",
+    //     "creditManager",
+    //     "sanctionHead",
+    // ];
 
     if (!req.employee) {
         res.status(403);
         throw new Error("Not Authorized!!");
     }
 
-    if (!authorizedRoles.includes(req.employee.empRole)) {
-        res.status(403);
-        throw new Error("Not Authorized to hold!!");
-    }
+    // if (!authorizedRoles.includes(req.employee.empRole)) {
+    //     res.status(403);
+    //     throw new Error("Not Authorized to hold!!");
+    // }
 
     let lead;
     let application;
     let logs;
 
-    if (req.screener) {
+    if (req.roles.has("screener")) {
         lead = await Lead.findByIdAndUpdate(
             id,
             { onHold: true, heldBy: req.employee._id },
@@ -53,7 +53,7 @@ export const onHold = asyncHandler(async (req, res) => {
         return res.json({ lead, logs });
     }
 
-    if (req.creditManager) {
+    if (req.roles.has("creditManger") || req.roles.has("sanctionHead")) {
         application = await Application.findByIdAndUpdate(
             id,
             { onHold: true, heldBy: req.employee._id },
@@ -86,28 +86,28 @@ export const unHold = asyncHandler(async (req, res) => {
     const { reason } = req.body;
 
     // List of roles that are authorized to hold a lead
-    const authorizedRoles = [
-        "screener",
-        "admin",
-        "creditManager",
-        "sanctionHead",
-    ];
+    // const authorizedRoles = [
+    //     "screener",
+    //     "admin",
+    //     "creditManager",
+    //     "sanctionHead",
+    // ];
 
     if (!req.employee) {
         res.status(403);
         throw new Error("Not Authorized!!");
     }
 
-    if (!authorizedRoles.includes(req.employee.empRole)) {
-        res.status(403);
-        throw new Error("Not Authorized to hold a lead!!");
-    }
+    // if (!authorizedRoles.includes(req.employee.empRole)) {
+    //     res.status(403);
+    //     throw new Error("Not Authorized to hold a lead!!");
+    // }
 
     let lead;
     let application;
     let logs;
 
-    if (req.screener) {
+    if (req.roles.has("screener")) {
         lead = await Lead.findByIdAndUpdate(
             id,
             { onHold: false },
@@ -128,7 +128,7 @@ export const unHold = asyncHandler(async (req, res) => {
         return res.json({ lead, logs });
     }
 
-    if (req.creditManager) {
+    if (req.roles.has("creditManger") || req.roles.has("sanctionHead")) {
         application = await Application.findByIdAndUpdate(
             id,
             { onHold: false },
@@ -157,12 +157,12 @@ export const unHold = asyncHandler(async (req, res) => {
 // @access Private
 export const getHold = asyncHandler(async (req, res) => {
     // List of roles that are authorized to hold a lead
-    const authorizedRoles = [
-        "screener",
-        "admin",
-        "creditManager",
-        "sanctionHead",
-    ];
+    // const authorizedRoles = [
+    //     "screener",
+    //     "admin",
+    //     "creditManager",
+    //     "sanctionHead",
+    // ];
 
     const page = parseInt(req.query.page) || 1; // current page
     const limit = parseInt(req.query.limit) || 10; // items per page
@@ -174,17 +174,17 @@ export const getHold = asyncHandler(async (req, res) => {
 
     if (!req.employee) {
         res.status(403);
-        throw new Error("Not Authorized!!");
+        throw new Error("No Employee!!");
     }
 
-    if (!authorizedRoles.includes(req.employee.empRole)) {
-        res.status(403);
-        throw new Error("Not Authorized!!");
-    }
+    // if (!authorizedRoles.includes(req.employee.empRole)) {
+    //     res.status(403);
+    //     throw new Error("Not Authorized!!");
+    // }
 
     // If the employee is not admint, they only see the leads they rejected
 
-    if (req.screener || req.creditManager) {
+    if (req.roles.has("screener") || req.roles.has("creditManager")) {
         query = {
             ...query,
             heldBy: employeeId,
@@ -195,7 +195,7 @@ export const getHold = asyncHandler(async (req, res) => {
     let applications;
     let totalRecords;
 
-    if (req.screener) {
+    if (req.roles.has("screener")) {
         leads = await Lead.find(query).skip(skip).limit(limit);
 
         totalRecords = await Lead.countDocuments(query);
@@ -208,7 +208,7 @@ export const getHold = asyncHandler(async (req, res) => {
                 leads,
             },
         });
-    } else if (req.creditManager) {
+    } else if (req.roles.has("creditManager")) {
         applications = await Application.find(query)
             .skip(skip)
             .limit(limit)

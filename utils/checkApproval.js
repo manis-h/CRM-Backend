@@ -12,6 +12,7 @@ export const checkApproval = async (
         const requiredDocs = [
             "aadhaarFront",
             "aadhaarBack",
+            "eAadhaar",
             "panCard",
             "bankStatement",
             "salarySlip",
@@ -65,6 +66,28 @@ export const checkApproval = async (
             const missingDocs = requiredDocs.filter(
                 (docType) => !uploadedDocs.includes(docType)
             );
+
+            // Check for Aadhaar document logic
+            const hasAadhaarFront = uploadedDocs.includes("aadhaarFront");
+            const hasAadhaarBack = uploadedDocs.includes("aadhaarBack");
+            const hasEAadhaar = uploadedDocs.includes("eAadhaar");
+
+            // Check if either both Aadhaar documents are uploaded or eAadhaar is uploaded
+            if ((hasAadhaarFront || hasAadhaarBack) && !hasEAadhaar) {
+                if (!(hasAadhaarFront && hasAadhaarBack)) {
+                    missingDocs.push(
+                        "Either aadhaarFront and aadhaarBack or eAadhaar"
+                    );
+                }
+            }
+
+            // Filter out eAadhaar if both Aadhaar documents are uploaded
+            if (hasAadhaarFront && hasAadhaarBack) {
+                const index = missingDocs.indexOf("eAadhaar");
+                if (index !== -1) {
+                    missingDocs.splice(index, 1);
+                }
+            }
 
             if (missingDocs.length > 0) {
                 return {

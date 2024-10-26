@@ -16,19 +16,6 @@ export const sentBack = asyncHandler(async (req, res) => {
     // If sendTo is Credit Manager this will be used
     const application = await Application.findOne({ lead: id });
 
-    if (sendTo === "screener") {
-        await CamDetails.deleteOne({
-            leadId: new mongoose.Types.ObjectId(id),
-        });
-
-        await Application.deleteOne({
-            lead: new mongoose.Types.ObjectId(id),
-        });
-
-        lead.isRecommended = false;
-        lead.recommendedBy = null;
-        await lead.save();
-    }
     if (sendTo === "creditManager") {
         application.isRecommended = false;
         application.recommendedBy = null;
