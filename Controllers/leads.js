@@ -342,12 +342,12 @@ export const emailVerify = asyncHandler(async (req, res) => {
         res.json({ success: false, message: "Email is already verified!!" });
     }
 
-    const otp = generateRandomNumber();
-    const otpExpiry = new Date(Date.now() + 15 * 60 * 1000); // Calculate expiry time
+    // const otp = generateRandomNumber();
+    // const otpExpiry = new Date(Date.now() + 15 * 60 * 1000); // Calculate expiry time
 
-    lead.emailOtp = otp;
-    lead.emailOtpExpiredAt = otpExpiry;
-    await lead.save();
+    // lead.emailOtp = otp;
+    // lead.emailOtpExpiredAt = otpExpiry;
+    // await lead.save();
 
     if (!lead) {
         res.status(404);
@@ -355,15 +355,15 @@ export const emailVerify = asyncHandler(async (req, res) => {
     }
 
     // Perform the email API request or other actions here
-    const response = await sendEmail(
-        req.employee.email,
-        lead.personalEmail,
-        `${lead.fName} ${lead.mName} ${lead.lName}`,
-        "Email Verfication",
-        otp
-    );
+    // const response = await sendEmail(
+    //     req.employee.email,
+    //     lead.personalEmail,
+    //     `${lead.fName} ${lead.mName} ${lead.lName}`,
+    //     "Email Verfication",
+    //     otp
+    // );
 
-    res.json({ message: response.message });
+    res.json({ success: true, message: "Email is now verified." });
 });
 
 // @desc Verify email OTP

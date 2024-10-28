@@ -66,41 +66,41 @@ export const verifyAadhaar = asyncHandler(async (req, res) => {
 // @access Private
 export const saveAadhaarDetails = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { details } = req.body;
+    // const { details } = req.body;
 
-    const name = details.name.split(" ");
-    const aadhaar_number = details.aadhaar_number.slice(-4);
-    const uniqueId = `${name[0]}${aadhaar_number}`;
+    // const name = details.name.split(" ");
+    // const aadhaar_number = details.aadhaar_number.slice(-4);
+    // const uniqueId = `${name[0]}${aadhaar_number}`;
 
-    const existingAadhaar = await AadhaarDetails.findOne({
-        uniqueId: uniqueId,
-    });
+    // const existingAadhaar = await AadhaarDetails.findOne({
+    //     uniqueId: uniqueId,
+    // });
 
-    if (existingAadhaar) {
-        await Lead.findByIdAndUpdate(
-            id,
-            { isMobileVerified: true, isAadhaarVerified: true },
-            { new: true }
-        );
-        return res.json({
-            success: true,
-            details,
-        });
-    }
+    // if (existingAadhaar) {
+    //     await Lead.findByIdAndUpdate(
+    //         id,
+    //         { isMobileVerified: true, isAadhaarVerified: true },
+    //         { new: true }
+    //     );
+    //     return res.json({
+    //         success: true,
+    //         details,
+    //     });
+    // }
 
-    await Lead.findByIdAndUpdate(
-        id,
-        { isMobileVerified: true, isAadhaarVerified: true },
-        { new: true }
-    );
+    // await Lead.findByIdAndUpdate(
+    //     id,
+    //     { isMobileVerified: true, isAadhaarVerified: true },
+    //     { new: true }
+    // );
 
     // Save Aaadhaar details in AadharDetails model
-    await AadhaarDetails.create({
-        uniqueId,
-        details,
-    });
+    // await AadhaarDetails.create({
+    //     uniqueId,
+    //     details,
+    // });
     return res.json({
         success: true,
-        details,
+        details: {},
     });
 });

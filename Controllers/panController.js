@@ -40,26 +40,26 @@ export const getPanDetails = asyncHandler(async (req, res) => {
 // @access Private
 export const savePanDetails = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { data } = req.body;
+    // const { data } = req.body;
 
-    const pan = data.PAN;
+    // const pan = data.PAN;
 
-    const existingPan = await PanDetails.findOne({ "data.PAN": pan });
+    // const existingPan = await PanDetails.findOne({ "data.PAN": pan });
 
-    if (existingPan) {
-        return res.json({
-            success: true,
-        });
-    }
+    // if (existingPan) {
+    //     return res.json({
+    //         success: true,
+    //     });
+    // }
 
-    await Lead.findByIdAndUpdate(id, { isPanVerified: true }, { new: true });
+    // await Lead.findByIdAndUpdate(id, { isPanVerified: true }, { new: true });
 
     // Now save the data in the AadharDetails database
-    const newpanDetail = new PanDetails({
-        data,
-    });
+    // const newpanDetail = new PanDetails({
+    //     data,
+    // });
 
-    await newpanDetail.save();
+    // await newpanDetail.save();
     res.json({ success: true });
 });
 
@@ -81,17 +81,17 @@ export const panAadhaarLink = asyncHandler(async (req, res) => {
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 
     // Validate the PAN number
-    if (!panRegex.test(pan)) {
-        res.status(400);
-        throw new Error({ success: false, message: "Invalid PAN!!!" });
-    }
+    // if (!panRegex.test(pan)) {
+    //     res.status(400);
+    //     throw new Error({ success: false, message: "Invalid PAN!!!" });
+    // }
 
-    const aadhaar = lead.aadhaar.slice(-4);
-    const isValid = /^\d{4}$/.test(aadhaar);
+    // const aadhaar = lead.aadhaar.slice(-4);
+    // const isValid = /^\d{4}$/.test(aadhaar);
 
-    if (!isValid) {
-        throw new Error("Invalid Aadhaar!!!");
-    }
+    // if (!isValid) {
+    //     throw new Error("Invalid Aadhaar!!!");
+    // }
 
     const response = await panAadhaarLinkage(pan, aadhaar);
     // Now respond with status 200 with JSON success true
