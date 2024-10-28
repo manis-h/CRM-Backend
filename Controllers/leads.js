@@ -178,7 +178,8 @@ export const allocatedLeads = asyncHandler(async (req, res) => {
     const leads = await Lead.find(query)
         .skip(skip)
         .limit(limit)
-        .populate("screenerId");
+        .populate("screenerId")
+        .sort({ updatedAt: -1 });
 
     const totalLeads = await Lead.countDocuments(query);
 

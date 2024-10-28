@@ -202,7 +202,10 @@ export const getHold = asyncHandler(async (req, res) => {
     let totalRecords;
 
     if (req.activeRole === "screener") {
-        leads = await Lead.find(query).skip(skip).limit(limit);
+        leads = await Lead.find(query)
+            .skip(skip)
+            .limit(limit)
+            .sort({ updatedAt: -1 });
 
         totalRecords = await Lead.countDocuments(query);
 
@@ -218,7 +221,8 @@ export const getHold = asyncHandler(async (req, res) => {
         applications = await Application.find(query)
             .skip(skip)
             .limit(limit)
-            .populate("lead");
+            .populate("lead")
+            .sort({ updatedAt: -1 });
         totalRecords = await Application.countDocuments(query);
 
         return res.json({
@@ -233,14 +237,16 @@ export const getHold = asyncHandler(async (req, res) => {
         leads = await Lead.find(query)
             .skip(skip)
             .limit(limit)
-            .populate({ path: "heldBy", select: "fName mName lName" });
+            .populate({ path: "heldBy", select: "fName mName lName" })
+            .sort({ updatedAt: -1 });
         const totalLeads = await Lead.countDocuments(query);
 
         applications = await Application.find(query)
             .skip(skip)
             .limit(limit)
             .populate("lead")
-            .populate({ path: "heldBy", select: "fName mName lName" });
+            .populate({ path: "heldBy", select: "fName mName lName" })
+            .sort({ updatedAt: -1 });
         const totalRecords = await Application.countDocuments(query);
 
         return res.json({

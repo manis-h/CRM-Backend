@@ -28,31 +28,25 @@ export const uploadDocs = async (lead, files, remarks, options = {}) => {
         );
 
         if (existingDocIndex !== -1) {
-            // Old file URL stored in document
+            // Delete the old file and upload the new file
             const oldFileKey =
                 lead.document.singleDocuments[existingDocIndex].url;
             if (oldFileKey) {
-                uploadPromises.push(
-                    deleteFilesFromS3(oldFileKey).then(async () => {
-                        const res = await uploadFilesToS3(buffer, key);
-                        lead.document.singleDocuments[existingDocIndex].url =
-                            res.Key;
-                    })
-                );
+                await deleteFilesFromS3(oldFileKey);
             }
+            // Upload the new file
+            const res = await uploadFilesToS3(buffer, key);
+            lead.document.singleDocuments[existingDocIndex].url = res.Key;
         } else {
-            // If document type does not exist, add it to the document array
-            uploadPromises.push(
-                uploadFilesToS3(buffer, key).then((res) => {
-                    singleDocUpdates.push({
-                        type: fieldName,
-                        url: res.Key,
-                    });
-                })
-            );
+            // If document type does not exist, add it to the singleDocuments array
+            const res = await uploadFilesToS3(buffer, key);
+            singleDocUpdates.push({
+                type: fieldName,
+                url: res.Key,
+            });
         }
     } else {
-        // Loop through each field and upload the files to S3
+        // Loop through each field in files and upload each file
         for (const fieldName in files) {
             const fileArray = files[fieldName];
             const isSingleType = [
@@ -80,40 +74,27 @@ export const uploadDocs = async (lead, files, remarks, options = {}) => {
                     const oldFileKey =
                         lead.document.singleDocuments[existingDocIndex].url;
                     if (oldFileKey) {
-                        uploadPromises.push(
-                            // Delete the old files fro S3
-                            deleteFilesFromS3(oldFileKey).then(async () => {
-                                // upload the new file
-                                const res = await uploadFilesToS3(
-                                    file.buffer,
-                                    key
-                                );
-                                // Update the existing document's URL
-                                lead.document.singleDocuments[
-                                    existingDocIndex
-                                ].url = res.Key;
-
-                                lead.document.singleDocuments[
-                                    existingDocIndex
-                                ].remarks = remarks;
-                            })
-                        );
+                        await deleteFilesFromS3(oldFileKey);
                     }
+                    const res = await uploadFilesToS3(file.buffer, key);
+                    // Update the existing document's URL
+                    lead.document.singleDocuments[existingDocIndex].url =
+                        res.Key;
+
+                    lead.document.singleDocuments[existingDocIndex].remarks =
+                        remarks;
                 } else {
-                    // If document type does not exist, add it to the document array
-                    uploadPromises.push(
-                        uploadFilesToS3(file.buffer, key).then((res) => {
-                            singleDocUpdates.push({
-                                type: fieldName,
-                                url: res.Key,
-                                remarks,
-                            });
-                        })
-                    );
+                    // If document type does not exist, add it to the singleDocuments array
+                    const res = await uploadFilesToS3(file.buffer, key);
+                    singleDocUpdates.push({
+                        type: fieldName,
+                        url: res.Key,
+                        remarks,
+                    });
                 }
             } else {
-                // Iterate through each file for multipleDocuments and handle remarks as array
-                fileArray.forEach((file, index) => {
+                // For multipleDocuments, upload each file sequentially to maintain order
+                for (const [index, file] of fileArray.entries()) {
                     // Get the current count of documents for this field in the database
                     const existingDocsCount =
                         lead.document.multipleDocuments[fieldName]?.length || 0;
@@ -130,27 +111,23 @@ export const uploadDocs = async (lead, files, remarks, options = {}) => {
                         ? remarks[index]
                         : remarks; // Get corresponding remark for each file
 
-                    uploadPromises.push(
-                        uploadFilesToS3(file.buffer, key).then((res) => {
-                            multipleDocUpdates[fieldName].push({
-                                name: name,
-                                url: res.Key,
-                                remarks: fileRemark,
-                            });
-                        })
-                    );
-                });
+                    const res = await uploadFilesToS3(file.buffer, key);
+                    multipleDocUpdates[fieldName].push({
+                        name: name,
+                        url: res.Key,
+                        remarks: fileRemark,
+                    });
+                }
             }
         }
     }
 
-    // Wait for all files to be uploaded
-    await Promise.all(uploadPromises);
-
+    // Add single document updates to the lead document
     if (singleDocUpdates.length > 0) {
         lead.document.singleDocuments.push(...singleDocUpdates);
     }
 
+    // Add multiple document updates to the lead document
     for (const [field, docs] of Object.entries(multipleDocUpdates)) {
         if (docs.length > 0) {
             lead.document.multipleDocuments[field].push(...docs);

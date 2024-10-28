@@ -86,14 +86,6 @@ export const rejected = asyncHandler(async (req, res) => {
 // @route GET /api/leads/reject
 // @access Private
 export const getRejected = asyncHandler(async (req, res) => {
-    // List of roles that are authorized to hold a lead
-    const authorizedRoles = [
-        "screener",
-        "admin",
-        "creditManager",
-        "sanctionHead",
-    ];
-
     const page = parseInt(req.query.page) || 1; // current page
     const limit = parseInt(req.query.limit) || 10; // items per page
     const skip = (page - 1) * limit;
@@ -110,7 +102,8 @@ export const getRejected = asyncHandler(async (req, res) => {
         const leads = await Lead.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)
-            .limit(limit);
+            .limit(limit)
+            .sort({ updatedAt: -1 });
 
         const totalLeads = await Lead.countDocuments(query);
         return res.json({
@@ -121,15 +114,13 @@ export const getRejected = asyncHandler(async (req, res) => {
                 leads,
             },
         });
-    } else if (
-        req.activeRole === "creditManager" ||
-        req.activeRole === "sanctionHead"
-    ) {
+    } else if (req.activeRole === "creditManager") {
         const application = await Application.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
-            .populate("lead");
+            .populate("lead")
+            .sort({ updatedAt: -1 });
 
         const totalApplications = await Application.countDocuments(query);
         return res.json({
@@ -145,7 +136,8 @@ export const getRejected = asyncHandler(async (req, res) => {
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
-            .populate({ path: "rejectedBy", select: "fName mName lName" });
+            .populate({ path: "rejectedBy", select: "fName mName lName" })
+            .sort({ updatedAt: -1 });
 
         const totalLeads = await Lead.countDocuments(query);
 
@@ -154,7 +146,8 @@ export const getRejected = asyncHandler(async (req, res) => {
             .skip(skip)
             .limit(limit)
             .populate("lead")
-            .populate({ path: "rejectedBy", select: "fName mName lName" });
+            .populate({ path: "rejectedBy", select: "fName mName lName" })
+            .sort({ updatedAt: -1 });
 
         const totalApplications = await Application.countDocuments(query);
 
