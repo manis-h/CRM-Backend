@@ -370,40 +370,34 @@ export const emailVerify = asyncHandler(async (req, res) => {
 // @route PATCH /api/verify/email-otp/:id
 // @access Private
 export const verifyEmailOtp = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const { otp } = req.body;
-
-    const lead = await Lead.findById(id);
-
-    if (!lead) {
-        res.status(404);
-        throw new Error("Lead not found!!!");
-    }
-
-    if (lead.screenerId.toString() !== req.employee._id.toString()) {
-        res.status(401);
-        throw new Error("You are not authorized!!");
-    }
-
-    // Check if the OTP has expired
-    const currentTime = new Date();
-    if (currentTime > lead.emailOtpExpiredAt) {
-        res.status(400);
-        throw new Error("OTP has expired");
-    }
-
-    // Check if the OTP matches
-    if (lead.emailOtp !== otp) {
-        res.status(400);
-        throw new Error("Invalid OTP");
-    }
-    lead.isEmailVerified = true;
-    await lead.save();
-
-    res.json({
-        success: true,
-        message: "Email is now verified.",
-    });
+    // const { id } = req.params;
+    // const { otp } = req.body;
+    // const lead = await Lead.findById(id);
+    // if (!lead) {
+    //     res.status(404);
+    //     throw new Error("Lead not found!!!");
+    // }
+    // if (lead.screenerId.toString() !== req.employee._id.toString()) {
+    //     res.status(401);
+    //     throw new Error("You are not authorized!!");
+    // }
+    // // Check if the OTP has expired
+    // const currentTime = new Date();
+    // if (currentTime > lead.emailOtpExpiredAt) {
+    //     res.status(400);
+    //     throw new Error("OTP has expired");
+    // }
+    // // Check if the OTP matches
+    // if (lead.emailOtp !== otp) {
+    //     res.status(400);
+    //     throw new Error("Invalid OTP");
+    // }
+    // lead.isEmailVerified = true;
+    // await lead.save();
+    // res.json({
+    //     success: true,
+    //     message: "Email is now verified.",
+    // });
 });
 
 // @desc Fetch CIBIL
