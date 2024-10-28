@@ -2,7 +2,6 @@ import asyncHandler from "../middleware/asyncHandler.js";
 import Application from "../models/Applications.js";
 import { generateSanctionLetter } from "../utils/sendsanction.js";
 import { dateFormatter, dateStripper } from "../utils/dateFormatter.js";
-import CamDetails from "../models/CAM.js";
 import { getSanctionData } from "../utils/sanctionData.js";
 import Lead from "../models/Leads.js";
 
@@ -71,7 +70,6 @@ export const sanctionApprove = asyncHandler(async (req, res) => {
         lead,
         `${application.applicant.personalDetails.personalEmail}`
     );
-
 
     // Return a unsuccessful response
     // if (!emailResponse.success) {

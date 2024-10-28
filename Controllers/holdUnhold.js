@@ -32,7 +32,7 @@ export const onHold = asyncHandler(async (req, res) => {
     let application;
     let logs;
 
-    if (req.roles.has("screener")) {
+    if (req.activeRole === "screener") {
         lead = await Lead.findByIdAndUpdate(
             id,
             { onHold: true, heldBy: req.employee._id },
@@ -53,7 +53,10 @@ export const onHold = asyncHandler(async (req, res) => {
         return res.json({ lead, logs });
     }
 
-    if (req.roles.has("creditManger") || req.roles.has("sanctionHead")) {
+    if (
+        req.activeRole === "creditManager" ||
+        req.activeRole === "sanctionHead"
+    ) {
         application = await Application.findByIdAndUpdate(
             id,
             { onHold: true, heldBy: req.employee._id },
@@ -107,7 +110,7 @@ export const unHold = asyncHandler(async (req, res) => {
     let application;
     let logs;
 
-    if (req.roles.has("screener")) {
+    if (req.activeRole === "screener") {
         lead = await Lead.findByIdAndUpdate(
             id,
             { onHold: false },
@@ -128,7 +131,10 @@ export const unHold = asyncHandler(async (req, res) => {
         return res.json({ lead, logs });
     }
 
-    if (req.roles.has("creditManger") || req.roles.has("sanctionHead")) {
+    if (
+        req.activeRole === "creditManager" ||
+        req.activeRole === "sanctionHead"
+    ) {
         application = await Application.findByIdAndUpdate(
             id,
             { onHold: false },
@@ -184,7 +190,7 @@ export const getHold = asyncHandler(async (req, res) => {
 
     // If the employee is not admint, they only see the leads they rejected
 
-    if (req.roles.has("screener") || req.roles.has("creditManager")) {
+    if (req.activeRole === "screener" || req.activeRole === "creditManager") {
         query = {
             ...query,
             heldBy: employeeId,
@@ -195,7 +201,7 @@ export const getHold = asyncHandler(async (req, res) => {
     let applications;
     let totalRecords;
 
-    if (req.roles.has("screener")) {
+    if (req.activeRole === "screener") {
         leads = await Lead.find(query).skip(skip).limit(limit);
 
         totalRecords = await Lead.countDocuments(query);
@@ -208,7 +214,7 @@ export const getHold = asyncHandler(async (req, res) => {
                 leads,
             },
         });
-    } else if (req.roles.has("creditManager")) {
+    } else if (req.activeRole === "creditManager") {
         applications = await Application.find(query)
             .skip(skip)
             .limit(limit)

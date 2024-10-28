@@ -1,9 +1,7 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Application from "../models/Applications.js";
-import CamDetails from "../models/CAM.js";
 import Employee from "../models/Employees.js";
 import Lead from "../models/Leads.js";
-import mongoose from "mongoose";
 import { postLogs } from "./logs.js";
 
 export const sentBack = asyncHandler(async (req, res) => {

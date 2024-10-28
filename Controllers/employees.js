@@ -7,7 +7,7 @@ import { generateToken } from "../utils/generateToken.js";
 // @route POST /api/employees
 //@access Private
 export const register = asyncHandler(async (req, res) => {
-    if (req.roles && req.roles.has("admin")) {
+    if (req.activeRole && req.activeRole === "admin") {
         const {
             fName,
             lName,
@@ -96,7 +96,7 @@ export const logout = (req, res) => {
 // @route GET /api/employees/
 // @access Private
 export const getAllEmployees = asyncHandler(async (req, res) => {
-    if (req.admin) {
+    if (req.activeRole === "admin") {
         const employees = await Employee.find({});
         return res.json(employees);
     }

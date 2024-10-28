@@ -113,7 +113,7 @@ export const allocateLead = asyncHandler(async (req, res) => {
     const { id } = req.params;
     let screenerId;
 
-    if (req.roles.has("screener")) {
+    if (req.activeRole === "screener") {
         screenerId = req.employee._id.toString(); // Current user is a screener
     }
 
@@ -151,7 +151,7 @@ export const allocateLead = asyncHandler(async (req, res) => {
 // @access Private
 export const allocatedLeads = asyncHandler(async (req, res) => {
     let query;
-    if (req.roles.has("admin") || req.roles.has("sanctionHead")) {
+    if (req.activeRole === "admin" || req.activeRole === "sanctionHead") {
         query = {
             screenerId: {
                 $ne: null,
@@ -160,7 +160,7 @@ export const allocatedLeads = asyncHandler(async (req, res) => {
             isRejected: { $ne: true },
             isRecommended: { $ne: true },
         };
-    } else if (req.roles.has("screener")) {
+    } else if (req.activeRole === "screener") {
         query = {
             screenerId: req.employee.id,
             onHold: { $ne: true },

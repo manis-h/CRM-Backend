@@ -114,6 +114,13 @@ export const uploadDocs = async (lead, files, remarks, options = {}) => {
             } else {
                 // Iterate through each file for multipleDocuments and handle remarks as array
                 fileArray.forEach((file, index) => {
+                    // Get the current count of documents for this field in the database
+                    const existingDocsCount =
+                        lead.document.multipleDocuments[fieldName]?.length || 0;
+
+                    const name = `${fieldName}_${
+                        existingDocsCount + index + 1
+                    }`;
                     const key = `${
                         lead._id
                     }/${fieldName}/${fieldName}-${Date.now()}-${
@@ -126,6 +133,7 @@ export const uploadDocs = async (lead, files, remarks, options = {}) => {
                     uploadPromises.push(
                         uploadFilesToS3(file.buffer, key).then((res) => {
                             multipleDocUpdates[fieldName].push({
+                                name: name,
                                 url: res.Key,
                                 remarks: fileRemark,
                             });

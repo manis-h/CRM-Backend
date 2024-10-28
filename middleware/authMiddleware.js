@@ -18,7 +18,6 @@ const protect = asyncHandler(async (req, res, next) => {
             }
             const rolesHierarchy = {
                 admin: ["admin"],
-                CreditManager: ["screener", "creditManager"],
                 sanction: ["screener", "creditManager", "sanctionHead"],
                 disbursal: ["disbursalManager", "disbursalHead"],
             };
@@ -40,30 +39,16 @@ const protect = asyncHandler(async (req, res, next) => {
 
             // const role = req.role;
             const requestedRole = req.query?.role;
-            const userRole = req.roles;
 
-            if (!userRole) {
-                res.status(500);
-                return next(
-                    new Error(
-                        "User roles are undefined. Ensure roles are set in the request object."
-                    )
-                );
-            }
-
-            // Check if userRole exists in role hierarchy and if it includes the requestedRole
-            const hasAccess = rolesHierarchy[userRole]?.has(requestedRole);
-
-            if (!hasAccess) {
+            if (!requestedRole || !req.roles.has(requestedRole)) {
                 res.status(403);
-                return next(
-                    new Error("You do not have the required permissions")
+                throw new Error(
+                    "You do not have the required permissions for this role"
                 );
             }
 
-            // Dynamically add the employee role to req
-            // const role = req.employee.empRole;
-            // req[role] = req.employee; // Assign the employee's role to req dynamically
+            // Set active role for later use in controllers
+            req.activeRole = requestedRole;
 
             next();
         } catch (error) {

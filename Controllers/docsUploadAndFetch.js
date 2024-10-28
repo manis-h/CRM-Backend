@@ -18,10 +18,8 @@ export const addDocs = asyncHandler(async (req, res) => {
         throw new Error("Lead not found");
     }
 
-    if (req.roles.has("screener")) {
+    if (req.activeRole === "screener" || req.activeRole === "creditManager") {
         employeeId = req.employee._id.toString();
-    } else if (req.roles.has("creditManager")) {
-        employeeId = req.creditManager._id.toString();
     }
 
     if (!req.files) {
@@ -29,8 +27,8 @@ export const addDocs = asyncHandler(async (req, res) => {
         throw new Error("No files uploaded");
     }
 
-    if (req.roles.has("screener") || req.roles.has("creditManager")) {
-        // Validate document uploads
+    if (req.activeRole === "screener" || req.activeRole === "creditManager") {
+        // Validate Aadhaar document uploads, but only if they exist
         const aadhaarFrontUploaded =
             req.files.aadhaarFront && req.files.aadhaarFront.length > 0;
         const aadhaarBackUploaded =
@@ -38,22 +36,25 @@ export const addDocs = asyncHandler(async (req, res) => {
         const eAadhaarUploaded =
             req.files.eAadhaar && req.files.eAadhaar.length > 0;
 
-        // Check validation logic
-        if (aadhaarFrontUploaded && aadhaarBackUploaded && eAadhaarUploaded) {
+        // Validation logic: Aadhaar files must follow either/or rule if uploaded
+        if ((aadhaarFrontUploaded || aadhaarBackUploaded) && eAadhaarUploaded) {
             return res.status(400).json({
                 message:
                     "You cannot upload both aadhaar documents and eAadhaar.",
             });
         }
-        if (aadhaarFrontUploaded && aadhaarBackUploaded && !eAadhaarUploaded) {
-            // Proceed with document upload for aadhaarFront and aadhaarBack
-            const result = await uploadDocs(lead, req.files, remarks);
-            if (!result) {
-                res.status(400);
-                throw new Error("Couldn't store documents.");
-            }
-        } else if (eAadhaarUploaded) {
-            // Proceed with document upload for eAadhaar
+
+        // If only aadhaarFront and aadhaarBack are provided, or only eAadhaar, proceed
+        if (
+            (aadhaarFrontUploaded &&
+                aadhaarBackUploaded &&
+                !eAadhaarUploaded) ||
+            (eAadhaarUploaded &&
+                !aadhaarFrontUploaded &&
+                !aadhaarBackUploaded) ||
+            (!aadhaarFrontUploaded && !aadhaarBackUploaded && !eAadhaarUploaded)
+        ) {
+            // Proceed with document upload
             const result = await uploadDocs(lead, req.files, remarks);
             if (!result) {
                 res.status(400);
@@ -62,7 +63,7 @@ export const addDocs = asyncHandler(async (req, res) => {
         } else {
             return res.status(400).json({
                 message:
-                    "At least one of the aadhaar documents or eAadhaar must be uploaded.",
+                    "At least one of the Aadhaar documents or eAadhaar must be uploaded, or none.",
             });
         }
     } else {
@@ -87,7 +88,7 @@ export const addDocs = asyncHandler(async (req, res) => {
 export const getDocuments = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { docType } = req.query;
-    const docId = Number(req.query.docId);
+    const docId = req.query.docId;
 
     let lead = await Lead.findById(id);
     if (!lead) {

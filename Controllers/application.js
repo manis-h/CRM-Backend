@@ -9,7 +9,10 @@ import CamDetails from "../models/CAM.js";
 // @route GET /api/applications
 // @access Private
 export const getAllApplication = asyncHandler(async (req, res) => {
-    if (req.employee.empRole === "screener") {
+    if (
+        req.activeRole !== "creditManager" ||
+        req.activeRole !== "sanctionHead"
+    ) {
         res.status(401);
         throw new Error("Screeners doesn't have the authorization.");
     }
@@ -66,13 +69,10 @@ export const allocateApplication = asyncHandler(async (req, res) => {
     const { id } = req.params;
     let creditManagerId;
 
-    if (req.admin) {
+    if (req.activeRole === "admin") {
         creditManagerId = req.body.creditManagerId;
-    } else {
-        creditManagerId = req.creditManager._id.toString();
-    }
-    if (!req.creditManager) {
-        throw new Error("Credit Manager not found");
+    } else if (req.activeRole === "creditManager") {
+        creditManagerId = req.employee._id.toString();
     }
 
     const application = await Application.findByIdAndUpdate(
@@ -103,10 +103,7 @@ export const allocateApplication = asyncHandler(async (req, res) => {
 // @access Private
 export const allocatedApplications = asyncHandler(async (req, res) => {
     let query;
-    if (
-        req.employee.empRole === "admin" ||
-        req.employee.empRole === "sanctionHead"
-    ) {
+    if (req.activeRole === "admin" || req.activeRole === "sanctionHead") {
         query = {
             creditManagerId: {
                 $ne: null,
@@ -115,7 +112,7 @@ export const allocatedApplications = asyncHandler(async (req, res) => {
             isRejected: { $ne: true },
             isRecommended: { $ne: true },
         };
-    } else if (req.employee.empRole === "creditManager") {
+    } else if (req.activeRole === "creditManager") {
         query = {
             creditManagerId: req.employee.id,
             onHold: { $ne: true },
@@ -199,7 +196,7 @@ export const updateCamDetails = asyncHandler(async (req, res) => {
     }
 
     if (
-        req.creditManager._id.toString() ===
+        req.employee._id.toString() ===
         application.creditManagerId._id.toString()
     ) {
         // Find the CamDetails associated with the application (if needed)
@@ -248,7 +245,7 @@ export const recommendedApplication = asyncHandler(async (req, res) => {
     }
 
     if (
-        req.creditManager._id.toString() ===
+        req.employee._id.toString() ===
         application.creditManagerId._id.toString()
     ) {
         const result = await checkApproval(

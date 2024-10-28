@@ -34,7 +34,7 @@ export const rejected = asyncHandler(async (req, res) => {
     let application;
     let logs;
 
-    if (req.roles.has("screener")) {
+    if (req.activeRole === "screener") {
         lead = await Lead.findByIdAndUpdate(
             id,
             { onHold: false, isRejected: true, rejectedBy: req.employee._id },
@@ -55,7 +55,10 @@ export const rejected = asyncHandler(async (req, res) => {
         return res.json({ lead, logs });
     }
 
-    if (req.roles.has("creditManager") || req.roles.has("sanctionHead")) {
+    if (
+        req.activeRole === "creditManager" ||
+        req.activeRole === "sanctionHead"
+    ) {
         application = await Application.findByIdAndUpdate(
             id,
             { isRejected: true, rejectedBy: req.employee._id },
@@ -102,13 +105,8 @@ export const getRejected = asyncHandler(async (req, res) => {
         throw new Error("Not Authorized!!");
     }
 
-    if (!authorizedRoles.includes(req.employee.empRole)) {
-        res.status(403);
-        throw new Error("Not Authorized!!");
-    }
-
     // Fetch the leads based on roles
-    if (req.screener) {
+    if (req.activeRole === "screener") {
         const leads = await Lead.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -123,7 +121,10 @@ export const getRejected = asyncHandler(async (req, res) => {
                 leads,
             },
         });
-    } else if (req.creditManager) {
+    } else if (
+        req.activeRole === "creditManager" ||
+        req.activeRole === "sanctionHead"
+    ) {
         const application = await Application.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)

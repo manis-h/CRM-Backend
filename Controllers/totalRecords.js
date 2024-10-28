@@ -34,7 +34,7 @@ export const totalRecords = asyncHandler(async (req, res) => {
         (lead) => lead.screenerId && !lead.onHold && lead.isRejected
     );
 
-    if (req.roles.has("screener")) {
+    if (req.activeRole === "screener") {
         allocatedLeads = allocatedLeads.filter(
             (allocated) =>
                 allocated.screenerId.toString() === req.employee._id.toString()
@@ -74,7 +74,7 @@ export const totalRecords = asyncHandler(async (req, res) => {
             application.isRejected
     );
 
-    if (req.roles.has("creditManager")) {
+    if (req.activeRole === "creditManager") {
         allocatedApplications = allocatedApplications.filter(
             (application) =>
                 application.creditManagerId.toString() ===
