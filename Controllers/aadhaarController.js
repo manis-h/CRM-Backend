@@ -9,22 +9,23 @@ import AadhaarDetails from "../models/AadhaarDetails.js";
 export const aadhaarOtp = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const lead = await Lead.findById(id);
-    const aadhaar = lead?.aadhaar;
+    // const lead = await Lead.findById(id);
+    // const aadhaar = lead?.aadhaar;
 
-    // Validate Aaadhaar number (12 digits)
-    if (!/^\d{12}$/.test(aadhaar)) {
-        return res.status(400).json({
-            success: false,
-            message: "Aaadhaar number must be a 12-digit number.",
-        });
-    }
+    // // Validate Aaadhaar number (12 digits)
+    // if (!/^\d{12}$/.test(aadhaar)) {
+    //     return res.status(400).json({
+    //         success: false,
+    //         message: "Aaadhaar number must be a 12-digit number.",
+    //     });
+    // }
 
-    // Call the function to generate OTP using Aaadhaar number
-    const response = await generateAadhaarOtp(aadhaar);
+    // // Call the function to generate OTP using Aaadhaar number
+    // const response = await generateAadhaarOtp(aadhaar);
     res.json({
         success: true,
-        trx_id: response.transaction_id,
+        // trx_id: response.transaction_id,
+        trx_id: "12345678912",
     });
 });
 
