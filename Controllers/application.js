@@ -9,10 +9,7 @@ import CamDetails from "../models/CAM.js";
 // @route GET /api/applications
 // @access Private
 export const getAllApplication = asyncHandler(async (req, res) => {
-    if (
-        req.activeRole !== "creditManager" ||
-        req.activeRole !== "sanctionHead"
-    ) {
+    if (req.activeRole === "screener") {
         res.status(401);
         throw new Error("Screeners doesn't have the authorization.");
     }
