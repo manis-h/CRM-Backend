@@ -20,7 +20,6 @@ const personalDetailsSchema = new mongoose.Schema(
         mobile: { type: String, required: true, unique: true },
         alternateMobile: {
             type: String,
-            unique: true,
         },
         personalEmail: {
             type: String,
