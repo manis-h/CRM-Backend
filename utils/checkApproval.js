@@ -47,12 +47,12 @@ export const checkApproval = async (
             //     return { approved: false, message: "Email is not verified!!" };
             // }
 
-            if (!lead.isAadhaarVerified) {
-                return {
-                    approved: false,
-                    message: "Aadhaar is not verified!!",
-                };
-            }
+            // if (!lead.isAadhaarVerified) {
+            //     return {
+            //         approved: false,
+            //         message: "Aadhaar is not verified!!",
+            //     };
+            // }
 
             if (!lead.isPanVerified) {
                 return { approved: false, message: "Pan is not verified!!" };

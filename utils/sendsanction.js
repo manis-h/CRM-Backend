@@ -51,7 +51,7 @@ export const generateSanctionLetter = async (
                 "content-type": "application/json",
             },
             data: JSON.stringify({
-                from: { address: "info@only1loan.com" },
+                from: { address: "info@fintechbasket.com" },
                 to: [
                     {
                         email_address: {
