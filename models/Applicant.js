@@ -24,12 +24,10 @@ const personalDetailsSchema = new mongoose.Schema(
         personalEmail: {
             type: String,
             required: true,
-            unique: true,
         },
         officeEmail: {
             type: String,
             required: true,
-            unique: true,
         },
         screenedBy: {
             type: String,

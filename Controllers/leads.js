@@ -267,8 +267,8 @@ export const recommendLead = asyncHandler(async (req, res) => {
             throw new Error(`${result.message}`);
         }
 
-        const screenerName = `${lead.screenerId.fname}${
-            lead.screenerId.fName && ` ${lead.screenerId.mName}`
+        const screenerName = `${lead.screenerId.fName}${
+            lead.screenerId.mName && ` ${lead.screenerId.mName}`
         } ${lead.screenerId.lName}`;
 
         const {
