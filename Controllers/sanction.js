@@ -51,38 +51,43 @@ export const sanctionPreview = asyncHandler(async (req, res) => {
 // @route PATCH /api/sanction/approve/:id
 // @access Private
 export const sanctionApprove = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    if (req.activeRole === "sanctionHead") {
+        const { id } = req.params;
 
-    const { application, camDetails, response } = await getSanctionData(id);
+        const { application, camDetails, response } = await getSanctionData(id);
 
-    const lead = await Lead.findById({ _id: application.lead });
+        const lead = await Lead.findById({ _id: application.lead });
 
-    // Call the generateSanctionLetter utility function
-    const emailResponse = await generateSanctionLetter(
-        `SANCTION LETTER - ${response.fullname}`,
-        dateFormatter(response.sanctionDate),
-        response.title,
-        response.fullname,
-        response.mobile,
-        response.residenceAddress,
-        response.stateCountry,
-        camDetails,
-        lead,
-        `${application.applicant.personalDetails.personalEmail}`
-    );
+        // Call the generateSanctionLetter utility function
+        const emailResponse = await generateSanctionLetter(
+            `SANCTION LETTER - ${response.fullname}`,
+            dateFormatter(response.sanctionDate),
+            response.title,
+            response.fullname,
+            response.mobile,
+            response.residenceAddress,
+            response.stateCountry,
+            camDetails,
+            lead,
+            `${application.applicant.personalDetails.personalEmail}`
+        );
 
-    // Return a unsuccessful response
-    // if (!emailResponse.success) {
-    //     return res.json({ success: false });
-    // }
+        // Return a unsuccessful response
+        if (!emailResponse.success) {
+            return res.json({ success: false });
+        }
 
-    // application.sanctionDate = response.sanctionDate;
-    // application.isApproved = true;
-    // application.approvedBy = req.employee._id.toString();
-    // await application.save();
+        application.sanctionDate = response.sanctionDate;
+        application.isApproved = true;
+        application.approvedBy = req.employee._id.toString();
+        await application.save();
 
-    res.json({
-        success: true,
-        // message: ,
-    });
+        res.json({
+            success: true,
+            message: emailResponse.message,
+        });
+    } else {
+        res.status(401);
+        throw new Error("You are not authorized!!");
+    }
 });

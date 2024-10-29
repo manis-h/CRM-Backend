@@ -29,20 +29,15 @@ export const generateSanctionLetter = async (
         );
 
         // Save the sanction letter in S3
-        await htmlToPdf(lead, htmlToSend);
+        // await htmlToPdf(lead, htmlToSend);
 
         // Call eSign API
-        const contract = await initiateEsignContract(
-            lead._id,
-            "sanctionLetter"
-        );
+        // const contract = await initiateEsignContract(
+        //     lead._id,
+        //     "sanctionLetter"
+        // );
 
         // response?.data?.signerdetail[0]?.workflowUrl  eSign url
-
-        // footer =
-        //     "https://publicramlella.s3.ap-south-1.amazonaws.com/public_assets/Footer.jpg";
-        // header =
-        //     "https://publicramlella.s3.ap-south-1.amazonaws.com/public_assets/Header.jpg";
 
         // Setup the options for the ZeptoMail API
         const options = {
@@ -56,7 +51,7 @@ export const generateSanctionLetter = async (
                 "content-type": "application/json",
             },
             data: JSON.stringify({
-                from: { address: "ajay@only1loan.com" },
+                from: { address: "info@only1loan.com" },
                 to: [
                     {
                         email_address: {
@@ -66,22 +61,23 @@ export const generateSanctionLetter = async (
                     },
                 ],
                 subject: subject,
-                htmlbody: `<div><p>To approve the loan, please verify and sign the sanction letter.</p><br/><a href=${response?.data?.signerdetail[0]?.workflowUrl}>${response?.data?.signerdetail[0]?.workflowUrl}</a></div>`,
+                // htmlbody: `<div><p>To approve the loan, please verify and sign the sanction letter.</p><br/><a href=${response?.data?.signerdetail[0]?.workflowUrl}>${response?.data?.signerdetail[0]?.workflowUrl}</a></div>`,
+                htmlbody: htmlToSend,
             }),
         };
         // Make the request to the ZeptoMail API
-        // const response = await axios(options);
-        // if (response.data.message === "OK") {
-        //     await htmlToPdf(lead, htmlToSend);
-        //     return {
-        //         success: true,
-        //         message: "Sanction letter sent and saved successfully",
-        //     };
-        // }
-        // return {
-        //     success: false,
-        //     message: "Failed to send email",
-        // };
+        const response = await axios(options);
+        if (response.data.message === "OK") {
+            // await htmlToPdf(lead, htmlToSend);
+            return {
+                success: true,
+                message: "Sanction letter sent and saved successfully",
+            };
+        }
+        return {
+            success: false,
+            message: "Failed to send email",
+        };
     } catch (error) {
         return {
             success: false,
