@@ -105,6 +105,10 @@ const leadSchema = new mongoose.Schema(
         document: {
             singleDocuments: [
                 {
+                    name: {
+                        type: String,
+                        required: true,
+                    },
                     type: {
                         type: String,
                         enum: [

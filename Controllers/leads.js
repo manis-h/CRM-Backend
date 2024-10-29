@@ -243,9 +243,8 @@ export const updateLead = asyncHandler(async (req, res) => {
 // @route Patch /api/lead/recommend/:id
 // @access Private
 export const recommendLead = asyncHandler(async (req, res) => {
-    if (req.activeRole === "screeneer") {
-        const { id } = req.params;
-
+    const { id } = req.params;
+    if (req.activeRole === "screener") {
         // Find the lead by its ID
         const lead = await Lead.findById(id).populate({
             path: "screenerId",

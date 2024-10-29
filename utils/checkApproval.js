@@ -43,9 +43,9 @@ export const checkApproval = async (
                 throw new Error("Lead is on hold, please unhold it first.");
             }
 
-            if (!lead.isEmailVerified) {
-                return { approved: false, message: "Email is not verified!!" };
-            }
+            // if (!lead.isEmailVerified) {
+            //     return { approved: false, message: "Email is not verified!!" };
+            // }
 
             if (!lead.isAadhaarVerified) {
                 return {
@@ -67,9 +67,10 @@ export const checkApproval = async (
                 ...lead?.document?.multipleDocuments?.bankStatement,
                 ...lead?.document?.multipleDocuments?.others,
                 ...lead?.document?.singleDocuments,
-
-            ]
-             const uploadedDocs = allDocuments.map((doc) => doc.type ? doc.type : doc.url.split("/")[1]); //
+            ];
+            const uploadedDocs = allDocuments.map((doc) =>
+                doc.type ? doc.type : doc.url.split("/")[1]
+            ); //
             const missingDocs = requiredDocs.filter(
                 (docType) => !uploadedDocs.includes(docType)
             );

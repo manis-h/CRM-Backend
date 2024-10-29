@@ -41,6 +41,7 @@ export const uploadDocs = async (lead, files, remarks, options = {}) => {
             // If document type does not exist, add it to the singleDocuments array
             const res = await uploadFilesToS3(buffer, key);
             singleDocUpdates.push({
+                name: fieldName,
                 type: fieldName,
                 url: res.Key,
             });
@@ -87,6 +88,7 @@ export const uploadDocs = async (lead, files, remarks, options = {}) => {
                     // If document type does not exist, add it to the singleDocuments array
                     const res = await uploadFilesToS3(file.buffer, key);
                     singleDocUpdates.push({
+                        name: fieldName,
                         type: fieldName,
                         url: res.Key,
                         remarks,

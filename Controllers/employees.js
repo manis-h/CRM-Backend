@@ -7,55 +7,55 @@ import { generateToken } from "../utils/generateToken.js";
 // @route POST /api/employees
 //@access Private
 export const register = asyncHandler(async (req, res) => {
-    if (req.activeRole && req.activeRole === "admin") {
-        const {
-            fName,
-            lName,
-            email,
-            password,
-            confPassword,
-            gender,
-            mobile,
-            empRole,
-            empId,
-        } = req.body;
-        const existingUser = await Employee.findOne({ email });
+    // if (req.activeRole && req.activeRole === "admin") {
+    const {
+        fName,
+        lName,
+        email,
+        password,
+        confPassword,
+        gender,
+        mobile,
+        empRole,
+        empId,
+    } = req.body;
+    const existingUser = await Employee.findOne({ email });
 
-        if (existingUser) {
-            res.status(400);
-            throw new Error("Employee already exists!!!");
-        }
-
-        if (password !== confPassword) {
-            res.status(400);
-            throw new Error("Passwords do not match");
-        }
-
-        // const empId = generateEmpId();
-        const employee = await Employee.create({
-            fName,
-            lName,
-            email,
-            password,
-            gender,
-            mobile,
-            empRole,
-            empId,
-        });
-        if (employee) {
-            generateToken(res, employee._id);
-            return res.status(201).json({
-                _id: employee._id,
-                name: employee.fName + " " + employee.lName,
-                email: employee.email,
-                empRole: employee.empRole,
-            });
-        }
-    } else {
-        // If user is not an admin, deny access
-        res.status(403);
-        throw new Error("Not authorized to register employees");
+    if (existingUser) {
+        res.status(400);
+        throw new Error("Employee already exists!!!");
     }
+
+    if (password !== confPassword) {
+        res.status(400);
+        throw new Error("Passwords do not match");
+    }
+
+    // const empId = generateEmpId();
+    const employee = await Employee.create({
+        fName,
+        lName,
+        email,
+        password,
+        gender,
+        mobile,
+        empRole,
+        empId,
+    });
+    if (employee) {
+        generateToken(res, employee._id);
+        return res.status(201).json({
+            _id: employee._id,
+            name: employee.fName + " " + employee.lName,
+            email: employee.email,
+            empRole: employee.empRole,
+        });
+    }
+    // } else {
+    //     // If user is not an admin, deny access
+    //     res.status(403);
+    //     throw new Error("Not authorized to register employees");
+    // }
 });
 
 // @desc Auth user & get token
