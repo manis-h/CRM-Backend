@@ -13,6 +13,7 @@ export const applicantDetails = async (details = null) => {
     try {
         const applicant = await Applicant.findOne({
             $and: [
+                { "personalDetails.mobile": details.mobile }, // Check if Aadhaar matches
                 { "personalDetails.pan": details.pan }, // Check if PAN matches
                 { "personalDetails.aadhaar": details.aadhaar }, // Check if Aadhaar matches
             ],
