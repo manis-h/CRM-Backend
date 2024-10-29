@@ -429,9 +429,9 @@ export const fetchCibil = asyncHandler(async (req, res) => {
         // await cibilPdf(lead);
         // console.log(pdfResult);
 
-        const value =
-            response?.CCRResponse?.CIRReportDataLst[0]?.CIRReportData
-                ?.ScoreDetails[0]?.Value || "720";
+        const value = "720";
+        // const value = response?.CCRResponse?.CIRReportDataLst[0]?.CIRReportData
+        //     ?.ScoreDetails[0]?.Value || "720";
 
         if (!value) {
             return res.status(400).json({
