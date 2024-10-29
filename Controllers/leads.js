@@ -44,7 +44,7 @@ export const createLead = asyncHandler(async (req, res) => {
         aadhaar,
         pan,
         mobile: String(mobile),
-        alternateMobile: String(alternateMobile),
+        alternateMobile: alternateMobile ? String(alternateMobile) : "",
         personalEmail,
         officeEmail,
         loanAmount,
