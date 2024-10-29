@@ -62,7 +62,14 @@ export const checkApproval = async (
                 return { approved: false, message: "CIBIL score is missing!!" };
             }
             // Check if all the required documents are present
-            const uploadedDocs = lead.document.map((doc) => doc.type);
+            const allDocuments = [
+                ...lead?.document?.multipleDocuments?.salarySlip,
+                ...lead?.document?.multipleDocuments?.bankStatement,
+                ...lead?.document?.multipleDocuments?.others,
+                ...lead?.document?.singleDocuments,
+
+            ]
+             const uploadedDocs = allDocuments.map((doc) => doc.type ? doc.type : doc.url.split("/")[1]); //
             const missingDocs = requiredDocs.filter(
                 (docType) => !uploadedDocs.includes(docType)
             );
