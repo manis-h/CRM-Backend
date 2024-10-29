@@ -24,7 +24,13 @@ app.use(cookieParser()); //cookie parser middlerware
 
 // CORS configuration
 var corsOption = {
-    origin: "http://localhost:5173",
+    origin: [
+        "http://localhost:5173",
+        "https://fintechbasket.com",
+        "http://www.fintechbasket.com",
+        "https://speedoloan.com",
+        "https://143.110.182.3",
+    ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
     preflightContinue: false,

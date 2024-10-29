@@ -231,50 +231,55 @@ export const updateCamDetails = asyncHandler(async (req, res) => {
 // @route Patch /api/applications/recommended/:id
 // @access Private
 export const recommendedApplication = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    if (req.activeRole === "creditManager") {
+        const { id } = req.params;
 
-    // Find the application by its ID
-    const application = await Application.findById(id)
-        .populate("lead")
-        .populate("creditManagerId");
+        // Find the application by its ID
+        const application = await Application.findById(id)
+            .populate("lead")
+            .populate("creditManagerId");
 
-    if (!application) {
-        throw new Error("Application not found"); // This error will be caught by the error handler
-    }
-
-    if (
-        req.employee._id.toString() ===
-        application.creditManagerId._id.toString()
-    ) {
-        const result = await checkApproval(
-            {},
-            application,
-            "",
-            req.creditManager._id.toString()
-        );
-        if (!result.approved) {
-            return res
-                .status(400)
-                .json({ success: false, message: result.message });
+        if (!application) {
+            throw new Error("Application not found"); // This error will be caught by the error handler
         }
-        // Approve the lead by updating its status
-        application.isRecommended = true;
-        application.recommendedBy = req.creditManager._id;
-        await application.save();
 
-        const logs = await postLogs(
-            application.lead._id,
-            "APPLICATION FORWARDED. TRANSFERED TO SACNTION HEAD",
-            `${application.lead.fName} ${application.lead.mName ?? ""} ${
-                application.lead.lName
-            }`,
-            `Application forwarded by ${application.creditManagerId.fName} ${application.creditManagerId.lName}`
-        );
-        return res.json(logs);
+        if (
+            req.employee._id.toString() ===
+            application.creditManagerId._id.toString()
+        ) {
+            const result = await checkApproval(
+                {},
+                application,
+                "",
+                req.employee._id.toString()
+            );
+            if (!result.approved) {
+                return res
+                    .status(400)
+                    .json({ success: false, message: result.message });
+            }
+            // Approve the lead by updating its status
+            application.isRecommended = true;
+            application.recommendedBy = req.employee._id;
+            await application.save();
+
+            const logs = await postLogs(
+                application.lead._id,
+                "APPLICATION FORWARDED. TRANSFERED TO SACNTION HEAD",
+                `${application.lead.fName} ${application.lead.mName ?? ""} ${
+                    application.lead.lName
+                }`,
+                `Application forwarded by ${application.creditManagerId.fName} ${application.creditManagerId.lName}`
+            );
+            return res.json(logs);
+        } else {
+            res.status(401);
+            throw new Error(
+                "You are not authorized to recommend this application!!"
+            );
+        }
     } else {
         res.status(401);
-        throw new Error(
-            "You are not authorized to recommend this application!!"
-        );
+        throw new Error("You are not authorized!!!");
     }
 });

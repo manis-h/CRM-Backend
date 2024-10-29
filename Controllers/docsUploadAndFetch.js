@@ -44,11 +44,10 @@ export const addDocs = asyncHandler(async (req, res) => {
             });
         }
 
-        // If only aadhaarFront and aadhaarBack are provided, or only eAadhaar, proceed
+        // If only aadhaarFront and aadhaarBack are provided, or only eAadhaar or none, proceed
         if (
-            (aadhaarFrontUploaded &&
-                aadhaarBackUploaded &&
-                !eAadhaarUploaded) ||
+            aadhaarFrontUploaded ||
+            (aadhaarBackUploaded && !eAadhaarUploaded) ||
             (eAadhaarUploaded &&
                 !aadhaarFrontUploaded &&
                 !aadhaarBackUploaded) ||

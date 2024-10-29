@@ -243,85 +243,90 @@ export const updateLead = asyncHandler(async (req, res) => {
 // @route Patch /api/lead/recommend/:id
 // @access Private
 export const recommendLead = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    if (req.activeRole === "screeneer") {
+        const { id } = req.params;
 
-    // Find the lead by its ID
-    const lead = await Lead.findById(id).populate({
-        path: "screenerId",
-        select: "fName mName lName",
-    });
+        // Find the lead by its ID
+        const lead = await Lead.findById(id).populate({
+            path: "screenerId",
+            select: "fName mName lName",
+        });
 
-    if (!lead) {
-        throw new Error("Lead not found"); // This error will be caught by the error handler
+        if (!lead) {
+            throw new Error("Lead not found"); // This error will be caught by the error handler
+        }
+
+        const result = await checkApproval(
+            lead,
+            {},
+            req.employee._id.toString(),
+            ""
+        );
+
+        if (!result.approved) {
+            res.status(400);
+            throw new Error(`${result.message}`);
+        }
+
+        const screenerName = `${lead.screenerId.fname}${
+            lead.screenerId.fName && ` ${lead.screenerId.mName}`
+        } ${lead.screenerId.lName}`;
+
+        const {
+            pan,
+            aadhaar,
+            fName,
+            mName,
+            lName,
+            gender,
+            dob,
+            mobile,
+            alternateMobile,
+            personalEmail,
+            officeEmail,
+        } = lead;
+        const details = {
+            pan,
+            aadhaar,
+            fName,
+            mName,
+            lName,
+            gender,
+            dob,
+            mobile,
+            alternateMobile,
+            personalEmail,
+            officeEmail,
+            screenedBy: screenerName,
+        };
+        const applicant = await applicantDetails(details);
+
+        await postCamDetails(id, lead.cibilScore, lead.loanAmount);
+
+        // Approve the lead by updating its status
+        lead.isRecommended = true;
+        lead.recommendedBy = req.employee._id;
+        await lead.save();
+
+        const newApplication = new Application({
+            lead: id,
+            applicant: applicant._id,
+        });
+        const response = await newApplication.save();
+
+        const logs = await postLogs(
+            lead._id,
+            "LEAD APPROVED. TRANSFERED TO CREDIT MANAGER",
+            `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
+            `Lead approved by ${lead.screenerId.fName} ${lead.screenerId.lName}`
+        );
+
+        // Send the approved lead as a JSON response
+        return res.json({ response, logs }); // This is a successful response
+    } else {
+        res.status(401);
+        throw new Error("You are not authorized!!");
     }
-
-    const result = await checkApproval(
-        lead,
-        {},
-        req.employee._id.toString(),
-        ""
-    );
-
-    if (!result.approved) {
-        res.status(400);
-        throw new Error(`${result.message}`);
-    }
-
-    const screenerName = `${lead.screenerId.fname}${
-        lead.screenerId.fName && ` ${lead.screenerId.mName}`
-    } ${lead.screenerId.lName}`;
-
-    const {
-        pan,
-        aadhaar,
-        fName,
-        mName,
-        lName,
-        gender,
-        dob,
-        mobile,
-        alternateMobile,
-        personalEmail,
-        officeEmail,
-    } = lead;
-    const details = {
-        pan,
-        aadhaar,
-        fName,
-        mName,
-        lName,
-        gender,
-        dob,
-        mobile,
-        alternateMobile,
-        personalEmail,
-        officeEmail,
-        screenedBy: screenerName,
-    };
-    const applicant = await applicantDetails(details);
-
-    await postCamDetails(id, lead.cibilScore, lead.loanAmount);
-
-    // Approve the lead by updating its status
-    lead.isRecommended = true;
-    lead.recommendedBy = req.screener._id;
-    await lead.save();
-
-    const newApplication = new Application({
-        lead: id,
-        applicant: applicant._id,
-    });
-    const response = await newApplication.save();
-
-    const logs = await postLogs(
-        lead._id,
-        "LEAD APPROVED. TRANSFERED TO CREDIT MANAGER",
-        `${lead.fName} ${lead.mName ?? ""} ${lead.lName}`,
-        `Lead approved by ${lead.screenerId.fName} ${lead.screenerId.lName}`
-    );
-
-    // Send the approved lead as a JSON response
-    return res.json({ response, logs }); // This is a successful response
 });
 
 // @desc verify email

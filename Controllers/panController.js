@@ -36,7 +36,7 @@ export const getPanDetails = asyncHandler(async (req, res) => {
 });
 
 // @desc Save the pan details once verified.
-// @route POST /api/verify/pan-aadhaar-link/:id
+// @route POST /api/verify/save-pan/:id
 // @access Private
 export const savePanDetails = asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -47,6 +47,12 @@ export const savePanDetails = asyncHandler(async (req, res) => {
     const existingPan = await PanDetails.findOne({ "data.PAN": pan });
 
     if (existingPan) {
+        await Lead.findByIdAndUpdate(
+            id,
+            { isPanVerified: true },
+            { new: true }
+        );
+
         return res.json({
             success: true,
         });
