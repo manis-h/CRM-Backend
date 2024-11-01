@@ -92,3 +92,34 @@ export const sanctionApprove = asyncHandler(async (req, res) => {
         throw new Error("You are not authorized!!");
     }
 });
+
+// @desc Get all sanctioned applications
+// @route GET /api/sanction/approved
+// @access Private
+export const sanctioned = asyncHandler(async (req, res) => {
+    if (req.activeRole === "sanctionHead") {
+        const page = parseInt(req.query.page) || 1; // current page
+        const limit = parseInt(req.query.limit) || 10; // items per page
+        const skip = (page - 1) * limit;
+
+        const query = {
+            isApproved: true,
+        };
+
+        console.log("query", query);
+
+        const applications = await Application.find(query)
+            .skip(skip)
+            .limit(limit)
+            .populate("lead");
+
+        const totalApplications = await Application.countDocuments(query);
+
+        return res.json({
+            totalApplications,
+            totalPages: Math.ceil(totalApplications / limit),
+            currentPage: page,
+            applications,
+        });
+    }
+});

@@ -18,6 +18,7 @@ const protect = asyncHandler(async (req, res, next) => {
             }
             const rolesHierarchy = {
                 admin: ["admin"],
+                supervisor: ["supervisor"],
                 sanction: ["screener", "creditManager", "sanctionHead"],
                 disbursal: ["disbursalManager", "disbursalHead"],
             };

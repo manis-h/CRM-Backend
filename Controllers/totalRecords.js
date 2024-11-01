@@ -73,6 +73,13 @@ export const totalRecords = asyncHandler(async (req, res) => {
             !application.onHold &&
             application.isRejected
     );
+    let sanctionedApplications = applications.filter(
+        (application) =>
+            application.creditManagerId &&
+            !application.onHold &&
+            !application.isRejected &&
+            application.isApproved
+    );
 
     if (req.activeRole === "creditManager") {
         allocatedApplications = allocatedApplications.filter(
@@ -102,6 +109,7 @@ export const totalRecords = asyncHandler(async (req, res) => {
             allocatedApplications: allocatedApplications.length,
             heldApplications: heldApplications.length,
             rejectedApplications: rejectedApplications.length,
+            sanctionedApplications: sanctionedApplications.length,
         },
     });
 });
