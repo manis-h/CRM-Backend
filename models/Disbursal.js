@@ -8,6 +8,26 @@ const disbursalSchema = new mongoose.Schema(
             required: true,
             unique: true,
         },
+        channel: {
+            type: String,
+            required: true,
+        },
+        mop: {
+            type: String,
+            required: true,
+        },
+        disbursalManagerId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Employee",
+        },
+        isRecommended: {
+            type: Boolean,
+            default: false,
+        },
+        recommendedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Employee",
+        },
         isDisbursed: {
             type: Boolean,
             default: false,

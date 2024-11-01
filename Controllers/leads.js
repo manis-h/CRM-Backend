@@ -302,16 +302,21 @@ export const recommendLead = asyncHandler(async (req, res) => {
 
         await postCamDetails(id, lead.cibilScore, lead.loanAmount);
 
-        // Approve the lead by updating its status
-        lead.isRecommended = true;
-        lead.recommendedBy = req.employee._id;
-        await lead.save();
-
         const newApplication = new Application({
             lead: id,
             applicant: applicant._id,
         });
         const response = await newApplication.save();
+
+        if (!response) {
+            res.status(400);
+            throw new Error("Could not approve this lead!!");
+        }
+
+        // Approve the lead by updating its status
+        lead.isRecommended = true;
+        lead.recommendedBy = req.employee._id;
+        await lead.save();
 
         const logs = await postLogs(
             lead._id,
